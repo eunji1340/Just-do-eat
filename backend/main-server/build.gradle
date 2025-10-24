@@ -1,0 +1,89 @@
+plugins {
+	id 'java'
+	id 'org.springframework.boot' version '3.5.7'
+	id 'io.spring.dependency-management' version '1.1.7'
+}
+
+group = 'com.ssafy.mvc'
+version = '0.0.1-SNAPSHOT'
+description = 'main-server'
+
+java {
+	toolchain {
+		languageVersion = JavaLanguageVersion.of(21)
+	}
+}
+
+configurations {
+	compileOnly {
+		extendsFrom annotationProcessor
+	}
+}
+
+repositories {
+	mavenCentral()
+}
+
+ext {
+	set('springCloudVersion', "2025.0.0")
+}
+
+dependencies {
+	// Spring Web
+	// Spring MVC(Controller, @RestController), 내장 톰캣, JSON, 기본 로깅(Logback)
+	// REST API 서버를 만든다면 무조건 들어가는 필수 스타터
+	implementation 'org.springframework.boot:spring-boot-starter-web'
+
+	// Spring Data JPA
+	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+
+	// Spring OAuth2 Client
+    // implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
+
+	// Spring Security
+	implementation 'org.springframework.boot:spring-boot-starter-security'
+
+	// Redis
+	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+
+	// Actuator
+	implementation 'org.springframework.boot:spring-boot-starter-actuator'
+
+	// PostgreSQL
+	runtimeOnly 'org.postgresql:postgresql'
+
+	// Lombok
+	compileOnly 'org.projectlombok:lombok'
+	annotationProcessor 'org.projectlombok:lombok'
+
+	// test 를 위한 필수 스타터
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testImplementation 'org.springframework.security:spring-security-test'
+	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+	// Prometheus
+	// implementation 'io.micrometer:micrometer-registry-prometheus'
+	// AWS S3
+	// implementation 'org.springframework.cloud:spring-cloud-starter-aws:2.2.6.RELEASE'
+	// 외부 API 사용시
+	// WebClient 용
+	// implementation("org.springframework.boot:spring-boot-starter-webflux")
+	// @Valid 용
+	// implementation 'org.springframework.boot:spring-boot-starter-validation'
+
+
+	// 왜 있는지 모름
+	// developmentOnly 'org.springframework.boot:spring-boot-devtools'
+	// annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
+	// implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
+}
+
+dependencyManagement {
+	imports {
+		mavenBom "org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}"
+	}
+}
+
+tasks.named('test') {
+	useJUnitPlatform()
+}
