@@ -3,7 +3,6 @@
 // --------------------------------------------
 import * as React from 'react';
 import BingoBoard from './bingo-board';
-import { useBingoTriState } from '../model/bingo-logic';
 import type { Tri, BingoItem } from '../model/bingo-types';
 import { useUserStore } from '../../../../entities/user/model/user-store';
 
@@ -13,11 +12,15 @@ export type BingoFlowProps = {
 
 export default function BingoFlow({ onComplete }: BingoFlowProps) {
   const { setBingoLikes } = useUserStore();
-  const { state, set } = useBingoTriState();
+  // 빙고 상태 관리 (기존 useBingoTriState 로직을 인라인으로)
+  const [state, setState] = React.useState<Record<number, Tri>>({});
   const [bingoItems, setBingoItems] = React.useState<BingoItem[]>([]);
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
   const [submitting, setSubmitting] = React.useState(false);
+
+  // 빙고 상태 업데이트 함수
+  const set = (idx: number, v: Tri) => setState((s) => ({ ...s, [idx]: v }));
 
   // 서버에서 빙고 보드 로드
   React.useEffect(() => {

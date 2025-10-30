@@ -2,7 +2,6 @@
 // features/Onboarding/MukbtiTest/ui/mukbti-flow.tsx
 // ---------------------------------------------
 import * as React from 'react';
-import { useMukbtiFlow } from '../model/mukbti-logic';
 import type { MukbtiAnswer, Question } from '../model/types';
 import { useUserStore } from '../../../../entities/user/model/user-store';
 
@@ -14,6 +13,9 @@ export default function MukbtiFlow({ onDone }: MukbtiFlowProps) {
   const [questions, setQuestions] = React.useState<Question[]>([]);
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
+  const [currentIndex, setCurrentIndex] = React.useState(0);
+  const [answers, setAnswers] = React.useState<MukbtiAnswer[]>([]);
+  const { setMukbtiAnswers } = useUserStore();
   
   // 서버에서 모든 질문 로드
   React.useEffect(() => {
@@ -29,9 +31,11 @@ export default function MukbtiFlow({ onDone }: MukbtiFlowProps) {
       });
   }, []);
 
-  const { current, isLast, progress, goNext } = useMukbtiFlow(questions);
-  const [answers, setAnswers] = React.useState<MukbtiAnswer[]>([]);
-  const { setMukbtiAnswers } = useUserStore();
+  // 질문 흐름 관리 (기존 useMukbtiFlow 로직을 인라인으로)
+  const current = questions[currentIndex];
+  const isLast = currentIndex === questions.length - 1;
+  const progress = questions.length > 0 ? Math.round(((currentIndex + 1) / questions.length) * 100) : 0;
+  const goNext = () => setCurrentIndex((i) => Math.min(i + 1, questions.length - 1));
 
   const handleSelect = (choiceId: string) => {
     // 1. 새로운 답변 배열 생성
