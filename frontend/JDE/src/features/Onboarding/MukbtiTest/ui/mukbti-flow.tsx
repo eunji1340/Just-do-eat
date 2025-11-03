@@ -108,10 +108,10 @@ export default function MukbtiFlow({ onDone }: MukbtiFlowProps) {
       <div className="mb-5">
         <div 
           aria-label="progress" 
-          className="h-2 bg-gray-200 rounded-full overflow-hidden"
+          className="h-2 bg-[var(--color-surface)] rounded-full overflow-hidden"
         >
           <div 
-            className="h-full bg-neutral-900 rounded-full transition-all duration-300" 
+            className="h-full bg-[var(--color-primary)] rounded-full transition-all duration-300" 
             style={{ width: `${progress}%` }}
           />
         </div>
@@ -119,7 +119,7 @@ export default function MukbtiFlow({ onDone }: MukbtiFlowProps) {
 
       {/* 중앙 질문 영역 (질문 텍스트만) */}
       <div className="flex-1 flex items-center justify-center overflow-auto">
-        <h2 className="m-0 text-2xl font-semibold text-center">{current.text}</h2>
+        <h2 className="m-0 text-2xl font-semibold text-center text-[var(--color-fg)]">{current.text}</h2>
       </div>
 
       {/* 하단 고정 선택지 */}
@@ -128,7 +128,7 @@ export default function MukbtiFlow({ onDone }: MukbtiFlowProps) {
           <button
             key={c.id}
             onClick={() => handleSelect(c.id)}
-            className="px-4 py-3 rounded-xl border border-gray-300 bg-neutral-900 text-white text-left cursor-pointer hover:bg-neutral-800 transition-colors text-base"
+            className="px-4 py-3 rounded-xl border border-[var(--color-border)] bg-[var(--color-primary)] text-[var(--color-primary-fg)] text-left cursor-pointer hover:opacity-90 transition-colors text-base"
           >
             {c.text}
           </button>

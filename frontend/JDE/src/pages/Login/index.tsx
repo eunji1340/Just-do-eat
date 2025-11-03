@@ -52,17 +52,17 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center">
+    <div className="min-h-screen flex items-center justify-center bg-[var(--color-bg)]">
       <div className="max-w-md mx-auto p-5 grid gap-5 w-full">
         <div className="text-center mb-5">
           <h1 className="text-4xl m-0">🍽️</h1>
-          <h2 className="mt-2 mb-0 text-2xl font-bold">로그인</h2>
+          <h2 className="mt-2 mb-0 text-2xl font-bold text-[var(--color-fg)]">로그인</h2>
         </div>
 
         <form onSubmit={handleSubmit} className="grid gap-4">
           {/* 아이디 */}
           <div className="grid gap-2">
-            <label htmlFor="userId" className="font-bold text-sm">
+            <label htmlFor="userId" className="font-bold text-sm text-[var(--color-fg)]">
               아이디
             </label>
             <input
@@ -72,13 +72,13 @@ export default function LoginPage() {
               onChange={(e) => handleChange('userId', e.target.value)}
               required
               placeholder="아이디를 입력하세요"
-              className="p-3 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-neutral-900"
+              className="p-3 rounded-lg border border-[var(--color-border)] bg-[var(--color-bg)] text-[var(--color-fg)] text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
             />
           </div>
 
           {/* 비밀번호 */}
           <div className="grid gap-2">
-            <label htmlFor="password" className="font-bold text-sm">
+            <label htmlFor="password" className="font-bold text-sm text-[var(--color-fg)]">
               비밀번호
             </label>
             <input
@@ -88,13 +88,13 @@ export default function LoginPage() {
               onChange={(e) => handleChange('password', e.target.value)}
               required
               placeholder="비밀번호를 입력하세요"
-              className="p-3 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-neutral-900"
+              className="p-3 rounded-lg border border-[var(--color-border)] bg-[var(--color-bg)] text-[var(--color-fg)] text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
             />
           </div>
 
           {/* 에러 메시지 */}
           {error && (
-            <div className="p-3 rounded-lg bg-red-50 text-red-700 text-sm">
+            <div className="p-3 rounded-lg bg-[var(--color-error)]/10 text-[var(--color-error)] text-sm">
               {error}
             </div>
           )}
@@ -104,10 +104,10 @@ export default function LoginPage() {
             type="submit"
             disabled={submitting}
             className={`
-              p-4 rounded-xl text-white border-0 text-base font-bold transition-colors block mx-auto
+              p-4 rounded-xl border-0 text-base font-bold transition-colors w-full
               ${submitting 
-                ? 'bg-gray-400 cursor-not-allowed' 
-                : 'bg-neutral-900 hover:bg-neutral-800 cursor-pointer'
+                ? 'bg-gray-400 cursor-not-allowed text-white' 
+                : 'bg-[var(--color-primary)] text-[var(--color-primary-fg)] hover:opacity-90 cursor-pointer'
               }
             `}
           >
@@ -116,19 +116,19 @@ export default function LoginPage() {
         </form>
 
         {/* 테스트 계정 안내 */}
-        <div className="p-3 rounded-lg bg-blue-50 text-xs text-gray-600">
+        <div className="p-3 rounded-lg bg-[var(--color-info)]/10 text-xs text-[var(--color-muted)]">
           <strong>테스트 계정:</strong><br />
           아이디: demo_user_01<br />
           비밀번호: DemoPassw0rd!
         </div>
 
         {/* 회원가입 링크 */}
-        <div className="text-center text-sm">
+        <div className="text-center text-sm text-[var(--color-muted)]">
           계정이 없으신가요?{' '}
           <a 
             href="/onboarding/landing" 
             onClick={(e) => { e.preventDefault(); nav('/onboarding/landing'); }}
-            className="text-neutral-900 font-bold underline hover:text-neutral-700"
+            className="text-[var(--color-primary)] font-bold underline hover:opacity-80"
           >
             온보딩 시작하기
           </a>

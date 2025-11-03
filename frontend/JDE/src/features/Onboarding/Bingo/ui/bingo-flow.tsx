@@ -100,8 +100,8 @@ export default function BingoFlow({ onComplete }: BingoFlowProps) {
 
   return (
     <div className="fixed inset-0 flex flex-col p-5 max-w-2xl mx-auto bg-[var(--color-bg)] overflow-hidden">
-      <h2 className="m-0 mb-2 text-center text-xl font-semibold">호불호 빙고 (5×5)</h2>
-      <p className="m-0 mb-4 text-gray-600 text-center">
+      <h2 className="m-0 mb-2 text-center text-xl font-semibold text-[var(--color-fg)]">호불호 빙고 (5×5)</h2>
+      <p className="m-0 mb-4 text-[var(--color-muted)] text-center">
         각 칸을 클릭해 선호도를 선택하세요: SKIP → LIKE → DISLIKE
       </p>
       
@@ -117,11 +117,11 @@ export default function BingoFlow({ onComplete }: BingoFlowProps) {
         onClick={handleSubmit}
         disabled={submitting}
         className={`
-          py-4 px-5 rounded-xl text-white border-0 cursor-pointer mt-4 text-base
-          transition-colors
+          py-4 px-5 rounded-xl border-0 cursor-pointer mt-4 text-base
+          transition-colors w-full max-w-md mx-auto
           ${submitting 
-            ? 'bg-gray-400 cursor-not-allowed' 
-            : 'bg-neutral-900 hover:bg-neutral-800'
+            ? 'bg-gray-400 cursor-not-allowed text-white' 
+            : 'bg-[var(--color-primary)] text-[var(--color-primary-fg)] hover:opacity-90'
           }
         `}
       >
