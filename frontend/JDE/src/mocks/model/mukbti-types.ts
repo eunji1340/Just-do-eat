@@ -1,6 +1,3 @@
-// ---------------------------------------------
-// features/Onboarding/MukbtiTest/model/types.ts
-// ---------------------------------------------
 export type Axis = 'M' | 'N' | 'P' | 'Q' | 'S' | 'A' | 'T' | 'D';
 
 

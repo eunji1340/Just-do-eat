@@ -1,20 +1,30 @@
-import { Routes, Route, Navigate } from 'react-router-dom';
-import OnboardingLanding from './pages/Onboarding/landing';
-import OnboardingPage from './pages/Onboarding';
-import OnboardingResult from './pages/Onboarding/result';
-import SignupPage from './pages/Signup';
-import LoginPage from './pages/Login';
-import './App.css';
+import { useState } from 'react'
+import viteLogo from '/vite.svg'
+import './App.css'
+
 
 export default function App() {
+  const [count, setCount] = useState(0)
+
   return (
-    <Routes>
-      <Route path="/" element={<Navigate to="/onboarding/landing" replace />} />
-      <Route path="/onboarding/landing" element={<OnboardingLanding />} />
-      <Route path="/onboarding/test" element={<OnboardingPage />} />
-      <Route path="/onboarding/result" element={<OnboardingResult />} />
-      <Route path="/signup" element={<SignupPage />} />
-      <Route path="/login" element={<LoginPage />} />
-    </Routes>
-  );
+    <>
+      <div>
+        <a href="https://vite.dev" target="_blank">
+          <img src={viteLogo} className="logo" alt="Vite logo" />
+        </a>
+      </div>
+      <h1>Vite + React</h1>
+      <div className="card">
+        <button onClick={() => setCount((count) => count + 1)}>
+          count is {count}
+        </button>
+        <p>
+          Edit <code>src/App.tsx</code> and save to test HMR
+        </p>
+      </div>
+      <p className="read-the-docs">
+        Click on the Vite and React logos to learn more
+      </p>
+    </>
+  )
 }
