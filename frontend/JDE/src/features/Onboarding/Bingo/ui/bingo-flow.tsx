@@ -118,7 +118,7 @@ export default function BingoFlow({ onComplete }: BingoFlowProps) {
         disabled={submitting}
         className={`
           py-4 px-5 rounded-xl border-0 cursor-pointer mt-4 text-base
-          transition-colors w-full max-w-md mx-auto
+          transition-colors w-full mx-auto
           ${submitting 
             ? 'bg-gray-400 cursor-not-allowed text-white' 
             : 'bg-[var(--color-primary)] text-[var(--color-primary-fg)] hover:opacity-90'
