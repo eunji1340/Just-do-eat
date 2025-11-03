@@ -3,6 +3,7 @@ import OnboardingLanding from './pages/Onboarding/landing';
 import OnboardingPage from './pages/Onboarding';
 import OnboardingResult from './pages/Onboarding/result';
 import SignupPage from './pages/Signup';
+import LoginPage from './pages/Login';
 import './App.css';
 
 export default function App() {
@@ -13,7 +14,7 @@ export default function App() {
       <Route path="/onboarding/test" element={<OnboardingPage />} />
       <Route path="/onboarding/result" element={<OnboardingResult />} />
       <Route path="/signup" element={<SignupPage />} />
-      <Route path="/login" element={<div style={{ padding: '20px', textAlign: 'center' }}>로그인 페이지 (준비중)</div>} />
+      <Route path="/login" element={<LoginPage />} />
     </Routes>
   );
 }
