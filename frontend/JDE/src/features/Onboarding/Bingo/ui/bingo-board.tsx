@@ -30,11 +30,11 @@ export default function BingoBoard({ items, value, onChange }: Props) {
 
   const getButtonStyles = (v: VoteValue) => {
     if (v === 1) {
-      return 'bg-green-600 text-white';
+      return 'bg-[var(--color-success)] text-white';
     } else if (v === -1) {
-      return 'bg-red-600 text-white';
+      return 'bg-[var(--color-error)] text-white';
     } else {
-      return 'bg-white text-neutral-900';
+      return 'bg-[var(--color-surface)] text-[var(--color-fg)]';
     }
   };
 
@@ -49,7 +49,7 @@ export default function BingoBoard({ items, value, onChange }: Props) {
               onClick={() => cycle(idx)}
               title={`${badge(v as VoteValue)}`}
               className={`
-                p-2 rounded-lg border border-gray-300 cursor-pointer
+                p-2 rounded-lg border border-[var(--color-border)] cursor-pointer
                 flex items-center justify-center text-center
                 text-xs leading-tight break-keep
                 transition-colors hover:opacity-80
@@ -61,7 +61,7 @@ export default function BingoBoard({ items, value, onChange }: Props) {
           );
         })}
       </div>
-      <small className="text-gray-600 text-center">
+      <small className="text-[var(--color-muted)] text-center">
         클릭할 때마다: SKIP → LIKE(초록) → DISLIKE(빨강) → SKIP
       </small>
     </div>

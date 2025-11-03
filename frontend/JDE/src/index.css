@@ -1,7 +1,42 @@
 @import "tailwindcss";
 
-/* ======================= Light (현재 목업 기준) ======================= */
-@theme {
+/* ======================= Light (기본값) ======================= */
+:root {
+  /* Neutral (stone/slate 계열 근사) */
+  --color-bg: #ffffff; /* 백그라운드 */
+  --color-surface: #f3f4f6; /* slate-100 ≈ 카드/섹션 배경 */
+  --color-border: #e5e7eb; /* slate-200 ≈ 디바이더 */
+  --color-fg: #0f172a; /* slate-900 본문 */
+  --color-muted: #64748b; /* slate-500 보조 텍스트 */
+
+  /* Brand */
+  --color-primary: #fb923c; /* orange-400  (CTA, 포인트) */
+  --color-primary-fg: #ffffff;
+  --color-secondary: #6b7280; /* gray-500  (보조 아이콘/라벨) */
+  --color-info: #3b82f6; /* blue-500 */
+
+  /* Brand Shades (S1~S6: 점점 진하게) */
+  --color-s1: #fb923c; /* orange-400 */
+  --color-s2: #f97316; /* orange-500 */
+  --color-s3: #ea580c; /* orange-600 */
+  --color-s4: #c2410c; /* orange-700 */
+  --color-s5: #9a3412; /* orange-800 */
+  --color-s6: #7c2d12; /* orange-900 */
+
+  /* Brand Tints (T1~T4: 점점 연하게) */
+  --color-t1: #fed7aa; /* orange-200 */
+  --color-t2: #ffedd5; /* orange-100 */
+  --color-t3: #fff7ed; /* orange-50  */
+  --color-t4: #f2f1f1; /* White-stroke/연그레이 근사 */
+
+  /* Actions */
+  --color-success: #22c55e; /* green-500  */
+  --color-warning: #f59e0b; /* amber-500  */
+  --color-error: #ef4444; /* red-500    */
+}
+
+/* ======================= Light (명시적) ======================= */
+:root[data-theme="light"] {
   /* Neutral (stone/slate 계열 근사) */
   --color-bg: #ffffff; /* 백그라운드 */
   --color-surface: #f3f4f6; /* slate-100 ≈ 카드/섹션 배경 */
@@ -37,38 +72,36 @@
 
 /* ======================= Dark ======================= */
 :root[data-theme="dark"] {
-  @theme {
-    /* Neutral (배경/서피스는 zinc, 텍스트는 slate) */
-    --color-bg: #0b0f19; /* zinc-950 근사 */
-    --color-surface: #111827; /* zinc-900 근사 */
-    --color-border: #374151; /* zinc-700  디바이더 */
-    --color-fg: #e5e7eb; /* slate-200 본문 */
-    --color-muted: #94a3b8; /* slate-400 보조 */
+  /* Neutral (배경/서피스는 zinc, 텍스트는 slate) */
+  --color-bg: #0b0f19; /* zinc-950 근사 */
+  --color-surface: #111827; /* zinc-900 근사 */
+  --color-border: #374151; /* zinc-700  디바이더 */
+  --color-fg: #e5e7eb; /* slate-200 본문 */
+  --color-muted: #94a3b8; /* slate-400 보조 */
 
-    /* Brand (살짝 진하게/선명하게) */
-    --color-primary: #f97316; /* orange-500 */
-    --color-primary-fg: #0b0b0c; /* 어두운 전경(칩/배지용) or #ffffff */
-    --color-secondary: #9ca3af; /* gray-400  */
+  /* Brand (살짝 진하게/선명하게) */
+  --color-primary: #f97316; /* orange-500 */
+  --color-primary-fg: #0b0b0c; /* 어두운 전경(칩/배지용) or #ffffff */
+  --color-secondary: #9ca3af; /* gray-400  */
 
-    /* Shades: 한 단계씩 진한 축 사용 유지 */
-    --color-s1: #f97316; /* 500 */
-    --color-s2: #ea580c; /* 600 */
-    --color-s3: #c2410c; /* 700 */
-    --color-s4: #9a3412; /* 800 */
-    --color-s5: #7c2d12; /* 900 */
-    --color-s6: #431407; /* 950 근사 */
+  /* Shades: 한 단계씩 진한 축 사용 유지 */
+  --color-s1: #f97316; /* 500 */
+  --color-s2: #ea580c; /* 600 */
+  --color-s3: #c2410c; /* 700 */
+  --color-s4: #9a3412; /* 800 */
+  --color-s5: #7c2d12; /* 900 */
+  --color-s6: #431407; /* 950 근사 */
 
-    /* Tints: 다크에서는 오버레이/하이라이트로 아주 소량 사용 */
-    --color-t1: #9a34121a; /* 10% 투명도 오렌지 */
-    --color-t2: #9a341212; /* 7%  투명도 */
-    --color-t3: #9a34120d; /* 5%  투명도 */
-    --color-t4: #ffffff0a; /* 6%  화이트 글로우 */
+  /* Tints: 다크에서는 오버레이/하이라이트로 아주 소량 사용 */
+  --color-t1: #9a34121a; /* 10% 투명도 오렌지 */
+  --color-t2: #9a341212; /* 7%  투명도 */
+  --color-t3: #9a34120d; /* 5%  투명도 */
+  --color-t4: #ffffff0a; /* 6%  화이트 글로우 */
 
-    /* Actions: 눈부심 방지로 명도/채도를 살짝 낮춘 근사 */
-    --color-success: #16a34a; /* green-600 */
-    --color-warning: #d97706; /* amber-600 */
-    --color-error: #dc2626; /* red-600   */
-  }
+  /* Actions: 눈부심 방지로 명도/채도를 살짝 낮춘 근사 */
+  --color-success: #16a34a; /* green-600 */
+  --color-warning: #d97706; /* amber-600 */
+  --color-error: #dc2626; /* red-600   */
 }
 
 /* 기본 배경/글씨 */
