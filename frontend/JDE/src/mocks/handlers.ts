@@ -156,4 +156,99 @@ export const handlers = [
       message: '카카오톡으로 공유되었습니다.',
     });
   }),
+
+  // 6) 회원가입: POST /api/auth/signup
+  http.post('/api/auth/signup', async ({ request }) => {
+    const body = (await request.json()) as {
+      userId?: string;
+      password?: string;
+      imageUrl?: string | null;
+      ageGroup?: string;
+      gender?: string;
+      sessionId?: string;
+    };
+
+    await delay(500);
+
+    // 유효성 검사
+    if (!body.userId || !body.password) {
+      return HttpResponse.json(
+        {
+          status: 'BAD_REQUEST',
+          code: 'VALIDATION_ERROR',
+          message: '아이디와 비밀번호는 필수입니다.',
+          result: null,
+        },
+        { status: 400 }
+      );
+    }
+
+    // userId 중복 체크 (간단한 모킹)
+    if (body.userId === 'existing_user') {
+      return HttpResponse.json(
+        {
+          status: 'CONFLICT',
+          code: 'USER_ALREADY_EXISTS',
+          message: '이미 존재하는 아이디입니다.',
+          result: null,
+        },
+        { status: 409 }
+      );
+    }
+
+    // 성공
+    return HttpResponse.json({
+      status: 'CREATED',
+      code: 'CREATED',
+      message: '회원가입 성공',
+      result: null,
+    });
+  }),
+
+  // 7) 로그인: POST /api/auth/login
+  http.post('/api/auth/login', async ({ request }) => {
+    const body = (await request.json()) as {
+      userId?: string;
+      password?: string;
+    };
+
+    await delay(300);
+
+    // 유효성 검사
+    if (!body.userId || !body.password) {
+      return HttpResponse.json(
+        {
+          status: 'BAD_REQUEST',
+          code: 'VALIDATION_ERROR',
+          message: '아이디와 비밀번호를 입력해주세요.',
+          result: null,
+        },
+        { status: 400 }
+      );
+    }
+
+    // 간단한 인증 로직 (모킹)
+    if (body.userId === 'demo_user_01' && body.password === 'DemoPassw0rd!') {
+      return HttpResponse.json({
+        status: 'OK',
+        code: 'OK',
+        message: '로그인 성공',
+        result: {
+          accessToken: 'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxIiwiaWF0IjoxNzYxNzA0MTE5LCJleHAiOjE3NjE3MDc3MTl9.q4MglaS3t6kmpvQyLcTtLqGuSV5gCkMNO8aadz99t-E',
+          refreshToken: 'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxIiwiaWF0IjoxNzYxNzA0MTE5LCJleHAiOjE3NjI5MTM3MTl9.i9LvL7Zwst__nfv-fVq9BIHcchp8qT4k5-iJtTx000o',
+        },
+      });
+    }
+
+    // 인증 실패
+    return HttpResponse.json(
+      {
+        status: 'UNAUTHORIZED',
+        code: 'INVALID_CREDENTIALS',
+        message: '아이디 또는 비밀번호가 일치하지 않습니다.',
+        result: null,
+      },
+      { status: 401 }
+    );
+  }),
 ];
