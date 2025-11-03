@@ -1,9 +1,17 @@
 // --------------------------------------------
 // features/Onboarding/Bingo/ui/bingo-board.tsx
 // --------------------------------------------
-import type { Tri, BingoItem } from '../model/bingo-types';
 
-export type BingoBoardValue = Record<number, Tri>;
+// 백엔드 API 응답 타입 (최소한의 정보만)
+type BingoItem = {
+  id: string;
+  label: string;
+};
+
+// 호불호 선택 타입 (UI에서만 사용)
+type VoteValue = -1 | 0 | 1; // DISLIKE | SKIP | LIKE
+
+export type BingoBoardValue = Record<number, VoteValue>;
 
 type Props = {
   items: BingoItem[];
@@ -14,53 +22,46 @@ type Props = {
 export default function BingoBoard({ items, value, onChange }: Props) {
   const cycle = (idx: number) => {
     const cur = value[idx] ?? 0; // -1,0,1 순환
-    const nxt = ((cur === 1 ? -1 : cur + 1) as Tri);
+    const nxt = ((cur === 1 ? -1 : cur + 1) as VoteValue);
     onChange({ ...value, [idx]: nxt });
   };
 
-  const badge = (v: Tri | undefined) => v === 1 ? 'LIKE' : v === -1 ? 'DISLIKE' : 'SKIP';
+  const badge = (v: VoteValue | undefined) => v === 1 ? 'LIKE' : v === -1 ? 'DISLIKE' : 'SKIP';
+
+  const getButtonStyles = (v: VoteValue) => {
+    if (v === 1) {
+      return 'bg-green-600 text-white';
+    } else if (v === -1) {
+      return 'bg-red-600 text-white';
+    } else {
+      return 'bg-white text-neutral-900';
+    }
+  };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 12, maxWidth: '500px', width: '100%' }}>
-      <div style={{ 
-        display: 'grid', 
-        gridTemplateColumns: 'repeat(5, 1fr)', 
-        gap: 8,
-        aspectRatio: '1/1',
-        maxWidth: '500px',
-        width: '100%'
-      }}>
+    <div className="flex flex-col gap-3 max-w-[500px] w-full">
+      <div className="grid grid-cols-5 gap-2 aspect-square max-w-[500px] w-full">
         {items.map((item, idx) => {
           const v = value[idx] ?? 0;
-          const bg = v === 1 ? '#0a0' : v === -1 ? '#a00' : '#fff';
-          const color = v === 0 ? '#222' : '#fff';
           return (
             <button
               key={item.id}
               onClick={() => cycle(idx)}
-              title={`${badge(v as Tri)}`}
-              style={{ 
-                padding: '8px', 
-                borderRadius: 8, 
-                border: '1px solid #ddd', 
-                background: bg, 
-                color, 
-                cursor: 'pointer',
-                fontSize: '12px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                textAlign: 'center',
-                wordBreak: 'keep-all',
-                lineHeight: '1.2'
-              }}
+              title={`${badge(v as VoteValue)}`}
+              className={`
+                p-2 rounded-lg border border-gray-300 cursor-pointer
+                flex items-center justify-center text-center
+                text-xs leading-tight break-keep
+                transition-colors hover:opacity-80
+                ${getButtonStyles(v as VoteValue)}
+              `}
             >
               {item.label}
             </button>
           );
         })}
       </div>
-      <small style={{ color: '#666', textAlign: 'center' }}>
+      <small className="text-gray-600 text-center">
         클릭할 때마다: SKIP → LIKE(초록) → DISLIKE(빨강) → SKIP
       </small>
     </div>

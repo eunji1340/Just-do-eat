@@ -1,6 +1,3 @@
-// --------------------------------------------
-// features/Onboarding/Bingo/model/bingo-types.ts
-// --------------------------------------------
 export type Tag =
   | 'spicy_chili'
   | 'mala_numbing'

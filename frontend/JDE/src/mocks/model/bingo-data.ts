@@ -1,6 +1,3 @@
-// --------------------------------------------
-// features/Onboarding/Bingo/model/bingo-data.ts
-// --------------------------------------------
 import type { BingoItem, TagWeightsMap } from './bingo-types';
 
 export const BINGO_5x5: BingoItem[] = [

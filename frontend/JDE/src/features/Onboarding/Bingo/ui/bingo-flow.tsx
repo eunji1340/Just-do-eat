@@ -3,8 +3,21 @@
 // --------------------------------------------
 import * as React from 'react';
 import BingoBoard from './bingo-board';
-import type { Tri, BingoItem } from '../model/bingo-types';
 import { useUserStore } from '../../../../entities/user/model/user-store';
+
+// 백엔드 API 응답 타입 (최소한의 정보만)
+type BingoItem = {
+  id: string;
+  label: string;
+};
+
+// 호불호 선택 타입 (UI에서만 사용)
+type VoteValue = -1 | 0 | 1; // DISLIKE | SKIP | LIKE
+
+// 백엔드 API 응답 타입
+type BingoItemsResponse = {
+  items: BingoItem[];
+};
 
 export type BingoFlowProps = {
   onComplete?: (bingoResponses: Array<{ id: string; vote: number }>) => Promise<void>;
@@ -12,21 +25,21 @@ export type BingoFlowProps = {
 
 export default function BingoFlow({ onComplete }: BingoFlowProps) {
   const { setBingoLikes } = useUserStore();
-  // 빙고 상태 관리 (기존 useBingoTriState 로직을 인라인으로)
-  const [state, setState] = React.useState<Record<number, Tri>>({});
+  // 빙고 상태 관리
+  const [state, setState] = React.useState<Record<number, VoteValue>>({});
   const [bingoItems, setBingoItems] = React.useState<BingoItem[]>([]);
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
   const [submitting, setSubmitting] = React.useState(false);
 
   // 빙고 상태 업데이트 함수
-  const set = (idx: number, v: Tri) => setState((s) => ({ ...s, [idx]: v }));
+  const set = (idx: number, v: VoteValue) => setState((s) => ({ ...s, [idx]: v }));
 
   // 서버에서 빙고 보드 로드
   React.useEffect(() => {
     fetch('/api/onboarding/bingo')
       .then((res) => res.json())
-      .then((data) => {
+      .then((data: BingoItemsResponse) => {
         setBingoItems(data.items || []);
         setLoading(false);
       })
@@ -65,37 +78,20 @@ export default function BingoFlow({ onComplete }: BingoFlowProps) {
 
   if (loading) {
     return (
-      <div style={{ 
-        position: 'fixed', 
-        top: 0, 
-        left: 0, 
-        right: 0, 
-        bottom: 0, 
-        display: 'flex', 
-        alignItems: 'center', 
-        justifyContent: 'center'
-      }}>
-        <p>빙고 보드를 불러오는 중...</p>
+      <div className="fixed inset-0 flex items-center justify-center bg-[var(--color-bg)]">
+        <p className="text-[var(--color-fg)]">빙고 보드를 불러오는 중...</p>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div style={{ 
-        position: 'fixed', 
-        top: 0, 
-        left: 0, 
-        right: 0, 
-        bottom: 0, 
-        display: 'flex', 
-        alignItems: 'center', 
-        justifyContent: 'center',
-        flexDirection: 'column',
-        gap: 16
-      }}>
-        <p style={{ color: '#a00' }}>오류: {error}</p>
-        <button onClick={() => window.location.reload()} style={{ padding: '12px 20px', borderRadius: 8, cursor: 'pointer' }}>
+      <div className="fixed inset-0 flex flex-col items-center justify-center gap-4 bg-[var(--color-bg)]">
+        <p className="text-[var(--color-error)]">오류: {error}</p>
+        <button 
+          onClick={() => window.location.reload()} 
+          className="px-5 py-3 rounded-lg bg-[var(--color-primary)] text-white cursor-pointer hover:bg-[var(--color-s2)] transition-colors"
+        >
           다시 시도
         </button>
       </div>
@@ -103,45 +99,31 @@ export default function BingoFlow({ onComplete }: BingoFlowProps) {
   }
 
   return (
-    <div style={{ 
-      position: 'fixed', 
-      top: 0, 
-      left: 0, 
-      right: 0, 
-      bottom: 0, 
-      display: 'flex', 
-      flexDirection: 'column',
-      padding: '20px',
-      maxWidth: '800px',
-      margin: '0 auto',
-      overflow: 'hidden'
-    }}>
-      <h2 style={{ margin: '0 0 8px 0', textAlign: 'center' }}>호불호 빙고 (5×5)</h2>
-      <p style={{ margin: '0 0 16px 0', color: '#666', textAlign: 'center' }}>
+    <div className="fixed inset-0 flex flex-col p-5 max-w-2xl mx-auto bg-[var(--color-bg)] overflow-hidden">
+      <h2 className="m-0 mb-2 text-center text-xl font-semibold">호불호 빙고 (5×5)</h2>
+      <p className="m-0 mb-4 text-gray-600 text-center">
         각 칸을 클릭해 선호도를 선택하세요: SKIP → LIKE → DISLIKE
       </p>
       
-      <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div className="flex-1 flex items-center justify-center">
         <BingoBoard 
           items={bingoItems}
           value={state} 
-          onChange={(next) => Object.entries(next).forEach(([k,v]) => set(+k, v as Tri))} 
+          onChange={(next) => Object.entries(next).forEach(([k,v]) => set(+k, v as VoteValue))} 
         />
       </div>
 
       <button 
         onClick={handleSubmit}
         disabled={submitting}
-        style={{ 
-          padding:'16px 20px', 
-          borderRadius:12, 
-          background: submitting ? '#999' : '#222', 
-          color:'#fff', 
-          border:0, 
-          cursor: submitting ? 'not-allowed' : 'pointer',
-          marginTop: '16px',
-          fontSize: '16px'
-        }}
+        className={`
+          py-4 px-5 rounded-xl text-white border-0 cursor-pointer mt-4 text-base
+          transition-colors
+          ${submitting 
+            ? 'bg-gray-400 cursor-not-allowed' 
+            : 'bg-neutral-900 hover:bg-neutral-800'
+          }
+        `}
       >
         {submitting ? '처리 중...' : '완료'}
       </button>

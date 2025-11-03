@@ -2,15 +2,36 @@
 // features/Onboarding/MukbtiTest/ui/mukbti-flow.tsx
 // ---------------------------------------------
 import * as React from 'react';
-import type { MukbtiAnswer, Question } from '../model/types';
 import { useUserStore } from '../../../../entities/user/model/user-store';
+
+// 백엔드 API 응답 타입 (최소한의 정보만)
+type MukbtiChoice = {
+  id: string;
+  text: string;
+};
+
+type MukbtiQuestion = {
+  id: string;
+  text: string;
+  choices: MukbtiChoice[];
+};
+
+type MukbtiAnswer = {
+  qid: string;
+  choiceId: string;
+};
+
+// 백엔드 API 응답 타입
+type MukbtiQuestionsResponse = {
+  items: MukbtiQuestion[];
+};
 
 export type MukbtiFlowProps = {
   onDone?: () => void;
 };
 
 export default function MukbtiFlow({ onDone }: MukbtiFlowProps) {
-  const [questions, setQuestions] = React.useState<Question[]>([]);
+  const [questions, setQuestions] = React.useState<MukbtiQuestion[]>([]);
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
   const [currentIndex, setCurrentIndex] = React.useState(0);
@@ -21,7 +42,7 @@ export default function MukbtiFlow({ onDone }: MukbtiFlowProps) {
   React.useEffect(() => {
     fetch('/api/onboarding/mbtis')
       .then((res) => res.json())
-      .then((data) => {
+      .then((data: MukbtiQuestionsResponse) => {
         setQuestions(data.items || []);
         setLoading(false);
       })
@@ -57,37 +78,20 @@ export default function MukbtiFlow({ onDone }: MukbtiFlowProps) {
 
   if (loading) {
     return (
-      <div style={{ 
-        position: 'fixed', 
-        top: 0, 
-        left: 0, 
-        right: 0, 
-        bottom: 0, 
-        display: 'flex', 
-        alignItems: 'center', 
-        justifyContent: 'center'
-      }}>
-        <p>질문을 불러오는 중...</p>
+      <div className="fixed inset-0 flex items-center justify-center bg-[var(--color-bg)]">
+        <p className="text-[var(--color-fg)]">질문을 불러오는 중...</p>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div style={{ 
-        position: 'fixed', 
-        top: 0, 
-        left: 0, 
-        right: 0, 
-        bottom: 0, 
-        display: 'flex', 
-        alignItems: 'center', 
-        justifyContent: 'center',
-        flexDirection: 'column',
-        gap: 16
-      }}>
-        <p style={{ color: '#a00' }}>오류: {error}</p>
-        <button onClick={() => window.location.reload()} style={{ padding: '12px 20px', borderRadius: 8, cursor: 'pointer' }}>
+      <div className="fixed inset-0 flex flex-col items-center justify-center gap-4 bg-[var(--color-bg)]">
+        <p className="text-[var(--color-error)]">오류: {error}</p>
+        <button 
+          onClick={() => window.location.reload()} 
+          className="px-5 py-3 rounded-lg bg-[var(--color-primary)] text-white cursor-pointer hover:bg-[var(--color-s2)] transition-colors"
+        >
           다시 시도
         </button>
       </div>
@@ -95,60 +99,36 @@ export default function MukbtiFlow({ onDone }: MukbtiFlowProps) {
   }
 
   if (!questions.length || !current) {
-    return <div>질문이 없습니다.</div>;
+    return <div className="text-[var(--color-fg)]">질문이 없습니다.</div>;
   }
 
   return (
-    <div style={{ 
-      position: 'fixed', 
-      top: 0, 
-      left: 0, 
-      right: 0, 
-      bottom: 0, 
-      display: 'flex', 
-      flexDirection: 'column',
-      padding: '20px',
-      maxWidth: '800px',
-      margin: '0 auto'
-    }}>
+    <div className="fixed inset-0 flex flex-col p-5 max-w-2xl mx-auto bg-[var(--color-bg)]">
       {/* 상단 고정 진행바 */}
-      <div style={{ marginBottom: '20px' }}>
-        <div aria-label="progress" style={{ height: 8, background: '#eee', borderRadius: 999 }}>
-          <div style={{ width: `${progress}%`, height: '100%', background: '#222', borderRadius: 999 }} />
+      <div className="mb-5">
+        <div 
+          aria-label="progress" 
+          className="h-2 bg-gray-200 rounded-full overflow-hidden"
+        >
+          <div 
+            className="h-full bg-neutral-900 rounded-full transition-all duration-300" 
+            style={{ width: `${progress}%` }}
+          />
         </div>
       </div>
 
-      {/* 중앙 질문 영역 */}
-      <div style={{ 
-        flex: 1, 
-        display: 'flex', 
-        alignItems: 'center', 
-        justifyContent: 'center',
-        overflow: 'auto'
-      }}>
-        <h2 style={{ margin: 0, textAlign: 'center', fontSize: '24px' }}>{current.text}</h2>
+      {/* 중앙 질문 영역 (질문 텍스트만) */}
+      <div className="flex-1 flex items-center justify-center overflow-auto">
+        <h2 className="m-0 text-2xl font-semibold text-center">{current.text}</h2>
       </div>
 
       {/* 하단 고정 선택지 */}
-      <div style={{ 
-        display: 'grid', 
-        gap: 12,
-        marginTop: '20px'
-      }}>
+      <div className="mt-5 grid gap-2">
         {current.choices.map((c) => (
           <button
             key={c.id}
             onClick={() => handleSelect(c.id)}
-            style={{ 
-              padding: '16px 20px', 
-              borderRadius: 12, 
-              border: '1px solid #ddd', 
-              background: '#222', 
-              color: '#fff', 
-              textAlign: 'left', 
-              cursor: 'pointer',
-              fontSize: '16px'
-            }}
+            className="px-4 py-3 rounded-xl border border-gray-300 bg-neutral-900 text-white text-left cursor-pointer hover:bg-neutral-800 transition-colors text-base"
           >
             {c.text}
           </button>

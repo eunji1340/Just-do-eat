@@ -6,24 +6,24 @@ import { http, HttpResponse, delay } from 'msw';
 import {
   MUKBTI_QUESTIONS,
   MUKBTI_TYPES,
-} from '../features/Onboarding/MukbtiTest/model/mukbti-data';
+} from './model/mukbti-data';
 import type {
   Question,
   MukbtiAnswer,
   Axis,
-} from '../features/Onboarding/MukbtiTest/model/types';
+} from './model/mukbti-types';
 
 // === Bingo 데이터/타입 가져오기 ===
 import {
   BINGO_5x5,
   TAG_WEIGHTS,
-} from '../features/Onboarding/Bingo/model/bingo-data';
+} from './model/bingo-data';
 import type {
   Tri,
   Tag,
   ItemWeights,
   TagPrefs,
-} from '../features/Onboarding/Bingo/model/bingo-types';
+} from './model/bingo-types';
 
 // ----------------------------------------------------
 // 유틸: MBTI 서버 계산 (클라와 동일 로직, 서버에 있다고 가정)

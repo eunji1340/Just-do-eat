@@ -1,7 +1,4 @@
-// -----------------------------------------------
-// features/Onboarding/MukbtiTest/model/mukbti-data.ts
-// -----------------------------------------------
-import type { Question, Axis } from './types';
+import type { Question, Axis } from './mukbti-types';
 
 // 각 축의 총 문항 수 (가중치 참고용)
 export const AXIS_DISTRIBUTION: Record<Axis, number> = {

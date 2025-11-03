@@ -95,39 +95,29 @@ export default function SignupPage() {
   }
 
   return (
-    <div style={{ 
-      maxWidth: '500px', 
-      margin: '0 auto', 
-      padding: '20px',
-      display: 'grid',
-      gap: '20px'
-    }}>
-      <h2 style={{ margin: 0 }}>회원가입</h2>
+    <div className="min-h-screen flex items-center justify-center">
+      <div className="max-w-lg mx-auto p-5 grid gap-5 w-full">
+        <h2 className="m-0 text-2xl font-bold text-center">회원가입</h2>
 
       {/* 온보딩 결과 요약 */}
-      <section style={{ 
-        border: '1px solid #eee', 
-        borderRadius: 12, 
-        padding: 16,
-        background: '#f9f9f9'
-      }}>
-        <h3 style={{ marginTop: 0, fontSize: '16px' }}>온보딩 결과</h3>
-        <p style={{ margin: '8px 0', fontSize: '14px' }}>
+      <section className="border border-gray-200 rounded-xl p-4 bg-gray-50 text-center">
+        <h3 className="mt-0 mb-2 text-base font-semibold">온보딩 결과</h3>
+        <p className="my-2 text-sm">
           <strong>먹BTI:</strong> {mukbtiResult.label} ({mukbtiResult.code})
         </p>
-        <p style={{ margin: '8px 0', fontSize: '14px' }}>
+        <p className="my-2 text-sm">
           <strong>선호 항목:</strong> {(bingoLikes || []).filter(b=>b.liked).length}개
         </p>
-        <p style={{ margin: '8px 0', fontSize: '14px' }}>
+        <p className="my-2 text-sm">
           <strong>태그 선호도:</strong> {Object.keys(tagPrefs).length}개
         </p>
       </section>
 
       {/* 회원가입 폼 */}
-      <form onSubmit={handleSubmit} style={{ display: 'grid', gap: '16px' }}>
+      <form onSubmit={handleSubmit} className="grid gap-4">
         {/* 아이디 */}
-        <div style={{ display: 'grid', gap: '8px' }}>
-          <label htmlFor="userId" style={{ fontWeight: 'bold', fontSize: '14px' }}>
+        <div className="grid gap-2">
+          <label htmlFor="userId" className="font-bold text-sm">
             아이디 *
           </label>
           <input
@@ -137,18 +127,13 @@ export default function SignupPage() {
             onChange={(e) => handleChange('userId', e.target.value)}
             required
             placeholder="영문, 숫자 조합 (4-20자)"
-            style={{
-              padding: '12px',
-              borderRadius: 8,
-              border: '1px solid #ddd',
-              fontSize: '14px'
-            }}
+            className="p-3 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-neutral-900"
           />
         </div>
 
         {/* 비밀번호 */}
-        <div style={{ display: 'grid', gap: '8px' }}>
-          <label htmlFor="password" style={{ fontWeight: 'bold', fontSize: '14px' }}>
+        <div className="grid gap-2">
+          <label htmlFor="password" className="font-bold text-sm">
             비밀번호 *
           </label>
           <input
@@ -158,18 +143,13 @@ export default function SignupPage() {
             onChange={(e) => handleChange('password', e.target.value)}
             required
             placeholder="8자 이상, 영문/숫자/특수문자 포함"
-            style={{
-              padding: '12px',
-              borderRadius: 8,
-              border: '1px solid #ddd',
-              fontSize: '14px'
-            }}
+            className="p-3 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-neutral-900"
           />
         </div>
 
         {/* 비밀번호 확인 */}
-        <div style={{ display: 'grid', gap: '8px' }}>
-          <label htmlFor="passwordConfirm" style={{ fontWeight: 'bold', fontSize: '14px' }}>
+        <div className="grid gap-2">
+          <label htmlFor="passwordConfirm" className="font-bold text-sm">
             비밀번호 확인 *
           </label>
           <input
@@ -179,30 +159,20 @@ export default function SignupPage() {
             onChange={(e) => handleChange('passwordConfirm', e.target.value)}
             required
             placeholder="비밀번호 재입력"
-            style={{
-              padding: '12px',
-              borderRadius: 8,
-              border: '1px solid #ddd',
-              fontSize: '14px'
-            }}
+            className="p-3 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-neutral-900"
           />
         </div>
 
         {/* 연령대 */}
-        <div style={{ display: 'grid', gap: '8px' }}>
-          <label htmlFor="ageGroup" style={{ fontWeight: 'bold', fontSize: '14px' }}>
+        <div className="grid gap-2">
+          <label htmlFor="ageGroup" className="font-bold text-sm">
             연령대 *
           </label>
           <select
             id="ageGroup"
             value={formData.ageGroup}
             onChange={(e) => handleChange('ageGroup', e.target.value)}
-            style={{
-              padding: '12px',
-              borderRadius: 8,
-              border: '1px solid #ddd',
-              fontSize: '14px'
-            }}
+            className="p-3 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-neutral-900"
           >
             <option value="TEENS">10대</option>
             <option value="TWENTIES">20대</option>
@@ -213,19 +183,20 @@ export default function SignupPage() {
         </div>
 
         {/* 성별 */}
-        <div style={{ display: 'grid', gap: '8px' }}>
-          <label style={{ fontWeight: 'bold', fontSize: '14px' }}>성별 *</label>
-          <div style={{ display: 'flex', gap: '12px' }}>
+        <div className="grid gap-2">
+          <label className="font-bold text-sm">성별 *</label>
+          <div className="flex gap-3 justify-center">
             {(['MALE', 'FEMALE', 'OTHER'] as const).map((gender) => (
-              <label key={gender} style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer' }}>
+              <label key={gender} className="flex items-center gap-2 cursor-pointer">
                 <input
                   type="radio"
                   name="gender"
                   value={gender}
                   checked={formData.gender === gender}
                   onChange={(e) => handleChange('gender', e.target.value)}
+                  className="cursor-pointer"
                 />
-                <span style={{ fontSize: '14px' }}>
+                <span className="text-sm">
                   {gender === 'MALE' ? '남성' : gender === 'FEMALE' ? '여성' : '기타'}
                 </span>
               </label>
@@ -235,13 +206,7 @@ export default function SignupPage() {
 
         {/* 에러 메시지 */}
         {error && (
-          <div style={{ 
-            padding: '12px', 
-            borderRadius: 8, 
-            background: '#fee', 
-            color: '#c00',
-            fontSize: '14px'
-          }}>
+          <div className="p-3 rounded-lg bg-red-50 text-red-700 text-sm">
             {error}
           </div>
         )}
@@ -250,31 +215,29 @@ export default function SignupPage() {
         <button
           type="submit"
           disabled={submitting}
-          style={{
-            padding: '16px',
-            borderRadius: 12,
-            background: submitting ? '#999' : '#222',
-            color: '#fff',
-            border: 0,
-            cursor: submitting ? 'not-allowed' : 'pointer',
-            fontSize: '16px',
-            fontWeight: 'bold'
-          }}
+          className={`
+            p-4 rounded-xl text-white border-0 text-base font-bold transition-colors block mx-auto
+            ${submitting 
+              ? 'bg-gray-400 cursor-not-allowed' 
+              : 'bg-neutral-900 hover:bg-neutral-800 cursor-pointer'
+            }
+          `}
         >
           {submitting ? '가입 중...' : '회원가입'}
         </button>
       </form>
 
       {/* 로그인 링크 */}
-      <div style={{ textAlign: 'center', fontSize: '14px' }}>
+      <div className="text-center text-sm">
         이미 계정이 있으신가요?{' '}
         <a 
           href="/login" 
           onClick={(e) => { e.preventDefault(); nav('/login'); }}
-          style={{ color: '#222', fontWeight: 'bold', textDecoration: 'underline' }}
+          className="text-neutral-900 font-bold underline hover:text-neutral-700"
         >
           로그인하기
         </a>
+      </div>
       </div>
     </div>
   );

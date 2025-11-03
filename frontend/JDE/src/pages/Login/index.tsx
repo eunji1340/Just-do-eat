@@ -52,120 +52,88 @@ export default function LoginPage() {
   };
 
   return (
-    <div style={{ 
-      maxWidth: '400px', 
-      margin: '0 auto', 
-      padding: '20px',
-      display: 'grid',
-      gap: '20px',
-      minHeight: '100vh',
-      alignContent: 'center'
-    }}>
-      <div style={{ textAlign: 'center', marginBottom: '20px' }}>
-        <h1 style={{ fontSize: '32px', margin: 0 }}>🍽️</h1>
-        <h2 style={{ margin: '8px 0 0' }}>로그인</h2>
-      </div>
-
-      <form onSubmit={handleSubmit} style={{ display: 'grid', gap: '16px' }}>
-        {/* 아이디 */}
-        <div style={{ display: 'grid', gap: '8px' }}>
-          <label htmlFor="userId" style={{ fontWeight: 'bold', fontSize: '14px' }}>
-            아이디
-          </label>
-          <input
-            id="userId"
-            type="text"
-            value={formData.userId}
-            onChange={(e) => handleChange('userId', e.target.value)}
-            required
-            placeholder="아이디를 입력하세요"
-            style={{
-              padding: '12px',
-              borderRadius: 8,
-              border: '1px solid #ddd',
-              fontSize: '14px'
-            }}
-          />
+    <div className="min-h-screen flex items-center justify-center">
+      <div className="max-w-md mx-auto p-5 grid gap-5 w-full">
+        <div className="text-center mb-5">
+          <h1 className="text-4xl m-0">🍽️</h1>
+          <h2 className="mt-2 mb-0 text-2xl font-bold">로그인</h2>
         </div>
 
-        {/* 비밀번호 */}
-        <div style={{ display: 'grid', gap: '8px' }}>
-          <label htmlFor="password" style={{ fontWeight: 'bold', fontSize: '14px' }}>
-            비밀번호
-          </label>
-          <input
-            id="password"
-            type="password"
-            value={formData.password}
-            onChange={(e) => handleChange('password', e.target.value)}
-            required
-            placeholder="비밀번호를 입력하세요"
-            style={{
-              padding: '12px',
-              borderRadius: 8,
-              border: '1px solid #ddd',
-              fontSize: '14px'
-            }}
-          />
-        </div>
-
-        {/* 에러 메시지 */}
-        {error && (
-          <div style={{ 
-            padding: '12px', 
-            borderRadius: 8, 
-            background: '#fee', 
-            color: '#c00',
-            fontSize: '14px'
-          }}>
-            {error}
+        <form onSubmit={handleSubmit} className="grid gap-4">
+          {/* 아이디 */}
+          <div className="grid gap-2">
+            <label htmlFor="userId" className="font-bold text-sm">
+              아이디
+            </label>
+            <input
+              id="userId"
+              type="text"
+              value={formData.userId}
+              onChange={(e) => handleChange('userId', e.target.value)}
+              required
+              placeholder="아이디를 입력하세요"
+              className="p-3 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-neutral-900"
+            />
           </div>
-        )}
 
-        {/* 제출 버튼 */}
-        <button
-          type="submit"
-          disabled={submitting}
-          style={{
-            padding: '16px',
-            borderRadius: 12,
-            background: submitting ? '#999' : '#222',
-            color: '#fff',
-            border: 0,
-            cursor: submitting ? 'not-allowed' : 'pointer',
-            fontSize: '16px',
-            fontWeight: 'bold'
-          }}
-        >
-          {submitting ? '로그인 중...' : '로그인'}
-        </button>
-      </form>
+          {/* 비밀번호 */}
+          <div className="grid gap-2">
+            <label htmlFor="password" className="font-bold text-sm">
+              비밀번호
+            </label>
+            <input
+              id="password"
+              type="password"
+              value={formData.password}
+              onChange={(e) => handleChange('password', e.target.value)}
+              required
+              placeholder="비밀번호를 입력하세요"
+              className="p-3 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-neutral-900"
+            />
+          </div>
 
-      {/* 테스트 계정 안내 */}
-      <div style={{ 
-        padding: '12px', 
-        borderRadius: 8, 
-        background: '#f0f8ff',
-        fontSize: '13px',
-        color: '#666'
-      }}>
-        <strong>테스트 계정:</strong><br />
-        아이디: demo_user_01<br />
-        비밀번호: DemoPassw0rd!
-      </div>
+          {/* 에러 메시지 */}
+          {error && (
+            <div className="p-3 rounded-lg bg-red-50 text-red-700 text-sm">
+              {error}
+            </div>
+          )}
 
-      {/* 회원가입 링크 */}
-      <div style={{ textAlign: 'center', fontSize: '14px' }}>
-        계정이 없으신가요?{' '}
-        <a 
-          href="/onboarding/landing" 
-          onClick={(e) => { e.preventDefault(); nav('/onboarding/landing'); }}
-          style={{ color: '#222', fontWeight: 'bold', textDecoration: 'underline' }}
-        >
-          온보딩 시작하기
-        </a>
+          {/* 제출 버튼 */}
+          <button
+            type="submit"
+            disabled={submitting}
+            className={`
+              p-4 rounded-xl text-white border-0 text-base font-bold transition-colors block mx-auto
+              ${submitting 
+                ? 'bg-gray-400 cursor-not-allowed' 
+                : 'bg-neutral-900 hover:bg-neutral-800 cursor-pointer'
+              }
+            `}
+          >
+            {submitting ? '로그인 중...' : '로그인'}
+          </button>
+        </form>
+
+        {/* 테스트 계정 안내 */}
+        <div className="p-3 rounded-lg bg-blue-50 text-xs text-gray-600">
+          <strong>테스트 계정:</strong><br />
+          아이디: demo_user_01<br />
+          비밀번호: DemoPassw0rd!
+        </div>
+
+        {/* 회원가입 링크 */}
+        <div className="text-center text-sm">
+          계정이 없으신가요?{' '}
+          <a 
+            href="/onboarding/landing" 
+            onClick={(e) => { e.preventDefault(); nav('/onboarding/landing'); }}
+            className="text-neutral-900 font-bold underline hover:text-neutral-700"
+          >
+            온보딩 시작하기
+          </a>
+        </div>
       </div>
     </div>
   );
 }
-
