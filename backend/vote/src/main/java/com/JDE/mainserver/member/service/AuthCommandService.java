@@ -1,0 +1,90 @@
+package com.JDE.mainserver.member.service;
+
+import com.JDE.mainserver.global.exception.CustomException;
+import com.JDE.mainserver.global.security.jwt.JwtUtil;
+import com.JDE.mainserver.member.entity.Member;
+import com.JDE.mainserver.member.entity.enums.AgeGroup;
+import com.JDE.mainserver.member.entity.enums.Gender;
+import com.JDE.mainserver.member.entity.enums.Role;
+import com.JDE.mainserver.member.repository.MemberRepository;
+import com.JDE.mainserver.onboarding.OnboardingSurveyStore;
+import com.JDE.mainserver.web.dto.request.LoginRequest;
+import com.JDE.mainserver.web.dto.request.SignUpRequest;
+import com.JDE.mainserver.web.dto.response.TokenResponse;
+import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import static com.JDE.mainserver.global.exception.code.MemberErrorCode.*;
+
+@Service
+@RequiredArgsConstructor
+public class AuthCommandService {
+
+    private final MemberRepository memberRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final JwtUtil jwtUtil;
+
+    // ✅ 추가: 온보딩 이관을 위한 저장소 주입
+    private final OnboardingSurveyStore onboardingSurveyStore;
+
+    @Transactional
+    public void signUp(SignUpRequest req) {
+        if (memberRepository.existsByUserId(req.getUserId())) {
+            throw new CustomException(USER_ID_DUPLICATED);
+        }
+        String encoded = passwordEncoder.encode(req.getPassword());
+        AgeGroup ageGroup = req.getAgeGroup();
+        Gender gender = req.getGender();
+        Role role = Role.USER;
+
+        Member m = new Member(
+                req.getUserId(),
+                encoded,
+                req.getImageUrl(),
+                role,
+                ageGroup,
+                gender
+        );
+        memberRepository.save(m);
+
+        // ✅ 핵심: 세션 → 유저로 온보딩 데이터 이관
+        String sid = req.getSessionId();
+        if (sid != null && !sid.isBlank()) {
+            onboardingSurveyStore.migrateSessionToUser(sid, m.getId());
+        }
+    }
+
+    @Transactional(readOnly = true)
+    public TokenResponse login(LoginRequest req) {
+        Member m = memberRepository.findByUserId(req.getUserId())
+                .orElseThrow(() -> new CustomException(MEMBER_NOT_FOUND));
+
+        if (!passwordEncoder.matches(req.getPassword(), m.getPassword())) {
+            throw new CustomException(INVALID_CREDENTIALS);
+        }
+
+        String access = jwtUtil.createAccessToken(String.valueOf(m.getId()));
+        String refresh = jwtUtil.createRefreshToken(String.valueOf(m.getId()));
+        return new TokenResponse(access, refresh);
+    }
+
+    @Transactional
+    public void updateProfileImage(Long memberId, String imageUrl) {
+        Member m = memberRepository.findById(memberId)
+                .orElseThrow(() -> new CustomException(MEMBER_NOT_FOUND));
+        m.setImageUrl(imageUrl);
+    }
+
+    @Transactional
+    public void deleteMe(Long memberId) {
+        Member m = memberRepository.findById(memberId)
+                .orElseThrow(() -> new CustomException(MEMBER_NOT_FOUND));
+        memberRepository.delete(m);
+    }
+
+    public void logout(Long memberId) {
+        // (옵션) RefreshToken/블랙리스트 사용 시 처리
+    }
+}
