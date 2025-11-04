@@ -16,7 +16,7 @@ services:
 
   # PostgreSQL
   postgres:
-    image: postgres:18
+    image: postgres:16.10
     container_name: JDE-postgres-local
     env_file:
       - env.local
