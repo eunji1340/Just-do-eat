@@ -13,6 +13,7 @@ type MukbtiResultDetail = {
   description: string;
   goodMatch: string[];
   badMatch: string[];
+  imagePath: string;
 };
 
 export default function OnboardingResultPage() {
@@ -92,19 +93,28 @@ export default function OnboardingResultPage() {
         <h2 className="text-2xl font-bold text-center text-[var(--color-fg)]">먹BTI 결과</h2>
         
         {/* 유형 정보 */}
-        <section className="border border-[var(--color-border)] rounded-xl p-4 bg-[var(--color-surface)]">
+        <section className="border border-[var(--color-border)] rounded-xl p-4 bg-[var(--color-surface)] text-center">
           <h3 className="mt-0 mb-2 text-lg font-semibold text-[var(--color-fg)]">
             {resultDetail.label} ({resultDetail.code})
           </h3>
+          {resultDetail.imagePath && (
+            <div className="flex justify-center mb-3">
+              <img 
+                src={resultDetail.imagePath} 
+                alt={resultDetail.label}
+                className="max-w-full h-auto rounded-lg"
+              />
+            </div>
+          )}
           <p className="m-0 text-sm text-[var(--color-muted)] mb-3">{resultDetail.nickname}</p>
           <p className="m-0 text-[var(--color-fg)]">{resultDetail.description}</p>
         </section>
 
         {/* 키워드 */}
         {resultDetail.keywords && resultDetail.keywords.length > 0 && (
-          <section className="border border-[var(--color-border)] rounded-xl p-4 bg-[var(--color-surface)]">
+          <section className="border border-[var(--color-border)] rounded-xl p-4 bg-[var(--color-surface)] text-center">
             <h3 className="mt-0 mb-3 text-lg font-semibold text-[var(--color-fg)]">핵심 키워드</h3>
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-2 justify-center">
               {resultDetail.keywords.map((keyword, idx) => (
                 <span
                   key={idx}
@@ -119,9 +129,9 @@ export default function OnboardingResultPage() {
 
         {/* 잘 맞는 유형 */}
         {resultDetail.goodMatch && resultDetail.goodMatch.length > 0 && (
-          <section className="border border-[var(--color-border)] rounded-xl p-4 bg-[var(--color-surface)]">
+          <section className="border border-[var(--color-border)] rounded-xl p-4 bg-[var(--color-surface)] text-center">
             <h3 className="mt-0 mb-3 text-lg font-semibold text-[var(--color-fg)]">잘 맞는 유형</h3>
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-2 justify-center">
               {resultDetail.goodMatch.map((type, idx) => (
                 <span
                   key={idx}
@@ -136,9 +146,9 @@ export default function OnboardingResultPage() {
 
         {/* 안 맞는 유형 */}
         {resultDetail.badMatch && resultDetail.badMatch.length > 0 && (
-          <section className="border border-[var(--color-border)] rounded-xl p-4 bg-[var(--color-surface)]">
+          <section className="border border-[var(--color-border)] rounded-xl p-4 bg-[var(--color-surface)] text-center">
             <h3 className="mt-0 mb-3 text-lg font-semibold text-[var(--color-fg)]">안 맞는 유형</h3>
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-2 justify-center">
               {resultDetail.badMatch.map((type, idx) => (
                 <span
                   key={idx}

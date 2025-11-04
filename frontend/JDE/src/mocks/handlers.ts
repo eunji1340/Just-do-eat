@@ -120,15 +120,16 @@ export const handlers = [
     // 태그 선호도 계산
     const tagPrefsResult = computeTagPrefsServerSide(body.bingoResponses ?? []);
 
-    // 확장된 결과 정보 가져오기
-    const fullMeta = MUKBTI_TYPES[mukbtiResult.code];
-    const extendedResult = fullMeta ? {
-      ...mukbtiResult,
-      nickname: fullMeta.nickname,
-      keywords: fullMeta.keywords,
-      goodMatch: fullMeta.goodMatch,
-      badMatch: fullMeta.badMatch,
-    } : mukbtiResult;
+          // 확장된 결과 정보 가져오기
+      const fullMeta = MUKBTI_TYPES[mukbtiResult.code];
+      const extendedResult = fullMeta ? {
+        ...mukbtiResult,
+        nickname: fullMeta.nickname,
+        keywords: fullMeta.keywords,
+        goodMatch: fullMeta.goodMatch,
+        badMatch: fullMeta.badMatch,
+        imagePath: fullMeta.imagePath,
+      } : mukbtiResult;
 
     return HttpResponse.json({
       success: true,
@@ -150,6 +151,7 @@ export const handlers = [
       description: '유형 정보를 찾을 수 없습니다.',
       goodMatch: [],
       badMatch: [],
+      imagePath: '',
     };
 
     return HttpResponse.json({
@@ -160,6 +162,7 @@ export const handlers = [
       description: meta.description,
       goodMatch: meta.goodMatch,
       badMatch: meta.badMatch,
+      imagePath: meta.imagePath,
     });
   }),
 
