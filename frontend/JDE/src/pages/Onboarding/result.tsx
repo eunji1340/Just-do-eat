@@ -110,7 +110,7 @@ export default function OnboardingResultPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-[var(--color-bg)]">
       <div className="grid gap-4 p-4 max-w-xl w-full">
-        <h2 className="text-2xl font-bold text-center text-[var(--color-fg)]">먹BTI 결과</h2>
+        <h2 className="text-2xl font-bold text-center text-[var(--color-fg)]">당신의 먹BTI 유형은?</h2>
         
         {/* 유형 정보 */}
         <section className="border border-[var(--color-border)] rounded-xl p-4 bg-[var(--color-surface)] text-center">
