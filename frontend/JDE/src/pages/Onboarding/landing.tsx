@@ -5,7 +5,7 @@ export default function OnboardingLanding() {
   const nav = useNavigate();
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen p-5 gap-8 max-w-lg mx-auto bg-[var(--color-bg)]">
+    <div className="flex flex-col items-center justify-center min-h-screen p-5 gap-8 max-w-xl mx-auto bg-[var(--color-bg)]">
       {/* 서비스 소개 */}
       <div className="text-center">
         <h1 className="text-4xl mb-4 font-bold text-[var(--color-fg)]">🍽️ 먹BTI</h1>

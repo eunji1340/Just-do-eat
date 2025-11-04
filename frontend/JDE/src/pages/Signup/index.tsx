@@ -96,7 +96,7 @@ export default function SignupPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-[var(--color-bg)]">
-      <div className="max-w-lg mx-auto p-5 grid gap-5 w-full">
+      <div className="max-w-xl mx-auto p-5 grid gap-5 w-full">
         <h2 className="m-0 text-2xl font-bold text-center text-[var(--color-fg)]">회원가입</h2>
 
       {/* 온보딩 결과 요약 */}

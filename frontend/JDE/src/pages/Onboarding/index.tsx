@@ -12,14 +12,14 @@ export default function OnboardingPage() {
   const nav = useNavigate();
   const initial = loc.state?.step ?? 'mukbti';
   const [step, setStep] = React.useState<'mukbti' | 'bingo'>(initial);
-  const { mukbtiAnswers, setMukbtiResult, setTagPrefs } = useUserStore();
+  const { mukbtiAnswers, setMukbtiResult } = useUserStore();
 
-  // 먹BTI 완료 시
+  // 먹BTI 완료 후
   const handleMukbtiDone = () => {
     setStep('bingo');
   };
 
-  // 빙고 완료 시 - 통합 POST 요청
+  // 빙고 완료 후 - 통합 POST 요청
   const handleBingoDone = async (bingoResponses: Array<{ id: string; vote: number }>) => {
     try {
       const response = await fetch('/api/onboarding/import', {
@@ -37,7 +37,6 @@ export default function OnboardingPage() {
       
       // 결과 저장
       setMukbtiResult(data.mukbtiResult);
-      setTagPrefs(data.tagPrefs);
 
       // 결과 페이지로 이동
       nav(`/onboarding/result?typeId=${data.typeId}`);

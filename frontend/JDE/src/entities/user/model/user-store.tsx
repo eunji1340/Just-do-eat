@@ -5,7 +5,15 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
 export type MukbtiAnswer = { qid: string; choiceId: string };
-export type MukbtiResult = { code: string; label: string; description: string };
+export type MukbtiResult = { 
+  code: string; 
+  label: string; 
+  description: string;
+  nickname?: string;
+  keywords?: string[];
+  goodMatch?: string[];
+  badMatch?: string[];
+};
 export type BingoLike = { item: string; liked: boolean };
 
 interface UserState {
