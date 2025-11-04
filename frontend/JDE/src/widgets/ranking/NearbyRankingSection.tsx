@@ -1,6 +1,7 @@
 // src/widgets/ranking/NearbyRankingSection.tsx
 // 목적: 근처 인기 식당 Top 10 (가로 스크롤 + 좌/우 버튼 네비게이션)
 // 단일 책임: 섹션 렌더링과 수평 스크롤 제어 (스타일은 인라인로 처리)
+
 import * as React from 'react'
 import type { Restaurant } from '../../entities/restaurant/types'
 import { DUMMY_RESTAURANTS } from '../../entities/restaurant/dummy'
@@ -112,8 +113,6 @@ export default function NearbyRankingSection({
     },
     meta1: { fontSize: 12, color: '#6b7280', marginTop: 4 },
     meta2: { fontSize: 12, color: '#9ca3af' },
-
-    // 좌우 버튼
     navBtn: (side: 'left' | 'right', disabled: boolean): React.CSSProperties => ({
       position: 'absolute',
       top: '50%',
@@ -132,7 +131,6 @@ export default function NearbyRankingSection({
       userSelect: 'none' as const,
       zIndex: 2,
     }),
-    // 가장자리 그라데이션 (내용 잘림 시 암시)
     edgeFade: (side: 'left' | 'right'): React.CSSProperties => ({
       position: 'absolute',
       top: 0,
@@ -154,11 +152,9 @@ export default function NearbyRankingSection({
       <h2 style={sx.title}>{title}</h2>
 
       <div style={sx.railOuter}>
-        {/* 좌우 페이드(옵션) */}
         {!atStart && <div aria-hidden style={sx.edgeFade('left')} />}
         {!atEnd && <div aria-hidden style={sx.edgeFade('right')} />}
 
-        {/* 좌/우 네비 버튼 */}
         <button
           type="button"
           aria-label="왼쪽으로 이동"
@@ -178,10 +174,9 @@ export default function NearbyRankingSection({
           <span style={sx.icon}>›</span>
         </button>
 
-        {/* 가로 스크롤 행 */}
         <div ref={rowRef} style={sx.row}>
           {data.map((r, idx) => (
-            <div key={r.id} style={sx.card}>
+            <div key={r.restaurant_id} style={sx.card}>
               <div style={sx.topRow}>
                 <span style={sx.rank}>{idx + 1}위</span>
                 <button
@@ -195,11 +190,15 @@ export default function NearbyRankingSection({
               <div style={sx.name} title={r.name}>
                 {r.name}
               </div>
+
+              {/* 메타 정보: 카테고리 · 평점 */}
               <div style={sx.meta1}>
-                {r.primaryMenu ?? '대표메뉴 미정'} · {r.rating ?? '-'}★
+                {r.category ?? '카테고리 미정'} · {r.rating?.toFixed?.(1) ?? '-'}★
               </div>
+
+              {/* 메타 정보: 영업상태 · 거리 */}
               <div style={sx.meta2}>
-                ❤️ {r.likeCount ?? 0} · {(r.distanceMeters ?? 0)}m
+                {r.is_open ? '영업중' : '영업종료'} · {(r.distance_m ?? 0)}m
               </div>
             </div>
           ))}
