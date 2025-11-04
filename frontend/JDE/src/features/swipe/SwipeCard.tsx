@@ -1,6 +1,5 @@
 // 목적: 단일 카드 UI + 제스처 바인딩 (배경/텍스트는 오버레이가 담당)
 
-import * as React from 'react'
 import { useSwipeHandler } from './useSwipeHandler'
 import type { Restaurant } from '@/entities/restaurant/types'
 
@@ -11,7 +10,7 @@ type Props = {
 }
 
 export default function SwipeCard({ data, onMove, onSwiped }: Props) {
-  const { offset, handleStart, handleMove, handleEnd } = useSwipeHandler({
+  const { offset, isDragging,  handleStart, handleMove, handleEnd } = useSwipeHandler({
     onMove,
     onSwipe: onSwiped,
   })
@@ -27,7 +26,7 @@ export default function SwipeCard({ data, onMove, onSwiped }: Props) {
       onTouchEnd={handleEnd}
       style={{
         transform: `translate(${offset.x}px, ${offset.y}px) rotate(${offset.x * 0.05}deg)`,
-        transition: 'transform 80ms linear',
+        transition: isDragging ? 'none' : 'transform 150ms ease',
       }}
     >
       <div className="bg-white rounded-2xl shadow-lg w-[92%] max-w-sm overflow-hidden">

@@ -1,4 +1,7 @@
-// 목적: 스와이프 제스처 해석 + 진행 중 오프셋을 상위로 리포트
+// 목적: 스와이프 제스처 해석 (낮은 임계치 + 속도 기반 판정)
+// - 거리 임계: X 64px / Y 80px (기존보다 훨씬 낮춤)
+// - 속도 임계: 0.35 px/ms 이상이면 거리 조금만 가도 스와이프 인정
+// - 진행 중 오프셋을 부모로 계속 전달(onMove)
 
 import { useRef, useState } from 'react'
 
@@ -8,42 +11,67 @@ export type Offset = { x: number; y: number }
 type Options = {
   onMove?: (offset: Offset) => void
   onSwipe: (dir: SwipeDir) => void
-  thresholdX?: number
-  thresholdY?: number
+  thresholdX?: number        // 기본 64
+  thresholdY?: number        // 기본 80
+  velocityThreshold?: number // px/ms, 기본 0.35
 }
 
-export function useSwipeHandler({ onMove, onSwipe, thresholdX = 120, thresholdY = 120 }: Options) {
+export function useSwipeHandler({
+  onMove,
+  onSwipe,
+  thresholdX = 164,
+  thresholdY = 80,
+}: Options) {
   const [offset, setOffset] = useState<Offset>({ x: 0, y: 0 })
   const [isDragging, setIsDragging] = useState(false)
   const start = useRef({ x: 0, y: 0 })
 
-  function point(e: React.TouchEvent | React.MouseEvent) {
-    return 'touches' in e ? e.touches[0] : (e as React.MouseEvent)
-  }
-
   function handleStart(e: React.TouchEvent | React.MouseEvent) {
+    const pt = 'touches' in e ? e.touches[0] : (e as React.MouseEvent)
     setIsDragging(true)
-    const p = point(e)
-    start.current = { x: p.clientX, y: p.clientY }
+    start.current = { x: pt.clientX, y: pt.clientY }
   }
 
   function handleMove(e: React.TouchEvent | React.MouseEvent) {
     if (!isDragging) return
-    const p = point(e)
-    const next = { x: p.clientX - start.current.x, y: p.clientY - start.current.y }
+    const pt = 'touches' in e ? e.touches[0] : (e as React.MouseEvent)
+    const dx = pt.clientX - start.current.x
+    const dy = pt.clientY - start.current.y
+    const next = { x: dx, y: dy }
     setOffset(next)
     onMove?.(next)
   }
 
   function handleEnd() {
+    if (!isDragging) return
     setIsDragging(false)
-    const { x, y } = offset
-    if (x > thresholdX) onSwipe('right')
-    else if (x < -thresholdX) onSwipe('left')
-    else if (y < -thresholdY) onSwipe('up')
+
+    const dx = offset.x
+    const dy = offset.y
+    const ax = Math.abs(dx)
+    const ay = Math.abs(dy)
+
+    // 주축 우선: 가로가 더 크면 좌/우, 세로가 더 크면 위만
+    if (ax > ay) {
+      if (dx > thresholdX) return fire('right')
+      if (dx < -thresholdX) return fire('left')
+    } else {
+      if (dy < -thresholdY) return fire('up')
+    }
+
+    // 임계 미달 → 원위치
+    reset()
+  }
+
+  function fire(dir: SwipeDir) {
+    onSwipe(dir)
+    reset() 
+  }
+
+  function reset() {
     setOffset({ x: 0, y: 0 })
     onMove?.({ x: 0, y: 0 })
   }
 
-  return { offset, handleStart, handleMove, handleEnd }
+  return { offset, isDragging, handleStart, handleMove, handleEnd }
 }

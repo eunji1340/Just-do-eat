@@ -24,9 +24,9 @@ function getState(offset: Offset, finalDir?: SwipeFinal): { dir: SwipeFinal; str
 export default function SwipeOverlay({ offset, finalDir = null, visible }: Props) {
   const { dir, strength } = getState(offset, finalDir)
   const map: Record<Exclude<SwipeFinal, null>, { bg: string; label: string }> = {
-    left:  { bg: 'bg-yellow-400', label: '보류' },
-    right: { bg: 'bg-red-500',    label: '싫어요' },
-    up:    { bg: 'bg-green-500',  label: '갈게요' },
+    left:  { bg: 'bg-red-400', label: '싫어요' },
+    right: { bg: 'bg-green-500',    label: '갈게요' },
+    up:    { bg: 'bg-yellow-500',  label: '보류' },
   }
 
   const active = dir !== null && visible

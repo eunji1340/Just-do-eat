@@ -1,7 +1,6 @@
 // 목적: 추천 페이지. 로컬 ITEMS를 덱에 전달(네트워크 없음)
 
-import * as React from 'react'
-import RestaurantSwipeDeck from '@/widgets/restaurant-swipe/RestaurantSwipeDeck'
+import RestaurantSwipeDeck from '@/widgets/restaurantSwipe/RestaurantSwipeDeck'
 import type { Restaurant } from '@/entities/restaurant/types'
 
 const ITEMS: Restaurant[] = [
@@ -38,7 +37,7 @@ const ITEMS: Restaurant[] = [
   // 필요 시 더 추가
 ]
 
-export default function RecommendPage() {
+export default function SwipePage() {
   return (
     <main className="min-h-dvh bg-gray-50 flex items-center justify-center">
       <section className="w-full flex items-center justify-center">
