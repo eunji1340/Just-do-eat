@@ -22,6 +22,7 @@ export default function OnboardingResultPage() {
   const [resultDetail, setResultDetail] = useState<MukbtiResultDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [sharing, setSharing] = useState(false);
 
   // 쿼리 파라미터에서 typeId 가져오기, 없으면 store의 mukbtiResult 사용
   const typeId = searchParams.get('typeId');
@@ -48,6 +49,25 @@ export default function OnboardingResultPage() {
         setLoading(false);
       });
   }, [targetTypeId]);
+
+  const handleShare = async () => {
+    if (!targetTypeId || sharing) return;
+    
+    setSharing(true);
+    try {
+      await fetch('/api/onboarding/share', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ typeId: targetTypeId }),
+      });
+    } catch (err) {
+      console.error('공유하기 요청 실패:', err);
+    } finally {
+      setSharing(false);
+    }
+  };
 
   if (!targetTypeId) {
     return (
@@ -164,10 +184,20 @@ export default function OnboardingResultPage() {
           )}
         </div>
 
-        <div className="text-center">
+        <div className="flex flex-col gap-3">
+          {/* 결과 공유하기 버튼 */}
+          <button
+            onClick={handleShare}
+            disabled={sharing}
+            className="px-4 py-3 rounded-xl border-2 border-[var(--color-primary)] bg-[var(--color-bg)] text-[var(--color-fg)] font-bold cursor-pointer hover:bg-[var(--color-surface)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed w-full"
+          >
+            {sharing ? '공유 중...' : '결과 공유하기'}
+          </button>
+
+          {/* 이 결과로 회원가입하기 버튼 */}
           <Link
             to="/signup"
-            className="block px-4 py-3 rounded-xl bg-[var(--color-primary)] text-[var(--color-primary-fg)] no-underline hover:opacity-90 transition-colors w-full"
+            className="block px-4 py-3 rounded-xl bg-[var(--color-primary)] text-[var(--color-primary-fg)] no-underline font-bold hover:opacity-90 transition-colors w-full text-center"
           >
             이 결과로 회원가입하기
           </Link>
