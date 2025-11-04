@@ -19,7 +19,9 @@ pipeline {
         stage('📦 Git Clone') {
             steps {
                 echo "Cloning project from GitLab..."
-                git branch: 'BE', url: 'https://lab.ssafy.com/s13-final/S13P31A701.git'
+                git branch: 'BE',
+                    credentialsId: 'nomio4001',
+                    url: 'https://lab.ssafy.com/s13-final/S13P31A701.git'
             }
         }
 
