@@ -2,10 +2,9 @@
 // 목적: 근처 인기 식당 Top 10 (가로 스크롤 + 좌/우 버튼 네비게이션)
 // 단일 책임: 섹션 렌더링과 수평 스크롤 제어 (스타일은 인라인로 처리)
 
-'use client'
-import * as React from 'react'
-import type { Restaurant } from '../../entities/restaurant/types'
-import { DUMMY_RESTAURANTS } from '../../entities/restaurant/dummy'
+import * as React from "react";
+import type { Restaurant } from "../../entities/restaurant/types";
+import { DUMMY_RESTAURANTS } from "../../entities/restaurant/dummy";
 
 type Props = {
   items?: Restaurant[]
