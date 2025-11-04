@@ -120,10 +120,20 @@ export const handlers = [
     // 태그 선호도 계산
     const tagPrefsResult = computeTagPrefsServerSide(body.bingoResponses ?? []);
 
+    // 확장된 결과 정보 가져오기
+    const fullMeta = MUKBTI_TYPES[mukbtiResult.code];
+    const extendedResult = fullMeta ? {
+      ...mukbtiResult,
+      nickname: fullMeta.nickname,
+      keywords: fullMeta.keywords,
+      goodMatch: fullMeta.goodMatch,
+      badMatch: fullMeta.badMatch,
+    } : mukbtiResult;
+
     return HttpResponse.json({
       success: true,
       typeId: mukbtiResult.code,
-      mukbtiResult,
+      mukbtiResult: extendedResult,
       tagPrefs: tagPrefsResult.tag_prefs, // 중첩 구조 제거
     });
   }),
@@ -134,14 +144,22 @@ export const handlers = [
     await delay(150);
 
     const meta = MUKBTI_TYPES[typeId as string] ?? { 
-      label: '알 수 없는 유형', 
-      description: '유형 정보를 찾을 수 없습니다.' 
+      label: '알 수 없는 유형',
+      nickname: '알 수 없는 유형',
+      keywords: [],
+      description: '유형 정보를 찾을 수 없습니다.',
+      goodMatch: [],
+      badMatch: [],
     };
 
     return HttpResponse.json({
       code: typeId,
       label: meta.label,
+      nickname: meta.nickname,
+      keywords: meta.keywords,
       description: meta.description,
+      goodMatch: meta.goodMatch,
+      badMatch: meta.badMatch,
     });
   }),
 

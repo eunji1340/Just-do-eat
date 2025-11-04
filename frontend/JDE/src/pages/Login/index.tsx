@@ -53,7 +53,7 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-[var(--color-bg)]">
-      <div className="max-w-md mx-auto p-5 grid gap-5 w-full">
+      <div className="max-w-xl mx-auto p-5 grid gap-5 w-full">
         <div className="text-center mb-5">
           <h1 className="text-4xl m-0">🍽️</h1>
           <h2 className="mt-2 mb-0 text-2xl font-bold text-[var(--color-fg)]">로그인</h2>

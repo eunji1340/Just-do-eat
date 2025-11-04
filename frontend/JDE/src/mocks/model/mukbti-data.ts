@@ -84,22 +84,142 @@ export const MUKBTI_QUESTIONS: Question[] = [
   },
 ];
 
-// 16유형 라벨/설명 (요약본)
-export const MUKBTI_TYPES: Record<string, { label: string; description: string }> = {
-  MPST: { label: '현실파 점심헌터', description: '식사=연료, 빠르고 익숙하게.' },
-  MPSA: { label: '실속형 미식러', description: '합리적인 모험, 가성비+재미.' },
-  MPAT: { label: '즉흥적 푸드러버', description: '길거리 신메뉴 즉시 도전.' },
-  MPAD: { label: '감성형 탐식가', description: '분위기+맛, 기록하는 미식.' },
-  MQST: { label: '평온한 루틴러', description: '큰 모험은 적당히, 품질 챙김.' },
-  MQSA: { label: '고급스런 실험가', description: '트렌드 빠르게, 감성+퀄.' },
-  MQAT: { label: '기획형 미식가', description: '조사→실행, 완성도 중시.' },
-  MQAD: { label: '느긋한 탐미가', description: '식사는 경험, 여유롭게.' },
-  NPST: { label: '루틴형 직장인', description: '가성비·속도 최우선.' },
-  NPSA: { label: '전략적 미식가', description: '합리선 안에서 도전.' },
-  NPAT: { label: '열정적 플랜러', description: '조사 철저, 실패 없는 탐험.' },
-  NPAD: { label: '느긋한 생활미식가', description: '힐링 루틴, 대화 선호.' },
-  NQST: { label: '완벽주의 미식가', description: '품질·서비스·위생 철저.' },
-  NQSA: { label: '트렌드 감별사', description: '신상 빠른 시도/리뷰.' },
-  NQAT: { label: '고급탐험가', description: '특별한 한 끼 추구.' },
-  NQAD: { label: '감성형 미식탐험가', description: '분위기+미식 완벽 조합.' },
+// 16유형 상세 정보 (수정된 정식 버전)
+export const MUKBTI_TYPES: Record<string, { 
+  label: string; 
+  description: string;
+  nickname: string;
+  keywords: string[];
+  goodMatch: string[];
+  badMatch: string[];
+}> = {
+  MPST: { 
+    label: '현실파 점심헌터', 
+    nickname: '현실파 점심헌터',
+    keywords: ['가성비', '한정식', '빨리먹고간다'],
+    description: '식사=연료. 점심시간엔 빠르게, 익숙한 메뉴만 고수.',
+    goodMatch: ['NPSD'],
+    badMatch: ['MQAD'],
+  },
+  MPSD: { 
+    label: '실속형 루틴러', 
+    nickname: '실속형 루틴러',
+    keywords: ['가성비', '일상식사', '분식집단골'],
+    description: '가격 대비 만족감 추구. 익숙하고 합리적인 메뉴 선호.',
+    goodMatch: ['NPST'],
+    badMatch: ['MQAD'],
+  },
+  MPAT: { 
+    label: '즉흥적 푸드러버', 
+    nickname: '즉흥적 푸드러버',
+    keywords: ['길거리음식', '야시장', '새로운조합'],
+    description: '호기심 많은 즉흥파. 길거리 신메뉴 발견 시 바로 줄 선다.',
+    goodMatch: ['NQAD'],
+    badMatch: ['NQST'],
+  },
+  MPAD: { 
+    label: '감성형 탐식가', 
+    nickname: '감성형 탐식가',
+    keywords: ['감성식당', '야시장', '카메라먼저'],
+    description: '분위기도 맛도 놓치지 않음. 먹는 게 하나의 예술.',
+    goodMatch: ['MQAD'],
+    badMatch: ['NQST'],
+  },
+  MQST: { 
+    label: '평온한 루틴러', 
+    nickname: '평온한 루틴러',
+    keywords: ['고급분식', '일상식사', '조용한카페'],
+    description: '안정된 일상, 조용한 식사. 큰 모험은 싫지만 퀄리티는 챙김.',
+    goodMatch: ['NQSD'],
+    badMatch: ['MPAD'],
+  },
+  MQSD: { 
+    label: '고급 실속파', 
+    nickname: '고급 실속파',
+    keywords: ['가심비', '조용한카페', '안정적'],
+    description: '안정 속에서도 디테일한 품질을 챙기는 타입.',
+    goodMatch: ['NQST'],
+    badMatch: ['MPAT'],
+  },
+  MQAT: { 
+    label: '기획형 미식가', 
+    nickname: '기획형 미식가',
+    keywords: ['고급한끼', '가심비', '예약필수'],
+    description: '미리 조사하고 움직이는 계획파. 가성비보다 완성도.',
+    goodMatch: ['NQAD'],
+    badMatch: ['MPST'],
+  },
+  MQAD: { 
+    label: '느긋한 탐미가', 
+    nickname: '느긋한 탐미가',
+    keywords: ['분위기맛집', '식사도여행', '와인페어링'],
+    description: '여유로운 식사와 대화. 음식은 하나의 경험.',
+    goodMatch: ['MPAD'],
+    badMatch: ['NPST'],
+  },
+  NPST: { 
+    label: '루틴형 직장인', 
+    nickname: '루틴형 직장인',
+    keywords: ['한식정식', '가성비', '점심30분'],
+    description: '새로운 건 부담. 효율·속도 최우선.',
+    goodMatch: ['MPST'],
+    badMatch: ['MQAD'],
+  },
+  NPSD: { 
+    label: '현실형 실속러', 
+    nickname: '현실형 실속러',
+    keywords: ['가성비', '무난한메뉴', '점심정식'],
+    description: '효율 중시, 모험보단 확실한 만족.',
+    goodMatch: ['MPST'],
+    badMatch: ['MQAD'],
+  },
+  NPAT: { 
+    label: '열정적 플랜러', 
+    nickname: '열정적 플랜러',
+    keywords: ['프로맛집러', '계획형', '시간관리'],
+    description: '신메뉴도 철저히 조사 후 선택. 실패 없는 탐험가.',
+    goodMatch: ['MQAT'],
+    badMatch: ['MPST'],
+  },
+  NPAD: { 
+    label: '느긋한 생활미식가', 
+    nickname: '느긋한 생활미식가',
+    keywords: ['브런치카페', '산책후식사', '일상힐링'],
+    description: '맛집 탐방이 힐링 루틴. 느긋한 식사와 대화 선호.',
+    goodMatch: ['MQAD'],
+    badMatch: ['NPST'],
+  },
+  NQST: { 
+    label: '완벽주의 미식가', 
+    nickname: '완벽주의 미식가',
+    keywords: ['정갈한한식', '프리미엄', '디테일'],
+    description: '위생·품질·서비스 모두 따지는 철저한 평가자.',
+    goodMatch: ['MQSD'],
+    badMatch: ['MPAT'],
+  },
+  NQSD: { 
+    label: '꼼꼼한 루틴러', 
+    nickname: '꼼꼼한 루틴러',
+    keywords: ['고급분식', '디테일', '안정지향'],
+    description: '안정과 퀄리티의 균형. 과한 모험은 부담스러움.',
+    goodMatch: ['MQST'],
+    badMatch: ['MPAD'],
+  },
+  NQAT: { 
+    label: '고급탐험가', 
+    nickname: '고급탐험가',
+    keywords: ['예약맛집', '특별한경험', '한정메뉴'],
+    description: '시간·돈 아깝지 않게 특별한 한 끼를 추구.',
+    goodMatch: ['MQAT'],
+    badMatch: ['MPST'],
+  },
+  NQAD: { 
+    label: '감성형 미식탐험가', 
+    nickname: '감성형 미식탐험가',
+    keywords: ['분위기', '느긋한식사', '새로움'],
+    description: '미식과 분위기 모두 즐기는 완벽한 여유형.',
+    goodMatch: ['MQAD'],
+    badMatch: ['MPST'],
+  },
 };
+

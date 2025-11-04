@@ -103,7 +103,7 @@ export default function MukbtiFlow({ onDone }: MukbtiFlowProps) {
   }
 
   return (
-    <div className="fixed inset-0 flex flex-col p-5 max-w-2xl mx-auto bg-[var(--color-bg)]">
+    <div className="fixed inset-0 flex flex-col p-5 max-w-xl mx-auto bg-[var(--color-bg)]">
       {/* 상단 고정 진행바 */}
       <div className="mb-5">
         <div 
