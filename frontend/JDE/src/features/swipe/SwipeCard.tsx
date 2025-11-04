@@ -10,7 +10,7 @@ type Props = {
 }
 
 export default function SwipeCard({ data, onMove, onSwiped }: Props) {
-  const { offset, isDragging,  handleStart, handleMove, handleEnd } = useSwipeHandler({
+  const { offset, handleStart, handleMove, handleEnd } = useSwipeHandler({
     onMove,
     onSwipe: onSwiped,
   })
@@ -26,7 +26,7 @@ export default function SwipeCard({ data, onMove, onSwiped }: Props) {
       onTouchEnd={handleEnd}
       style={{
         transform: `translate(${offset.x}px, ${offset.y}px) rotate(${offset.x * 0.05}deg)`,
-        transition: isDragging ? 'none' : 'transform 150ms ease',
+        transition: 'transform 80ms linear',
       }}
     >
       <div className="bg-white rounded-2xl shadow-lg w-[92%] max-w-sm overflow-hidden">
