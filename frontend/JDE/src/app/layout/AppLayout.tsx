@@ -53,11 +53,7 @@ export default function AppLayout({ children }: Props) {
       </main>
 
       {/* 조건부 렌더링: BottomNavBar */}
-      {showNavBar && (
-        <div className="w-full min-w-[320px] sm:max-w-[640px] mx-auto">
-          <BottomNavBar />
-        </div>
-      )}
+      {showNavBar && <BottomNavBar />}
     </div>
   );
 }
