@@ -17,6 +17,7 @@ export const TopNavBar = (props: TopNavBarAllProps) => {
   // 공통 컨테이너 스타일
   const containerClass = cn(
     "h-[86px] pt-7 pb-3 flex items-center bg-white border-b border-gray-200",
+    "sticky top-0 z-50",
     paddingClass,
     className
   );
