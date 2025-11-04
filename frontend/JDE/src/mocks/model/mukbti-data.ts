@@ -92,6 +92,7 @@ export const MUKBTI_TYPES: Record<string, {
   keywords: string[];
   goodMatch: string[];
   badMatch: string[];
+  imagePath: string;
 }> = {
   MPST: { 
     label: '현실파 점심헌터', 
@@ -100,6 +101,7 @@ export const MUKBTI_TYPES: Record<string, {
     description: '식사=연료. 점심시간엔 빠르게, 익숙한 메뉴만 고수.',
     goodMatch: ['NPSD'],
     badMatch: ['MQAD'],
+    imagePath: '/src/mocks/model/images/MPST.png',
   },
   MPSD: { 
     label: '실속형 루틴러', 
@@ -108,6 +110,7 @@ export const MUKBTI_TYPES: Record<string, {
     description: '가격 대비 만족감 추구. 익숙하고 합리적인 메뉴 선호.',
     goodMatch: ['NPST'],
     badMatch: ['MQAD'],
+    imagePath: '/src/mocks/model/images/MPSD.png',
   },
   MPAT: { 
     label: '즉흥적 푸드러버', 
@@ -116,6 +119,7 @@ export const MUKBTI_TYPES: Record<string, {
     description: '호기심 많은 즉흥파. 길거리 신메뉴 발견 시 바로 줄 선다.',
     goodMatch: ['NQAD'],
     badMatch: ['NQST'],
+    imagePath: '/src/mocks/model/images/MPAT.png',
   },
   MPAD: { 
     label: '감성형 탐식가', 
@@ -124,6 +128,7 @@ export const MUKBTI_TYPES: Record<string, {
     description: '분위기도 맛도 놓치지 않음. 먹는 게 하나의 예술.',
     goodMatch: ['MQAD'],
     badMatch: ['NQST'],
+    imagePath: '/src/mocks/model/images/MPAD.png',
   },
   MQST: { 
     label: '평온한 루틴러', 
@@ -132,6 +137,7 @@ export const MUKBTI_TYPES: Record<string, {
     description: '안정된 일상, 조용한 식사. 큰 모험은 싫지만 퀄리티는 챙김.',
     goodMatch: ['NQSD'],
     badMatch: ['MPAD'],
+    imagePath: '/src/mocks/model/images/MQST.png',
   },
   MQSD: { 
     label: '고급 실속파', 
@@ -140,6 +146,7 @@ export const MUKBTI_TYPES: Record<string, {
     description: '안정 속에서도 디테일한 품질을 챙기는 타입.',
     goodMatch: ['NQST'],
     badMatch: ['MPAT'],
+    imagePath: '/src/mocks/model/images/MQSD.png',
   },
   MQAT: { 
     label: '기획형 미식가', 
@@ -148,6 +155,7 @@ export const MUKBTI_TYPES: Record<string, {
     description: '미리 조사하고 움직이는 계획파. 가성비보다 완성도.',
     goodMatch: ['NQAD'],
     badMatch: ['MPST'],
+    imagePath: '/src/mocks/model/images/MQAT.png',
   },
   MQAD: { 
     label: '느긋한 탐미가', 
@@ -156,6 +164,7 @@ export const MUKBTI_TYPES: Record<string, {
     description: '여유로운 식사와 대화. 음식은 하나의 경험.',
     goodMatch: ['MPAD'],
     badMatch: ['NPST'],
+    imagePath: '/src/mocks/model/images/MQAD.png',
   },
   NPST: { 
     label: '루틴형 직장인', 
@@ -164,6 +173,7 @@ export const MUKBTI_TYPES: Record<string, {
     description: '새로운 건 부담. 효율·속도 최우선.',
     goodMatch: ['MPST'],
     badMatch: ['MQAD'],
+    imagePath: '/src/mocks/model/images/NPST.png',
   },
   NPSD: { 
     label: '현실형 실속러', 
@@ -172,6 +182,7 @@ export const MUKBTI_TYPES: Record<string, {
     description: '효율 중시, 모험보단 확실한 만족.',
     goodMatch: ['MPST'],
     badMatch: ['MQAD'],
+    imagePath: '/src/mocks/model/images/NPSD.png',
   },
   NPAT: { 
     label: '열정적 플랜러', 
@@ -180,6 +191,7 @@ export const MUKBTI_TYPES: Record<string, {
     description: '신메뉴도 철저히 조사 후 선택. 실패 없는 탐험가.',
     goodMatch: ['MQAT'],
     badMatch: ['MPST'],
+    imagePath: '/src/mocks/model/images/NPAT.png',
   },
   NPAD: { 
     label: '느긋한 생활미식가', 
@@ -188,6 +200,7 @@ export const MUKBTI_TYPES: Record<string, {
     description: '맛집 탐방이 힐링 루틴. 느긋한 식사와 대화 선호.',
     goodMatch: ['MQAD'],
     badMatch: ['NPST'],
+    imagePath: '/src/mocks/model/images/NPAD.png',
   },
   NQST: { 
     label: '완벽주의 미식가', 
@@ -196,6 +209,7 @@ export const MUKBTI_TYPES: Record<string, {
     description: '위생·품질·서비스 모두 따지는 철저한 평가자.',
     goodMatch: ['MQSD'],
     badMatch: ['MPAT'],
+    imagePath: '/src/mocks/model/images/NQST.png',
   },
   NQSD: { 
     label: '꼼꼼한 루틴러', 
@@ -204,6 +218,7 @@ export const MUKBTI_TYPES: Record<string, {
     description: '안정과 퀄리티의 균형. 과한 모험은 부담스러움.',
     goodMatch: ['MQST'],
     badMatch: ['MPAD'],
+    imagePath: '/src/mocks/model/images/NQSD.png',
   },
   NQAT: { 
     label: '고급탐험가', 
@@ -212,6 +227,7 @@ export const MUKBTI_TYPES: Record<string, {
     description: '시간·돈 아깝지 않게 특별한 한 끼를 추구.',
     goodMatch: ['MQAT'],
     badMatch: ['MPST'],
+    imagePath: '/src/mocks/model/images/NQAT.png',
   },
   NQAD: { 
     label: '감성형 미식탐험가', 
@@ -220,6 +236,7 @@ export const MUKBTI_TYPES: Record<string, {
     description: '미식과 분위기 모두 즐기는 완벽한 여유형.',
     goodMatch: ['MQAD'],
     badMatch: ['MPST'],
+    imagePath: '/src/mocks/model/images/NQAD.png',
   },
 };
 
