@@ -102,7 +102,7 @@ export default function OnboardingResultPage() {
               <img 
                 src={resultDetail.imagePath} 
                 alt={resultDetail.label}
-                className="max-w-full h-auto rounded-lg"
+                className="max-w-[300px] max-h-[300px] w-auto h-auto object-contain rounded-lg"
               />
             </div>
           )}
@@ -127,39 +127,42 @@ export default function OnboardingResultPage() {
           </section>
         )}
 
-        {/* 잘 맞는 유형 */}
-        {resultDetail.goodMatch && resultDetail.goodMatch.length > 0 && (
-          <section className="border border-[var(--color-border)] rounded-xl p-4 bg-[var(--color-surface)] text-center">
-            <h3 className="mt-0 mb-3 text-lg font-semibold text-[var(--color-fg)]">잘 맞는 유형</h3>
-            <div className="flex flex-wrap gap-2 justify-center">
-              {resultDetail.goodMatch.map((type, idx) => (
-                <span
-                  key={idx}
-                  className="px-3 py-1 rounded-full bg-[var(--color-success)] text-white text-sm font-medium"
-                >
-                  {type}
-                </span>
-              ))}
-            </div>
-          </section>
-        )}
+        {/* 잘 맞는 유형 / 안 맞는 유형 - 나란히 배치 */}
+        <div className="grid grid-cols-2 gap-4">
+          {/* 잘 맞는 유형 */}
+          {resultDetail.goodMatch && resultDetail.goodMatch.length > 0 && (
+            <section className="border border-[var(--color-border)] rounded-xl p-4 bg-[var(--color-surface)] text-center">
+              <h3 className="mt-0 mb-3 text-lg font-semibold text-[var(--color-fg)]">잘 맞는 유형</h3>
+              <div className="flex flex-wrap gap-2 justify-center">
+                {resultDetail.goodMatch.map((type, idx) => (
+                  <span
+                    key={idx}
+                    className="px-3 py-1 rounded-full bg-[var(--color-success)] text-white text-sm font-medium"
+                  >
+                    {type}
+                  </span>
+                ))}
+              </div>
+            </section>
+          )}
 
-        {/* 안 맞는 유형 */}
-        {resultDetail.badMatch && resultDetail.badMatch.length > 0 && (
-          <section className="border border-[var(--color-border)] rounded-xl p-4 bg-[var(--color-surface)] text-center">
-            <h3 className="mt-0 mb-3 text-lg font-semibold text-[var(--color-fg)]">안 맞는 유형</h3>
-            <div className="flex flex-wrap gap-2 justify-center">
-              {resultDetail.badMatch.map((type, idx) => (
-                <span
-                  key={idx}
-                  className="px-3 py-1 rounded-full bg-[var(--color-error)] text-white text-sm font-medium"
-                >
-                  {type}
-                </span>
-              ))}
-            </div>
-          </section>
-        )}
+          {/* 안 맞는 유형 */}
+          {resultDetail.badMatch && resultDetail.badMatch.length > 0 && (
+            <section className="border border-[var(--color-border)] rounded-xl p-4 bg-[var(--color-surface)] text-center">
+              <h3 className="mt-0 mb-3 text-lg font-semibold text-[var(--color-fg)]">안 맞는 유형</h3>
+              <div className="flex flex-wrap gap-2 justify-center">
+                {resultDetail.badMatch.map((type, idx) => (
+                  <span
+                    key={idx}
+                    className="px-3 py-1 rounded-full bg-[var(--color-error)] text-white text-sm font-medium"
+                  >
+                    {type}
+                  </span>
+                ))}
+              </div>
+            </section>
+          )}
+        </div>
 
         <div className="text-center">
           <Link
