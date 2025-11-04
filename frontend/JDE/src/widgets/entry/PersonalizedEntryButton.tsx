@@ -32,7 +32,7 @@ export default function PersonalizedEntryButton() {
         </div>
 
         {/* 하단: 버튼 */}
-        <div className="bg-orange-500 px-6 py-4 flex items-center justify-between hover:bg-orange-600 transition-colors">
+        <div className="bg-orange-400 px-6 py-4 flex items-center justify-between hover:bg-orange-500 transition-colors">
           <span className="text-white font-semibold">지금 추천받기</span>
           <ArrowRight className="w-6 h-6 text-white" strokeWidth={3} />
         </div>
