@@ -8,7 +8,7 @@ export default function OnboardingLanding() {
     <div className="flex flex-col items-center justify-center min-h-screen p-5 gap-8 max-w-xl mx-auto bg-[var(--color-bg)]">
       {/* 서비스 소개 */}
       <div className="text-center">
-        <h1 className="text-4xl mb-4 font-bold text-[var(--color-fg)]">🍽️ 먹BTI</h1>
+        <h1 className="text-4xl mb-4 font-bold text-[var(--color-fg)]">🍽️ JUST DO EAT</h1>
         <p className="text-lg text-[var(--color-muted)] leading-relaxed">
           나만의 음식 취향을 발견하고<br />
           맞춤형 맛집을 추천받아보세요!
