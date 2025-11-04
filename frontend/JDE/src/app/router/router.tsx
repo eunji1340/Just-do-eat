@@ -5,7 +5,7 @@
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 import AppLayout from '../layout/AppLayout'
 import MainPage from '../../pages/main/MainPage'
-import RecommendPage from '../../pages/recommend/RecommendPage'
+import SwipePage from '../../pages/swipe/SwipePage'
 const router = createBrowserRouter([
   { 
     path: '/',
@@ -18,7 +18,7 @@ const router = createBrowserRouter([
     path: '/swipe',
     element:
     <AppLayout>
-      <RecommendPage /> 
+      <SwipePage /> 
     </AppLayout>
   },
 
