@@ -3,6 +3,8 @@
 // 교체 포인트: 라우터 전환 시 여기만 수정 (ex. Remix, TanStack Router)
 
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
+import AppLayout from '../layout/AppLayout';
+import MainPage from '../../pages/main/MainPage';
 import OnboardingLanding from '../../pages/Onboarding/landing';
 import OnboardingPage from '../../pages/Onboarding';
 import OnboardingResult from '../../pages/Onboarding/result';
@@ -12,7 +14,11 @@ import LoginPage from '../../pages/Login';
 const router = createBrowserRouter([
   { 
     path: '/',
-    element: <OnboardingLanding />,
+    element: (
+      <AppLayout>
+        <MainPage /> 
+      </AppLayout>
+    ),
   },
   {
     path: '/onboarding/landing',
