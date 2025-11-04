@@ -5,7 +5,7 @@
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 import AppLayout from '../layout/AppLayout'
 import MainPage from '../../pages/main/MainPage'
-
+import RecommendPage from '../../pages/recommend/RecommendPage'
 const router = createBrowserRouter([
   { 
     path: '/',
@@ -14,6 +14,14 @@ const router = createBrowserRouter([
       <MainPage /> 
     </AppLayout>
   },
+  { 
+    path: '/swipe',
+    element:
+    <AppLayout>
+      <RecommendPage /> 
+    </AppLayout>
+  },
+
 ])
 
 export default function AppRouter() {
