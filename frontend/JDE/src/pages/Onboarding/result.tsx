@@ -77,8 +77,8 @@ export default function OnboardingResultPage() {
 
   if (!targetTypeId) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[var(--color-bg)]">
-        <div className="grid gap-3 p-4 max-w-xl text-center">
+      <div className="min-h-screen flex flex-col bg-[var(--color-bg)] py-4">
+        <div className="grid gap-3 p-4 max-w-xl mx-auto text-center">
           <h2 className="text-2xl font-bold text-[var(--color-fg)]">결과가 아직 없습니다</h2>
           <p className="text-[var(--color-muted)]">온보딩을 먼저 진행해주세요.</p>
           <Link to="/onboarding" className="text-[var(--color-primary)] underline hover:opacity-80">
@@ -91,7 +91,7 @@ export default function OnboardingResultPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[var(--color-bg)]">
+      <div className="min-h-screen flex flex-col items-center justify-center bg-[var(--color-bg)]">
         <div className="text-center">
           <p className="text-[var(--color-muted)]">결과를 불러오는 중...</p>
         </div>
@@ -101,8 +101,8 @@ export default function OnboardingResultPage() {
 
   if (error || !resultDetail) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[var(--color-bg)]">
-        <div className="grid gap-3 p-4 max-w-xl text-center">
+      <div className="min-h-screen flex flex-col bg-[var(--color-bg)] py-4">
+        <div className="grid gap-3 p-4 max-w-xl mx-auto text-center">
           <h2 className="text-2xl font-bold text-[var(--color-fg)]">오류 발생</h2>
           <p className="text-[var(--color-muted)]">{error || '결과를 불러올 수 없습니다.'}</p>
           <Link to="/onboarding" className="text-[var(--color-primary)] underline hover:opacity-80">
@@ -114,9 +114,9 @@ export default function OnboardingResultPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[var(--color-bg)]">
-      <div className="grid gap-4 p-4 max-w-xl w-full">
-        <h2 className="text-2xl font-bold text-center text-[var(--color-fg)]">먹BTI 결과</h2>
+    <div className="min-h-screen flex flex-col bg-[var(--color-bg)] py-4">
+      <div className="grid gap-4 p-4 max-w-xl w-full mx-auto">
+        <h2 className="text-2xl font-bold text-center text-[var(--color-fg)]">당신의 먹BTI 유형은?</h2>
         
         {/* 유형 정보 */}
         <section className="border border-[var(--color-border)] rounded-xl p-4 bg-[var(--color-surface)] text-center">
