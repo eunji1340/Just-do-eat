@@ -1,0 +1,13 @@
+spring:
+  datasource:
+    url:      ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/JDE}
+    username: ${SPRING_DATASOURCE_USERNAME:root}
+    password: ${SPRING_DATASOURCE_PASSWORD:justdoeat}
+
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:} # 선택(미사용 시 비워둠)
+
+# 위의 공통 JPA/Flyway/logging/app.jwt 설정은 application.yml에서 상속됨
