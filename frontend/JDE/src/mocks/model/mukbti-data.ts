@@ -84,14 +84,14 @@ export const MUKBTI_QUESTIONS: Question[] = [
   },
 ];
 
-// 16유형 상세 정보 (수정된 정식 버전)
+// 16유형 상세 정보 (goodMatch/badMatch 확장 버전)
 export const MUKBTI_TYPES: Record<string, { 
   label: string; 
   description: string;
   nickname: string;
   keywords: string[];
-  goodMatch: string[];
-  badMatch: string[];
+  goodMatch: { type: string; label: string; imagePath: string }[];
+  badMatch: { type: string; label: string; imagePath: string }[];
   imagePath: string;
 }> = {
   MPST: { 
@@ -99,8 +99,12 @@ export const MUKBTI_TYPES: Record<string, {
     nickname: '현실파 점심헌터',
     keywords: ['가성비', '한정식', '빨리먹고간다'],
     description: '식사=연료. 점심시간엔 빠르게, 익숙한 메뉴만 고수.',
-    goodMatch: ['NPSD'],
-    badMatch: ['MQAD'],
+    goodMatch: [
+      { type: 'NPSD', label: '현실형 실속러', imagePath: '/src/mocks/model/images/NPSD.png' },
+    ],
+    badMatch: [
+      { type: 'MQAD', label: '느긋한 탐미가', imagePath: '/src/mocks/model/images/MQAD.png' },
+    ],
     imagePath: '/src/mocks/model/images/MPST.png',
   },
   MPSD: { 
@@ -108,8 +112,12 @@ export const MUKBTI_TYPES: Record<string, {
     nickname: '실속형 루틴러',
     keywords: ['가성비', '일상식사', '분식집단골'],
     description: '가격 대비 만족감 추구. 익숙하고 합리적인 메뉴 선호.',
-    goodMatch: ['NPST'],
-    badMatch: ['MQAD'],
+    goodMatch: [
+      { type: 'NPST', label: '루틴형 직장인', imagePath: '/src/mocks/model/images/NPST.png' },
+    ],
+    badMatch: [
+      { type: 'MQAD', label: '느긋한 탐미가', imagePath: '/src/mocks/model/images/MQAD.png' },
+    ],
     imagePath: '/src/mocks/model/images/MPSD.png',
   },
   MPAT: { 
@@ -117,8 +125,12 @@ export const MUKBTI_TYPES: Record<string, {
     nickname: '즉흥적 푸드러버',
     keywords: ['길거리음식', '야시장', '새로운조합'],
     description: '호기심 많은 즉흥파. 길거리 신메뉴 발견 시 바로 줄 선다.',
-    goodMatch: ['NQAD'],
-    badMatch: ['NQST'],
+    goodMatch: [
+      { type: 'NQAD', label: '감성형 미식탐험가', imagePath: '/src/mocks/model/images/NQAD.png' },
+    ],
+    badMatch: [
+      { type: 'NQST', label: '완벽주의 미식가', imagePath: '/src/mocks/model/images/NQST.png' },
+    ],
     imagePath: '/src/mocks/model/images/MPAT.png',
   },
   MPAD: { 
@@ -126,8 +138,12 @@ export const MUKBTI_TYPES: Record<string, {
     nickname: '감성형 탐식가',
     keywords: ['감성식당', '야시장', '카메라먼저'],
     description: '분위기도 맛도 놓치지 않음. 먹는 게 하나의 예술.',
-    goodMatch: ['MQAD'],
-    badMatch: ['NQST'],
+    goodMatch: [
+      { type: 'MQAD', label: '느긋한 탐미가', imagePath: '/src/mocks/model/images/MQAD.png' },
+    ],
+    badMatch: [
+      { type: 'NQST', label: '완벽주의 미식가', imagePath: '/src/mocks/model/images/NQST.png' },
+    ],
     imagePath: '/src/mocks/model/images/MPAD.png',
   },
   MQST: { 
@@ -135,8 +151,12 @@ export const MUKBTI_TYPES: Record<string, {
     nickname: '평온한 루틴러',
     keywords: ['고급분식', '일상식사', '조용한카페'],
     description: '안정된 일상, 조용한 식사. 큰 모험은 싫지만 퀄리티는 챙김.',
-    goodMatch: ['NQSD'],
-    badMatch: ['MPAD'],
+    goodMatch: [
+      { type: 'NQSD', label: '꼼꼼한 루틴러', imagePath: '/src/mocks/model/images/NQSD.png' },
+    ],
+    badMatch: [
+      { type: 'MPAD', label: '감성형 탐식가', imagePath: '/src/mocks/model/images/MPAD.png' },
+    ],
     imagePath: '/src/mocks/model/images/MQST.png',
   },
   MQSD: { 
@@ -144,8 +164,12 @@ export const MUKBTI_TYPES: Record<string, {
     nickname: '고급 실속파',
     keywords: ['가심비', '조용한카페', '안정적'],
     description: '안정 속에서도 디테일한 품질을 챙기는 타입.',
-    goodMatch: ['NQST'],
-    badMatch: ['MPAT'],
+    goodMatch: [
+      { type: 'NQST', label: '완벽주의 미식가', imagePath: '/src/mocks/model/images/NQST.png' },
+    ],
+    badMatch: [
+      { type: 'MPAT', label: '즉흥적 푸드러버', imagePath: '/src/mocks/model/images/MPAT.png' },
+    ],
     imagePath: '/src/mocks/model/images/MQSD.png',
   },
   MQAT: { 
@@ -153,8 +177,12 @@ export const MUKBTI_TYPES: Record<string, {
     nickname: '기획형 미식가',
     keywords: ['고급한끼', '가심비', '예약필수'],
     description: '미리 조사하고 움직이는 계획파. 가성비보다 완성도.',
-    goodMatch: ['NQAD'],
-    badMatch: ['MPST'],
+    goodMatch: [
+      { type: 'NQAD', label: '감성형 미식탐험가', imagePath: '/src/mocks/model/images/NQAD.png' },
+    ],
+    badMatch: [
+      { type: 'MPST', label: '현실파 점심헌터', imagePath: '/src/mocks/model/images/MPST.png' },
+    ],
     imagePath: '/src/mocks/model/images/MQAT.png',
   },
   MQAD: { 
@@ -162,8 +190,12 @@ export const MUKBTI_TYPES: Record<string, {
     nickname: '느긋한 탐미가',
     keywords: ['분위기맛집', '식사도여행', '와인페어링'],
     description: '여유로운 식사와 대화. 음식은 하나의 경험.',
-    goodMatch: ['MPAD'],
-    badMatch: ['NPST'],
+    goodMatch: [
+      { type: 'MPAD', label: '감성형 탐식가', imagePath: '/src/mocks/model/images/MPAD.png' },
+    ],
+    badMatch: [
+      { type: 'NPST', label: '루틴형 직장인', imagePath: '/src/mocks/model/images/NPST.png' },
+    ],
     imagePath: '/src/mocks/model/images/MQAD.png',
   },
   NPST: { 
@@ -171,8 +203,12 @@ export const MUKBTI_TYPES: Record<string, {
     nickname: '루틴형 직장인',
     keywords: ['한식정식', '가성비', '점심30분'],
     description: '새로운 건 부담. 효율·속도 최우선.',
-    goodMatch: ['MPST'],
-    badMatch: ['MQAD'],
+    goodMatch: [
+      { type: 'MPST', label: '현실파 점심헌터', imagePath: '/src/mocks/model/images/MPST.png' },
+    ],
+    badMatch: [
+      { type: 'MQAD', label: '느긋한 탐미가', imagePath: '/src/mocks/model/images/MQAD.png' },
+    ],
     imagePath: '/src/mocks/model/images/NPST.png',
   },
   NPSD: { 
@@ -180,8 +216,12 @@ export const MUKBTI_TYPES: Record<string, {
     nickname: '현실형 실속러',
     keywords: ['가성비', '무난한메뉴', '점심정식'],
     description: '효율 중시, 모험보단 확실한 만족.',
-    goodMatch: ['MPST'],
-    badMatch: ['MQAD'],
+    goodMatch: [
+      { type: 'MPST', label: '현실파 점심헌터', imagePath: '/src/mocks/model/images/MPST.png' },
+    ],
+    badMatch: [
+      { type: 'MQAD', label: '느긋한 탐미가', imagePath: '/src/mocks/model/images/MQAD.png' },
+    ],
     imagePath: '/src/mocks/model/images/NPSD.png',
   },
   NPAT: { 
@@ -189,8 +229,12 @@ export const MUKBTI_TYPES: Record<string, {
     nickname: '열정적 플랜러',
     keywords: ['프로맛집러', '계획형', '시간관리'],
     description: '신메뉴도 철저히 조사 후 선택. 실패 없는 탐험가.',
-    goodMatch: ['MQAT'],
-    badMatch: ['MPST'],
+    goodMatch: [
+      { type: 'MQAT', label: '기획형 미식가', imagePath: '/src/mocks/model/images/MQAT.png' },
+    ],
+    badMatch: [
+      { type: 'MPST', label: '현실파 점심헌터', imagePath: '/src/mocks/model/images/MPST.png' },
+    ],
     imagePath: '/src/mocks/model/images/NPAT.png',
   },
   NPAD: { 
@@ -198,8 +242,12 @@ export const MUKBTI_TYPES: Record<string, {
     nickname: '느긋한 생활미식가',
     keywords: ['브런치카페', '산책후식사', '일상힐링'],
     description: '맛집 탐방이 힐링 루틴. 느긋한 식사와 대화 선호.',
-    goodMatch: ['MQAD'],
-    badMatch: ['NPST'],
+    goodMatch: [
+      { type: 'MQAD', label: '느긋한 탐미가', imagePath: '/src/mocks/model/images/MQAD.png' },
+    ],
+    badMatch: [
+      { type: 'NPST', label: '루틴형 직장인', imagePath: '/src/mocks/model/images/NPST.png' },
+    ],
     imagePath: '/src/mocks/model/images/NPAD.png',
   },
   NQST: { 
@@ -207,8 +255,12 @@ export const MUKBTI_TYPES: Record<string, {
     nickname: '완벽주의 미식가',
     keywords: ['정갈한한식', '프리미엄', '디테일'],
     description: '위생·품질·서비스 모두 따지는 철저한 평가자.',
-    goodMatch: ['MQSD'],
-    badMatch: ['MPAT'],
+    goodMatch: [
+      { type: 'MQSD', label: '고급 실속파', imagePath: '/src/mocks/model/images/MQSD.png' },
+    ],
+    badMatch: [
+      { type: 'MPAT', label: '즉흥적 푸드러버', imagePath: '/src/mocks/model/images/MPAT.png' },
+    ],
     imagePath: '/src/mocks/model/images/NQST.png',
   },
   NQSD: { 
@@ -216,8 +268,12 @@ export const MUKBTI_TYPES: Record<string, {
     nickname: '꼼꼼한 루틴러',
     keywords: ['고급분식', '디테일', '안정지향'],
     description: '안정과 퀄리티의 균형. 과한 모험은 부담스러움.',
-    goodMatch: ['MQST'],
-    badMatch: ['MPAD'],
+    goodMatch: [
+      { type: 'MQST', label: '평온한 루틴러', imagePath: '/src/mocks/model/images/MQST.png' },
+    ],
+    badMatch: [
+      { type: 'MPAD', label: '감성형 탐식가', imagePath: '/src/mocks/model/images/MPAD.png' },
+    ],
     imagePath: '/src/mocks/model/images/NQSD.png',
   },
   NQAT: { 
@@ -225,8 +281,12 @@ export const MUKBTI_TYPES: Record<string, {
     nickname: '고급탐험가',
     keywords: ['예약맛집', '특별한경험', '한정메뉴'],
     description: '시간·돈 아깝지 않게 특별한 한 끼를 추구.',
-    goodMatch: ['MQAT'],
-    badMatch: ['MPST'],
+    goodMatch: [
+      { type: 'MQAT', label: '기획형 미식가', imagePath: '/src/mocks/model/images/MQAT.png' },
+    ],
+    badMatch: [
+      { type: 'MPST', label: '현실파 점심헌터', imagePath: '/src/mocks/model/images/MPST.png' },
+    ],
     imagePath: '/src/mocks/model/images/NQAT.png',
   },
   NQAD: { 
@@ -234,8 +294,12 @@ export const MUKBTI_TYPES: Record<string, {
     nickname: '감성형 미식탐험가',
     keywords: ['분위기', '느긋한식사', '새로움'],
     description: '미식과 분위기 모두 즐기는 완벽한 여유형.',
-    goodMatch: ['MQAD'],
-    badMatch: ['MPST'],
+    goodMatch: [
+      { type: 'MQAD', label: '느긋한 탐미가', imagePath: '/src/mocks/model/images/MQAD.png' },
+    ],
+    badMatch: [
+      { type: 'MPST', label: '현실파 점심헌터', imagePath: '/src/mocks/model/images/MPST.png' },
+    ],
     imagePath: '/src/mocks/model/images/NQAD.png',
   },
 };

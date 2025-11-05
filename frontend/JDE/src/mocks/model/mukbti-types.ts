@@ -19,10 +19,16 @@ choices: Choice[];
 export type MukbtiAnswer = { qid: string; choiceId: string };
 
 export type MukbtiTypeCode = 
-  | 'MPST' | 'MPSA' | 'MPAT' | 'MPAD'
-  | 'MQST' | 'MQSA' | 'MQAT' | 'MQAD'
-  | 'NPST' | 'NPSA' | 'NPAT' | 'NPAD'
-  | 'NQST' | 'NQSA' | 'NQAT' | 'NQAD';
+  | 'MPST' | 'MPSD' | 'MPAT' | 'MPAD'
+  | 'MQST' | 'MQSD' | 'MQAT' | 'MQAD'
+  | 'NPST' | 'NPSD' | 'NPAT' | 'NPAD'
+  | 'NQST' | 'NQSD' | 'NQAT' | 'NQAD';
+
+export type MukbtiMatchType = {
+  type: string;
+  label: string;
+  imagePath: string;
+};
 
 export type MukbtiResult = {
   code: string; // 예: 'MPST'
@@ -30,6 +36,7 @@ export type MukbtiResult = {
   description: string;
   nickname?: string;
   keywords?: string[];
-  goodMatch?: string[];
-  badMatch?: string[];
+  goodMatch?: MukbtiMatchType[];
+  badMatch?: MukbtiMatchType[];
+  imagePath?: string;
 };

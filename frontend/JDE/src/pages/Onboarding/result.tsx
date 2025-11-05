@@ -5,14 +5,20 @@ import { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useUserStore } from '../../entities/user/model/user-store';
 
+type MukbtiMatchType = {
+  type: string;
+  label: string;
+  imagePath: string;
+};
+
 type MukbtiResultDetail = {
   code: string;
   label: string;
   nickname: string;
   keywords: string[];
   description: string;
-  goodMatch: string[];
-  badMatch: string[];
+  goodMatch: MukbtiMatchType[];
+  badMatch: MukbtiMatchType[];
   imagePath: string;
 };
 
@@ -110,7 +116,7 @@ export default function OnboardingResultPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-[var(--color-bg)]">
       <div className="grid gap-4 p-4 max-w-xl w-full">
-        <h2 className="text-2xl font-bold text-center text-[var(--color-fg)]">당신의 먹BTI 유형은?</h2>
+        <h2 className="text-2xl font-bold text-center text-[var(--color-fg)]">먹BTI 결과</h2>
         
         {/* 유형 정보 */}
         <section className="border border-[var(--color-border)] rounded-xl p-4 bg-[var(--color-surface)] text-center">
@@ -153,14 +159,20 @@ export default function OnboardingResultPage() {
           {resultDetail.goodMatch && resultDetail.goodMatch.length > 0 && (
             <section className="border border-[var(--color-border)] rounded-xl p-4 bg-[var(--color-surface)] text-center">
               <h3 className="mt-0 mb-3 text-lg font-semibold text-[var(--color-fg)]">잘 맞는 유형</h3>
-              <div className="flex flex-wrap gap-2 justify-center">
-                {resultDetail.goodMatch.map((type, idx) => (
-                  <span
-                    key={idx}
-                    className="px-3 py-1 rounded-full bg-[var(--color-success)] text-white text-sm font-medium"
-                  >
-                    {type}
-                  </span>
+              <div className="flex flex-col gap-4 items-center">
+                {resultDetail.goodMatch.map((match, idx) => (
+                  <div key={idx} className="flex flex-col items-center gap-2">
+                    {match.imagePath && (
+                      <img 
+                        src={match.imagePath} 
+                        alt={match.label}
+                        className="max-w-[120px] max-h-[120px] w-auto h-auto object-contain rounded-lg"
+                      />
+                    )}
+                    <p className="text-sm font-medium text-[var(--color-fg)] m-0">
+                      {match.label} ({match.type})
+                    </p>
+                  </div>
                 ))}
               </div>
             </section>
@@ -170,14 +182,21 @@ export default function OnboardingResultPage() {
           {resultDetail.badMatch && resultDetail.badMatch.length > 0 && (
             <section className="border border-[var(--color-border)] rounded-xl p-4 bg-[var(--color-surface)] text-center">
               <h3 className="mt-0 mb-3 text-lg font-semibold text-[var(--color-fg)]">안 맞는 유형</h3>
-              <div className="flex flex-wrap gap-2 justify-center">
-                {resultDetail.badMatch.map((type, idx) => (
-                  <span
-                    key={idx}
-                    className="px-3 py-1 rounded-full bg-[var(--color-error)] text-white text-sm font-medium"
-                  >
-                    {type}
-                  </span>
+              <div className="flex flex-col gap-4 items-center">
+                {resultDetail.badMatch.map((match, idx) => (
+                  <div key={idx} className="flex flex-col items-center gap-2">
+                    
+                    {match.imagePath && (
+                      <img 
+                        src={match.imagePath} 
+                        alt={match.label}
+                        className="max-w-[120px] max-h-[120px] w-auto h-auto object-contain rounded-lg"
+                      />
+                    )}
+                    <p className="text-sm font-medium text-[var(--color-fg)] m-0">
+                      {match.label} ({match.type})
+                    </p>
+                  </div>
                 ))}
               </div>
             </section>

@@ -18,10 +18,10 @@ export default function OnboardingLanding() {
       {/* 버튼 그룹 */}
       <div className="flex flex-col gap-3 w-full max-w-md">
         <button
-          onClick={() => nav('/login')}
+          onClick={() => nav('/onboarding/test')}
           className="py-4 px-8 text-lg rounded-xl border-none bg-[var(--color-primary)] text-[var(--color-primary-fg)] cursor-pointer font-bold hover:opacity-90 transition-colors"
         >
-          로그인
+          테스트 시작하기
         </button>
 
         <button
@@ -32,17 +32,17 @@ export default function OnboardingLanding() {
         </button>
 
         <button
-          onClick={() => nav('/onboarding/test')}
+          onClick={() => nav('/login')}
           className="py-4 px-8 text-base rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-muted)] cursor-pointer hover:bg-[var(--color-border)] transition-colors"
         >
-          비회원으로 테스트하기
+          로그인
         </button>
       </div>
 
-      <p className="text-sm text-[var(--color-muted)] text-center">
+      {/* <p className="text-sm text-[var(--color-muted)] text-center">
         비회원은 테스트만 가능하며,<br />
         결과 저장 및 맞춤 추천을 받으려면 회원가입이 필요합니다.
-      </p>
+      </p> */}
     </div>
   );
 }
