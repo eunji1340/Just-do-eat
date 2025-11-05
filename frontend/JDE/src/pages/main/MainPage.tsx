@@ -16,7 +16,7 @@ export default function MainPage() {
 
       {/* 메인 콘텐츠 */}
       <div className="bg-gradient-to-b from-gray-50 to-white md:py-10 space-y-6">
-        {/* 현재 위치 정보  표시, 왼쪽정렬 px-3
+        {/* 추천받을 상권 선택 섹션, 왼쪽정렬 px-3, 
         [<PinIcon>강남역 <아래다운츄버아이콘> */}
 
         {/* 최근 방문 식당 확인 배너 */}
@@ -63,7 +63,7 @@ export default function MainPage() {
 
         {/* 유형별 맛집 추천(예: 한식, 중식, 일식 등) */}
         {/* (한식이미지) (중식이미지) (일식 이미지)
-        가로 스크롤로 유형확인 */}
+        가로 스크롤로 추가 유형 볼 수 있음 */}
       </div>
 
       {/* 푸터 */}
