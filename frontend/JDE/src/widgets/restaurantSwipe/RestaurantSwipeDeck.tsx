@@ -65,32 +65,32 @@ export default function RestaurantSwipeDeck({ items, onTopSwiped, overlayHoldMs 
           type="dislike"
           icon={<X />}
           onClick={() => handleSwiped('left')}
-          aria-Label="싫어요"
+          aria-label="싫어요"
         />
         <CircularButton
           type="bookmark"
           icon={<Star  />}
           onClick={() => handleSwiped('left')}
-          aria-Label="싫어요"
+          aria-label="싫어요"
         />
 
         <CircularButton
           type="next"
           icon={<ArrowDown  />}
           onClick={() => handleSwiped('up')}
-          aria-Label="보류"
+          aria-label="보류"
         />
         <CircularButton
           type="info"
           icon={<CircleAlert  />}
           onClick={() => handleSwiped('up')}
-          aria-Label="보류"
+          aria-label="보류"
         />
         <CircularButton
           type="confirm"
           icon={<Check />}
           onClick={() => handleSwiped('right')}
-          aria-Label="갈게요"
+          aria-label="갈게요"
         />
       </div>
     </div>
