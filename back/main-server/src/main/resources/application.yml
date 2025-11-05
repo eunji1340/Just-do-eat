@@ -1,0 +1,38 @@
+server:
+  port: 8080  # 🔸 로컬 백엔드 포트 (Jenkins/Nginx랑 겹치지 않게)
+
+spring:
+  application:
+    name: main-server
+
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://localhost:5432/jde_db   # 🔸 실제 DB URL로 변경
+    username: postgres                              # 🔸 DB 계정
+    password: your_password                         # 🔸 DB 비밀번호
+
+  jpa:
+    hibernate:
+      ddl-auto: update   # create / update / validate / none
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+    show-sql: true
+
+  mvc:
+    pathmatch:
+      matching-strategy: ant_path_matcher
+
+logging:
+  level:
+    root: info
+    org.springframework.web: debug
+    org.hibernate.SQL: debug
+  file:
+    name: ./logs/app.log
+
+# 🔹 (선택) JWT, OAuth, AWS, Redis 등 추가 설정은 여기에
+# jwt:
+#   secret: your_secret_key_here
+
