@@ -19,7 +19,7 @@ type Options = {
 export function useSwipeHandler({
   onMove,
   onSwipe,
-  thresholdX = 164,
+  thresholdX = 64,
   thresholdY = 80,
 }: Options) {
   const [offset, setOffset] = useState<Offset>({ x: 0, y: 0 })
