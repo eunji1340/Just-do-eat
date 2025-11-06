@@ -16,7 +16,7 @@ services:
 
   # PostgreSQL
   postgres:
-    image: postgres:16.10
+    image: postgis/postgis:16-3.4
     container_name: JDE-postgres-local
     env_file:
       - env.local
@@ -44,7 +44,7 @@ services:
     image: redis:7
     container_name: JDE-redis-local
     env_file:
-      - env.local
+      - ./env.local
     command: ["redis-server","--appendonly","yes","--requirepass","${REDIS_PASSWORD}"]
     ports:
       - "6379:6379"
@@ -53,6 +53,7 @@ services:
     networks:
       - JDE-local-network
     restart: unless-stopped
+
 
   # Main Server
   main-server:
@@ -66,9 +67,12 @@ services:
       SPRING_DATASOURCE_URL: ${SPRING_DATASOURCE_URL}
       SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME}
       SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD}
-      REDIS_HOST: ${REDIS_HOST}
-      REDIS_PORT: ${REDIS_PORT}
-      REDIS_PASSWORD: ${REDIS_PASSWORD}
+      # REDIS_HOST: ${REDIS_HOST}
+      # REDIS_PORT: ${REDIS_PORT}
+      # REDIS_PASSWORD: ${REDIS_PASSWORD}
+      SPRING_DATA_REDIS_HOST: ${REDIS_HOST}
+      SPRING_DATA_REDIS_PORT: ${REDIS_PORT}
+      SPRING_DATA_REDIS_PASSWORD: ${REDIS_PASSWORD}
       # AWS_S3_BUCKET: ${AWS_S3_BUCKET}
       # AWS_REGION_STATIC: ${AWS_REGION_STATIC}
       # AWS_CREDENTIALS_ACCESS_KEY: ${AWS_CREDENTIALS_ACCESS_KEY}
