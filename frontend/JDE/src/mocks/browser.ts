@@ -7,6 +7,11 @@ export const worker = setupWorker(...handlers);
 
 // 앱 시작 시 호출할 초기화 함수
 export async function initMsw() {
+  // 환경 변수로 MSW 활성화 여부 제어
+  if (import.meta.env.VITE_USE_MSW === 'false') {
+    return; // MSW 비활성화
+  }
+
   // Vite 기준: 개발 환경에서만 시작
   if (import.meta.env.DEV) {
     await worker.start({

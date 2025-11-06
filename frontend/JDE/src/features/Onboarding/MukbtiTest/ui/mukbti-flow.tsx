@@ -3,6 +3,7 @@
 // ---------------------------------------------
 import * as React from 'react';
 import { useUserStore } from '../../../../entities/user/model/user-store';
+import customAxios from '../../../../shared/api/http';
 
 // 백엔드 API 응답 타입 (최소한의 정보만)
 type MukbtiChoice = {
@@ -40,14 +41,19 @@ export default function MukbtiFlow({ onDone }: MukbtiFlowProps) {
   
   // 서버에서 모든 질문 로드
   React.useEffect(() => {
-    fetch('/api/onboarding/mbtis')
-      .then((res) => res.json())
-      .then((data: MukbtiQuestionsResponse) => {
+    customAxios({
+      method: 'GET',
+      url: '/onboarding/mbtis',
+      meta: { authRequired: false }
+    })
+      .then((response: any) => {
+        const data: MukbtiQuestionsResponse = response.data;
         setQuestions(data.items || []);
         setLoading(false);
       })
-      .catch((err) => {
-        setError(err.message);
+      .catch((err: any) => {
+        const errorMessage = err.response?.data?.message || err.message || '질문을 불러오는데 실패했습니다.';
+        setError(errorMessage);
         setLoading(false);
       });
   }, []);

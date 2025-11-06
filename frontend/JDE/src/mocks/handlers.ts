@@ -290,6 +290,96 @@ export const handlers = [
   
   // 절대 URL 핸들러 (customAxios baseURL 사용 시)
   http.post('http://localhost:8080/onboarding/session', handleOnboardingSession),
+  
+  // === customAxios를 위한 절대 URL 핸들러 추가 ===
+  // 1) 먹BTI 문항 조회: GET http://localhost:8080/onboarding/mbtis
+  http.get('http://localhost:8080/onboarding/mbtis', async () => {
+    await delay(150);
+    return HttpResponse.json({
+      items: MUKBTI_QUESTIONS,
+    });
+  }),
+
+  // 2) 빙고 문항 조회: GET http://localhost:8080/onboarding/bingo
+  http.get('http://localhost:8080/onboarding/bingo', async () => {
+    await delay(120);
+    return HttpResponse.json({
+      items: BINGO_5x5,
+    });
+  }),
+
+  // 3) 온보딩 결과 반영: POST http://localhost:8080/onboarding/import
+  http.post('http://localhost:8080/onboarding/import', async ({ request }) => {
+    const body = (await request.json()) as {
+      mukbtiAnswers?: MukbtiAnswer[];
+      bingoResponses?: Array<{ id: string; vote: Tri }>;
+    };
+
+    await delay(300);
+
+    // MBTI 결과 계산
+    const mukbtiResult = computeMukbtiServerSide(MUKBTI_QUESTIONS, body.mukbtiAnswers ?? []);
+    
+    // 태그 선호도 계산
+    const tagPrefsResult = computeTagPrefsServerSide(body.bingoResponses ?? []);
+
+    // 확장된 결과 정보 가져오기
+    const fullMeta = MUKBTI_TYPES[mukbtiResult.code];
+    const extendedResult = fullMeta ? {
+      ...mukbtiResult,
+      nickname: fullMeta.nickname,
+      keywords: fullMeta.keywords,
+      goodMatch: fullMeta.goodMatch,
+      badMatch: fullMeta.badMatch,
+      imagePath: fullMeta.imagePath,
+    } : mukbtiResult;
+
+    return HttpResponse.json({
+      success: true,
+      typeId: mukbtiResult.code,
+      mukbtiResult: extendedResult,
+      tagPrefs: tagPrefsResult.tag_prefs,
+    });
+  }),
+
+  // 4) 결과 유형 조회: GET http://localhost:8080/onboarding/result/types/:typeId
+  http.get('http://localhost:8080/onboarding/result/types/:typeId', async ({ params }) => {
+    const { typeId } = params;
+    await delay(150);
+
+    const meta = MUKBTI_TYPES[typeId as string] ?? { 
+      label: '알 수 없는 유형',
+      nickname: '알 수 없는 유형',
+      keywords: [],
+      description: '유형 정보를 찾을 수 없습니다.',
+      goodMatch: [],
+      badMatch: [],
+      imagePath: '',
+    };
+
+    return HttpResponse.json({
+      code: typeId,
+      label: meta.label,
+      nickname: meta.nickname,
+      keywords: meta.keywords,
+      description: meta.description,
+      goodMatch: meta.goodMatch,
+      badMatch: meta.badMatch,
+      imagePath: meta.imagePath,
+    });
+  }),
+
+  // 5) 온보딩 결과 공유: POST http://localhost:8080/onboarding/share
+  http.post('http://localhost:8080/onboarding/share', async ({ request }) => {
+    const body = (await request.json()) as { typeId?: string };
+    await delay(200);
+
+    return HttpResponse.json({
+      success: true,
+      shareUrl: `https://example.com/share/${body.typeId}`,
+      message: '카카오톡으로 공유되었습니다.',
+    });
+  }),
 
   // === 새로 추가: 아이디 중복 확인 ===
   // 상대 경로 핸들러 (fetch 사용 시)
