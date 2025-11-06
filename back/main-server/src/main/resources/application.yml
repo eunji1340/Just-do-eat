@@ -1,7 +1,7 @@
 spring:
   datasource:
     driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://localhost:5432/jde
+    url: jdbc:postgresql://JDE-postgres-local:5432/jde
     username: justdoeat
     password: justdoeat
 
@@ -22,8 +22,9 @@ spring:
 
   data:
     redis:
-      host: localhost
+      host: redis
       port: 6379
+      password: ${REDIS_PASSWORD}
 
 server:
   port: 8080
