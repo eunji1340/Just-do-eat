@@ -1,0 +1,13 @@
+global:
+  scrape_interval: 5s  # 수집 주기 (기본 1분, 개발환경에서는 짧게)
+
+scrape_configs:
+  - job_name: 'spring-main-server'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['main-server:8080']  # Docker 내부에서 main-server 접근
+
+  - job_name: 'fastapi-score'
+    metrics_path: '/metrics'
+    static_configs:
+      - targets: ['ai:8000']

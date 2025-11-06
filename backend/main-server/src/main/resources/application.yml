@@ -1,0 +1,57 @@
+# ===================== 공통 =====================
+spring:
+  profiles:
+    default: local
+
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        # Postgres는 자동 선택되지만 고정 원하면 유지
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+
+server:
+  port: 8080
+  servlet:
+    context-path: /api
+
+logging:
+  level:
+    org.hibernate.SQL: warn
+    org.springframework.security: info
+    org.springframework.data.repository.config: warn
+
+app:
+  jwt:
+    secret: qwerasdfzxcv123456789qwerasdfzxcv123456789qwerasdfzxcv123456789qwerasdfzxcv123456789
+    access-ttl-ms: 90000000
+    refresh-ttl-ms: 10800000
+
+# ===================== local =====================
+---
+spring:
+  config:
+    activate:
+      on-profile: local
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/JDE
+    username: root
+    password: justdoeat
+    driver-class-name: org.postgresql.Driver
+
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      password:      # 필요 시 주입
+      repositories:
+        enabled: false                  # Redis 리포지토리 오인 경고 억제
+
+
