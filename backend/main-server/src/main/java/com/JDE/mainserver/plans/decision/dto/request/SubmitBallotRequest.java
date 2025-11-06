@@ -1,4 +1,4 @@
-package com.JDE.mainserver.web.dto.request.decision;
+package com.JDE.mainserver.plans.decision.dto.request;
 
 import jakarta.validation.constraints.NotNull;
 

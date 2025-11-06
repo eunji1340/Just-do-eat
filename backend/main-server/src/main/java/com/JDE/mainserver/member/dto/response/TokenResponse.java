@@ -4,7 +4,7 @@
  * Author: kimheejin
  * Date: 2025-10-28
  */
-package com.JDE.mainserver.web.dto.response;
+package com.JDE.mainserver.member.dto.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

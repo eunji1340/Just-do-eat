@@ -4,7 +4,7 @@
  * Author: kimheejin
  * Date: 2025-10-28
  */
-package com.JDE.mainserver.web.dto.request;
+package com.JDE.mainserver.member.dto.request;
 
 import com.JDE.mainserver.member.entity.enums.AgeGroup;
 import com.JDE.mainserver.member.entity.enums.Gender;

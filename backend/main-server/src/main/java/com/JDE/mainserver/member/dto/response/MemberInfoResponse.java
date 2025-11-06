@@ -1,4 +1,4 @@
-package com.JDE.mainserver.web.dto.response;
+package com.JDE.mainserver.member.dto.response;
 
 import com.JDE.mainserver.member.entity.Member;
 import com.JDE.mainserver.member.entity.enums.AgeGroup;
