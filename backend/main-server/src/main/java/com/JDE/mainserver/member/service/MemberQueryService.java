@@ -3,7 +3,7 @@ package com.JDE.mainserver.member.service;
 import com.JDE.mainserver.global.exception.CustomException;
 import com.JDE.mainserver.member.entity.Member;
 import com.JDE.mainserver.member.repository.MemberRepository;
-import com.JDE.mainserver.web.dto.response.MemberInfoResponse;
+import com.JDE.mainserver.member.dto.response.MemberInfoResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

@@ -1,10 +1,10 @@
-package com.JDE.mainserver.web.controller;
+package com.JDE.mainserver.plans.decision.controller;
 
 import com.JDE.mainserver.plans.decision.enums.DecisionToolType;
 import com.JDE.mainserver.plans.decision.service.PlanDecisionService;
-import com.JDE.mainserver.web.dto.request.decision.ConfirmDecisionRequest;
-import com.JDE.mainserver.web.dto.request.decision.SubmitBallotRequest;
-import com.JDE.mainserver.web.dto.response.decision.TallyResponse;
+import com.JDE.mainserver.plans.decision.dto.request.ConfirmDecisionRequest;
+import com.JDE.mainserver.plans.decision.dto.request.SubmitBallotRequest;
+import com.JDE.mainserver.plans.decision.dto.response.TallyResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

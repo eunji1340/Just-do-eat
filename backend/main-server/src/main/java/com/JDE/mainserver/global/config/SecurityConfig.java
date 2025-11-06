@@ -1,4 +1,4 @@
-package com.JDE.mainserver.global.security.config;
+package com.JDE.mainserver.global.config;
 
 import com.JDE.mainserver.global.security.jwt.JwtFilter;
 import com.JDE.mainserver.global.security.jwt.JwtUtil;
@@ -90,25 +90,25 @@ public class SecurityConfig {
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
                 .authorizeHttpRequests(auth -> auth
-                        // 온보딩/가입/로그인/중복확인 (context-path 유무 모두 허용)
+                        // 온보딩/가입/로그인/중복확인 (정확 경로 매칭)
                         .requestMatchers(
-                                "/**/onboarding/session", "/**/onboarding/session/",
-                                "/**/onboarding/submit",  "/**/onboarding/submit/",
-                                "/**/auth/login", "/**/auth/login/",
-                                "/**/auth/signup", "/**/auth/signup/",
-                                "/**/users", "/**/users/",
-                                "/**/users/exists", "/**/users/exists/"
+                                "/onboarding/session", "/onboarding/session/",
+                                "/onboarding/submit",  "/onboarding/submit/",
+                                "/auth/login", "/auth/login/",
+                                "/auth/signup", "/auth/signup/",
+                                "/users", "/users/",
+                                "/users/exists", "/users/exists/"
                         ).permitAll()
 
                         // Swagger / Actuator
                         .requestMatchers(
-                                "/**/swagger-ui/**",
-                                "/**/v3/api-docs/**",
-                                "/**/actuator/**"
+                                "/swagger-ui/**",
+                                "/v3/api-docs/**",
+                                "/actuator/**"
                         ).permitAll()
 
-                        // 레거시에서 열어둔 /main/** 허용
-                        .requestMatchers("/**/main/**").permitAll()
+                        // 레거시 main
+                        .requestMatchers("/main/**").permitAll()
 
                         // 프리플라이트
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()

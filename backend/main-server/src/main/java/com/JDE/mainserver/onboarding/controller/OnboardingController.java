@@ -1,9 +1,9 @@
-package com.JDE.mainserver.web.controller;
+package com.JDE.mainserver.onboarding.controller;
 
 import com.JDE.mainserver.global.api.ApiResponse;
 import com.JDE.mainserver.global.exception.code.GeneralSuccessCode;
 import com.JDE.mainserver.onboarding.OnboardingSurveyStore;
-import com.JDE.mainserver.web.dto.request.SubmitSurveyRequest;
+import com.JDE.mainserver.onboarding.dto.request.SubmitSurveyRequest;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
