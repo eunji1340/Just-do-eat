@@ -43,7 +43,6 @@ EXPOSE 8080
 
 # 8️⃣ 애플리케이션 실행 명령어
 ENTRYPOINT ["java", "-jar", "app.jar"]
-=======
 # ---------- Build stage ----------
 FROM gradle:8.7-jdk21-alpine AS build
 WORKDIR /home/gradle/project
