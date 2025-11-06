@@ -4,13 +4,14 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useUserStore } from '../../entities/user/model/user-store';
+import customAxios from '../../shared/api/http';
 
 type AgeGroup = 'TEENS' | 'TWENTIES' | 'THIRTIES' | 'FORTIES' | 'FIFTIES_PLUS';
 type Gender = 'MALE' | 'FEMALE' | 'OTHER';
 
 export default function SignupPage() {
   const nav = useNavigate();
-  const { mukbtiResult, bingoLikes, tagPrefs } = useUserStore();
+  const { mukbtiResult, bingoLikes, tagPrefs, onboardingSessionId } = useUserStore();
   
   // 폼 상태
   const [formData, setFormData] = React.useState({
@@ -24,6 +25,13 @@ export default function SignupPage() {
   
   const [submitting, setSubmitting] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
+  
+  // 아이디 중복 확인 상태
+  const [userIdCheck, setUserIdCheck] = React.useState<{
+    checking: boolean;
+    available: boolean | null;
+    message: string;
+  }>({ checking: false, available: null, message: '' });
 
   // 온보딩 결과가 없으면 온보딩으로 리다이렉트
   React.useEffect(() => {
@@ -35,7 +43,66 @@ export default function SignupPage() {
 
   const handleChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+    
+    // 아이디 변경 시 중복 확인 초기화
+    if (field === 'userId') {
+      setUserIdCheck({ checking: false, available: null, message: '' });
+    }
   };
+
+  // 아이디 중복 확인 함수
+  const checkUserId = async (userId: string) => {
+    if (!userId || userId.length < 4) {
+      setUserIdCheck({ checking: false, available: null, message: '' });
+      return;
+    }
+
+    setUserIdCheck({ checking: true, available: null, message: '확인 중...' });
+
+    try {
+      const response = await customAxios({
+        method: 'GET',
+        url: `/users/exists?userId=${encodeURIComponent(userId)}`,
+        meta: { authRequired: false }
+      }) as any;
+
+      // 응답에서 boolean 값 직접 추출
+      // response.data.data가 boolean 값 (true = 중복됨, false = 사용 가능)
+      const exists = response?.data?.data ?? false;
+      
+      setUserIdCheck({
+        checking: false,
+        available: !exists,  // exists가 false면 사용 가능 (available = true)
+        message: exists ? '이미 사용 중인 아이디입니다.' : '사용 가능한 아이디입니다.'
+      });
+    } catch (error: any) {
+      // 404나 다른 에러는 사용 가능한 것으로 처리할 수도 있음
+      const errorData = error.response?.data;
+      if (errorData?.code === 'NOT_FOUND' || error.response?.status === 404) {
+        setUserIdCheck({
+          checking: false,
+          available: true,
+          message: '사용 가능한 아이디입니다.'
+        });
+      } else {
+        setUserIdCheck({
+          checking: false,
+          available: null,
+          message: '중복 확인에 실패했습니다.'
+        });
+      }
+    }
+  };
+
+  // 아이디 입력에 debounce 적용
+  React.useEffect(() => {
+    const timer = setTimeout(() => {
+      if (formData.userId) {
+        checkUserId(formData.userId);
+      }
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [formData.userId]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -55,36 +122,58 @@ export default function SignupPage() {
       return;
     }
 
-    try {
-      // 세션 ID 생성 (온보딩 결과와 연결)
-      const sessionId = crypto.randomUUID();
+    // 아이디 중복 확인
+    if (userIdCheck.available === false) {
+      setError('사용할 수 없는 아이디입니다.');
+      setSubmitting(false);
+      return;
+    }
 
-      const payload = {
+    if (userIdCheck.checking) {
+      setError('아이디 중복 확인 중입니다. 잠시 후 다시 시도해주세요.');
+      setSubmitting(false);
+      return;
+    }
+
+    try {
+      // 세션 ID가 있으면 포함하여 요청
+      const payload: {
+        userId: string;
+        password: string;
+        imageUrl: string | null;
+        ageGroup: string;
+        gender: string;
+        sessionId?: string;
+      } = {
         userId: formData.userId,
         password: formData.password,
         imageUrl: formData.imageUrl,
         ageGroup: formData.ageGroup,
         gender: formData.gender,
-        sessionId,
       };
 
-      const res = await fetch('/api/auth/signup', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.message || '회원가입에 실패했습니다.');
+      // 온보딩 세션이 있으면 포함
+      if (onboardingSessionId) {
+        payload.sessionId = onboardingSessionId;
       }
 
-      // 성공 시 로그인 페이지로 이동
-      alert('회원가입이 완료되었습니다! 로그인해주세요.');
-      nav('/login');
+      const response = await customAxios({
+        method: 'POST',
+        url: '/auth/signup',
+        data: payload,
+        meta: { authRequired: false }
+      }) as any;
+
+      if (response?.data?.status === 'CREATED') {
+        // 성공 시 로그인 페이지로 이동
+        alert('회원가입이 완료되었습니다! 로그인해주세요.');
+        nav('/login');
+      } else {
+        throw new Error(response?.data?.message || '회원가입에 실패했습니다.');
+      }
     } catch (e: any) {
-      setError(e.message || '회원가입 중 오류가 발생했습니다.');
+      const errorMessage = e.response?.data?.message || e.message || '회원가입 중 오류가 발생했습니다.';
+      setError(errorMessage);
     } finally {
       setSubmitting(false);
     }
@@ -127,8 +216,24 @@ export default function SignupPage() {
             onChange={(e) => handleChange('userId', e.target.value)}
             required
             placeholder="영문, 숫자 조합 (4-20자)"
-            className="p-3 rounded-lg border border-[var(--color-border)] bg-[var(--color-bg)] text-[var(--color-fg)] text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
+            className={`p-3 rounded-lg border ${
+              userIdCheck.available === false 
+                ? 'border-[var(--color-error)]' 
+                : userIdCheck.available === true 
+                ? 'border-green-500' 
+                : 'border-[var(--color-border)]'
+            } bg-[var(--color-bg)] text-[var(--color-fg)] text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]`}
           />
+          {/* 아이디 중복 확인 결과 표시 */}
+          {userIdCheck.checking && (
+            <p className="text-sm text-[var(--color-muted)] m-0">확인 중...</p>
+          )}
+          {userIdCheck.available === false && (
+            <p className="text-sm text-[var(--color-error)] m-0">{userIdCheck.message}</p>
+          )}
+          {userIdCheck.available === true && (
+            <p className="text-sm text-green-600 m-0">{userIdCheck.message}</p>
+          )}
         </div>
 
         {/* 비밀번호 */}

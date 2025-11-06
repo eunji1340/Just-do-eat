@@ -22,12 +22,16 @@ interface UserState {
   mukbtiResult: MukbtiResult | null;
   bingoLikes: BingoLike[];
   tagPrefs: Record<string, number>; // 빙고 태그 선호도(0~1)
+  
+  // 온보딩 세션 ID (비회원 온보딩 정보 연결용)
+  onboardingSessionId: string | null;
 
   // setters
   setMukbtiAnswers: (a: MukbtiAnswer[]) => void;
   setMukbtiResult: (r: MukbtiResult) => void;
   setBingoLikes: (b: BingoLike[]) => void;
   setTagPrefs: (p: Record<string, number>) => void;
+  setOnboardingSessionId: (id: string | null) => void;
   resetOnboarding: () => void;
 }
 
@@ -38,13 +42,21 @@ export const useUserStore = create<UserState>()(
       mukbtiResult: null,
       bingoLikes: [],
       tagPrefs: {},
+      onboardingSessionId: null,
 
       setMukbtiAnswers: (a) => set({ mukbtiAnswers: a }),
       setMukbtiResult: (r) => set({ mukbtiResult: r }),
       setBingoLikes: (b) => set({ bingoLikes: b }),
       setTagPrefs: (p) => set({ tagPrefs: p }),
+      setOnboardingSessionId: (id) => set({ onboardingSessionId: id }),
 
-      resetOnboarding: () => set({ mukbtiAnswers: [], mukbtiResult: null, bingoLikes: [], tagPrefs: {} }),
+      resetOnboarding: () => set({ 
+        mukbtiAnswers: [], 
+        mukbtiResult: null, 
+        bingoLikes: [], 
+        tagPrefs: {},
+        onboardingSessionId: null
+      }),
     }),
     { name: 'user-store-v2' }
   )
