@@ -16,8 +16,8 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 sh '''
-                    cd backend/main-server
-                    docker build --no-cache -t ${IMAGE_NAME} .
+                    cd back/main-server
+                    docker build -t ${IMAGE_NAME} .
                 '''
             }
         }
