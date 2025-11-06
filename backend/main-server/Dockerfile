@@ -1,3 +1,4 @@
+
 # ---------- builder 단계 ----------
 # [설명] build용 이미지 (JDK + Gradle 실행 환경)
 FROM public.ecr.aws/docker/library/eclipse-temurin:21-jdk AS builder
@@ -42,3 +43,20 @@ EXPOSE 8080
 
 # 8️⃣ 애플리케이션 실행 명령어
 ENTRYPOINT ["java", "-jar", "app.jar"]
+=======
+# ---------- Build stage ----------
+FROM gradle:8.7-jdk21-alpine AS build
+WORKDIR /home/gradle/project
+COPY build.gradle settings.gradle gradle gradlew ./
+RUN chmod +x gradlew || true
+RUN ./gradlew --no-daemon dependencies || true
+COPY . .
+RUN ./gradlew --no-daemon clean bootJar -x test
+
+# ---------- Run stage ----------
+FROM eclipse-temurin:21-jre-alpine
+WORKDIR /app
+ENV TZ=Asia/Seoul
+COPY --from=build /home/gradle/project/build/libs/*SNAPSHOT.jar app.jar
+EXPOSE 8080
+ENTRYPOINT ["java","-jar","/app/app.jar"]
