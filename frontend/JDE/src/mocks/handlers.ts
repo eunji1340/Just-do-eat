@@ -191,108 +191,15 @@ const handleSignup = async ({ request }: { request: Request }) => {
 };
 
 // ----------------------------------------------------
-// 핸들러
+// 핸들러 (customAxios 방식만 사용)
 // ----------------------------------------------------
 export const handlers = [
-  // 1) 먹BTI 문항 조회: GET /api/onboarding/mbtis
-  http.get('/api/onboarding/mbtis', async () => {
-    await delay(150);
-    return HttpResponse.json({
-      items: MUKBTI_QUESTIONS,
-    });
-  }),
-
-  // 2) 빙고 문항 조회: GET /api/onboarding/bingo
-  http.get('/api/onboarding/bingo', async () => {
-    await delay(120);
-    return HttpResponse.json({
-      items: BINGO_5x5,
-    });
-  }),
-
-  // 3) 온보딩 결과 반영: POST /api/onboarding/import
-  //    body: { mukbtiAnswers: MukbtiAnswer[], bingoResponses: Array<{ id: string; vote: Tri }> }
-  http.post('/api/onboarding/import', async ({ request }) => {
-    const body = (await request.json()) as {
-      mukbtiAnswers?: MukbtiAnswer[];
-      bingoResponses?: Array<{ id: string; vote: Tri }>;
-    };
-
-    await delay(300);
-
-    // MBTI 결과 계산
-    const mukbtiResult = computeMukbtiServerSide(MUKBTI_QUESTIONS, body.mukbtiAnswers ?? []);
-    
-    // 태그 선호도 계산
-    const tagPrefsResult = computeTagPrefsServerSide(body.bingoResponses ?? []);
-
-          // 확장된 결과 정보 가져오기
-      const fullMeta = MUKBTI_TYPES[mukbtiResult.code];
-      const extendedResult = fullMeta ? {
-        ...mukbtiResult,
-        nickname: fullMeta.nickname,
-        keywords: fullMeta.keywords,
-        goodMatch: fullMeta.goodMatch,
-        badMatch: fullMeta.badMatch,
-        imagePath: fullMeta.imagePath,
-      } : mukbtiResult;
-
-    return HttpResponse.json({
-      success: true,
-      typeId: mukbtiResult.code,
-      mukbtiResult: extendedResult,
-      tagPrefs: tagPrefsResult.tag_prefs, // 중첩 구조 제거
-    });
-  }),
-
-  // 4) 결과 유형 조회: GET /api/onboarding/result/types/:typeId
-  http.get('/api/onboarding/result/types/:typeId', async ({ params }) => {
-    const { typeId } = params;
-    await delay(150);
-
-    const meta = MUKBTI_TYPES[typeId as string] ?? { 
-      label: '알 수 없는 유형',
-      nickname: '알 수 없는 유형',
-      keywords: [],
-      description: '유형 정보를 찾을 수 없습니다.',
-      goodMatch: [],
-      badMatch: [],
-      imagePath: '',
-    };
-
-    return HttpResponse.json({
-      code: typeId,
-      label: meta.label,
-      nickname: meta.nickname,
-      keywords: meta.keywords,
-      description: meta.description,
-      goodMatch: meta.goodMatch,
-      badMatch: meta.badMatch,
-      imagePath: meta.imagePath,
-    });
-  }),
-
-  // 5) 온보딩 결과 공유: POST /api/onboarding/share
-  http.post('/api/onboarding/share', async ({ request }) => {
-    const body = (await request.json()) as { typeId?: string };
-    await delay(200);
-
-    return HttpResponse.json({
-      success: true,
-      shareUrl: `https://example.com/share/${body.typeId}`,
-      message: '카카오톡으로 공유되었습니다.',
-    });
-  }),
-
-  // === 새로 추가: 비회원 온보딩 세션 발급 ===
-  // 상대 경로 핸들러 (fetch 사용 시)
-  http.post('/onboarding/session', handleOnboardingSession),
+  // === 온보딩 관련 API ===
   
-  // 절대 URL 핸들러 (customAxios baseURL 사용 시)
+  // 1) 비회원 온보딩 세션 발급: POST http://localhost:8080/onboarding/session
   http.post('http://localhost:8080/onboarding/session', handleOnboardingSession),
   
-  // === customAxios를 위한 절대 URL 핸들러 추가 ===
-  // 1) 먹BTI 문항 조회: GET http://localhost:8080/onboarding/mbtis
+  // 2) 먹BTI 문항 조회: GET http://localhost:8080/onboarding/mbtis
   http.get('http://localhost:8080/onboarding/mbtis', async () => {
     await delay(150);
     return HttpResponse.json({
@@ -300,7 +207,7 @@ export const handlers = [
     });
   }),
 
-  // 2) 빙고 문항 조회: GET http://localhost:8080/onboarding/bingo
+  // 3) 빙고 문항 조회: GET http://localhost:8080/onboarding/bingo
   http.get('http://localhost:8080/onboarding/bingo', async () => {
     await delay(120);
     return HttpResponse.json({
@@ -308,7 +215,7 @@ export const handlers = [
     });
   }),
 
-  // 3) 온보딩 결과 반영: POST http://localhost:8080/onboarding/import
+  // 4) 온보딩 결과 반영: POST http://localhost:8080/onboarding/import
   http.post('http://localhost:8080/onboarding/import', async ({ request }) => {
     const body = (await request.json()) as {
       mukbtiAnswers?: MukbtiAnswer[];
@@ -342,7 +249,7 @@ export const handlers = [
     });
   }),
 
-  // 4) 결과 유형 조회: GET http://localhost:8080/onboarding/result/types/:typeId
+  // 5) 결과 유형 조회: GET http://localhost:8080/onboarding/result/types/:typeId
   http.get('http://localhost:8080/onboarding/result/types/:typeId', async ({ params }) => {
     const { typeId } = params;
     await delay(150);
@@ -369,7 +276,7 @@ export const handlers = [
     });
   }),
 
-  // 5) 온보딩 결과 공유: POST http://localhost:8080/onboarding/share
+  // 6) 온보딩 결과 공유: POST http://localhost:8080/onboarding/share
   http.post('http://localhost:8080/onboarding/share', async ({ request }) => {
     const body = (await request.json()) as { typeId?: string };
     await delay(200);
@@ -381,125 +288,16 @@ export const handlers = [
     });
   }),
 
-  // === 새로 추가: 아이디 중복 확인 ===
-  // 상대 경로 핸들러 (fetch 사용 시)
-  http.get('/users/exists', handleUserIdExists),
+  // === 인증 관련 API ===
   
-  // 절대 URL 핸들러 (customAxios baseURL 사용 시)
+  // 7) 아이디 중복 확인: GET http://localhost:8080/users/exists
   http.get('http://localhost:8080/users/exists', handleUserIdExists),
 
-  // === 수정: 회원가입 (응답 형식 변경: result → data) ===
-  // 상대 경로 핸들러 (fetch 사용 시)
-  http.post('/auth/signup', handleSignup),
-  
-  // 절대 URL 핸들러 (customAxios baseURL 사용 시)
+  // 8) 회원가입: POST http://localhost:8080/auth/signup
   http.post('http://localhost:8080/auth/signup', handleSignup),
 
-  // === 기존 유지: 회원가입 (fetch 사용 시 /api/ 접두사) ===
-  // POST /api/auth/signup
-  http.post('/api/auth/signup', async ({ request }) => {
-    const body = (await request.json()) as {
-      userId?: string;
-      password?: string;
-      imageUrl?: string | null;
-      ageGroup?: string;
-      gender?: string;
-      sessionId?: string;
-    };
-
-    await delay(500);
-
-    // 유효성 검사
-    if (!body.userId || !body.password) {
-      return HttpResponse.json(
-        {
-          status: 'BAD_REQUEST',
-          code: 'VALIDATION_ERROR',
-          message: '아이디와 비밀번호는 필수입니다.',
-          data: null,
-        },
-        { status: 400 }
-      );
-    }
-
-    // userId 중복 체크
-    if (body.userId === 'existing_user' || body.userId === 'test' || body.userId === 'admin') {
-      return HttpResponse.json(
-        {
-          status: 'CONFLICT',
-          code: 'USER_ALREADY_EXISTS',
-          message: '이미 존재하는 아이디입니다.',
-          data: null,
-        },
-        { status: 409 }
-      );
-    }
-
-    // 세션 ID가 있으면 로그 출력 (디버깅용)
-    if (body.sessionId) {
-      console.log('[Mock] 회원가입 시 세션 ID 포함:', body.sessionId);
-    }
-
-    // 성공
-    return HttpResponse.json({
-      status: 'CREATED',
-      code: 'CREATED',
-      message: '회원가입 성공',
-      data: null,
-    });
-  }),
-
-  // === 기존 유지: 로그인 (응답 형식은 result 사용, 명세서에 맞춤) ===
-  // POST /api/auth/login
-  http.post('/api/auth/login', async ({ request }) => {
-    const body = (await request.json()) as {
-      userId?: string;
-      password?: string;
-    };
-
-    await delay(300);
-
-    // 유효성 검사
-    if (!body.userId || !body.password) {
-      return HttpResponse.json(
-        {
-          status: 'BAD_REQUEST',
-          code: 'VALIDATION_ERROR',
-          message: '아이디와 비밀번호를 입력해주세요.',
-          result: null,
-        },
-        { status: 400 }
-      );
-    }
-
-    // 간단한 인증 로직 (모킹)
-    if (body.userId === 'demo_user_01' && body.password === 'DemoPassw0rd!') {
-      return HttpResponse.json({
-        status: 'OK',
-        code: 'OK',
-        message: '로그인 성공',
-        result: {
-          accessToken: 'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxIiwiaWF0IjoxNzYxNzA0MTE5LCJleHAiOjE3NjE3MDc3MTl9.q4MglaS3t6kmpvQyLcTtLqGuSV5gCkMNO8aadz99t-E',
-          refreshToken: 'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxIiwiaWF0IjoxNzYxNzA0MTE5LCJleHAiOjE3NjI5MTM3MTl9.i9LvL7Zwst__nfv-fVq9BIHcchp8qT4k5-iJtTx000o',
-        },
-      });
-    }
-
-    // 인증 실패
-    return HttpResponse.json(
-      {
-        status: 'UNAUTHORIZED',
-        code: 'INVALID_CREDENTIALS',
-        message: '아이디 또는 비밀번호가 일치하지 않습니다.',
-        result: null,
-      },
-      { status: 401 }
-    );
-  }),
-
-  // === 추가: 로그인 (customAxios 사용 시 /auth/login) ===
-  // POST /auth/login
-  http.post('/auth/login', async ({ request }) => {
+  // 9) 로그인: POST http://localhost:8080/auth/login
+  http.post('http://localhost:8080/auth/login', async ({ request }) => {
     const body = (await request.json()) as {
       userId?: string;
       password?: string;
