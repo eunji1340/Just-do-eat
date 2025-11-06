@@ -4,7 +4,7 @@
  * Author: kimheejin
  * 설명: 파일 업로드(image) 또는 imageUrl 중 택1 가능
  */
-package com.JDE.mainserver.web.dto.request;
+package com.JDE.mainserver.member.dto.request;
 
 import com.JDE.mainserver.member.entity.enums.AgeGroup;
 import com.JDE.mainserver.member.entity.enums.Gender;

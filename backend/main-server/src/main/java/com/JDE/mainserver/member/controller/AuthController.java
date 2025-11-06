@@ -1,11 +1,11 @@
-package com.JDE.mainserver.web.controller;
+package com.JDE.mainserver.member.controller;
 
 import com.JDE.mainserver.global.api.ApiResponse;
 import com.JDE.mainserver.global.exception.code.GeneralSuccessCode;
 import com.JDE.mainserver.member.service.AuthCommandService;
-import com.JDE.mainserver.web.dto.request.LoginRequest;
-import com.JDE.mainserver.web.dto.request.SignUpRequest;
-import com.JDE.mainserver.web.dto.response.TokenResponse;
+import com.JDE.mainserver.member.dto.request.LoginRequest;
+import com.JDE.mainserver.member.dto.request.SignUpRequest;
+import com.JDE.mainserver.member.dto.response.TokenResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

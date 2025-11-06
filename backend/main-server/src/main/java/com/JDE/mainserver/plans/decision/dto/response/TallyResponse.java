@@ -1,4 +1,4 @@
-package com.JDE.mainserver.web.dto.response.decision;
+package com.JDE.mainserver.plans.decision.dto.response;
 
 import java.util.List;
 

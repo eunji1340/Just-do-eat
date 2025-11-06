@@ -1,4 +1,4 @@
-package com.JDE.mainserver.web.dto.request;
+package com.JDE.mainserver.onboarding.dto.request;
 
 import java.util.Map;
 
