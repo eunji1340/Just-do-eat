@@ -26,7 +26,7 @@ import java.util.List;
 @Configuration
 public class SecurityConfig {
 
-    @Value("${app.jwt.secret:ZmFrZV9zZWNyZXRfMzJieXRlc19iYXNlNjQ=}")
+    @Value("${app.jwt.secret:Q2jj11sMpDIAG64jMjOsuyW38wdLmpTqJp+BrvgwkLg=}")
     private String jwtSecret;
 
     @Bean

@@ -35,11 +35,3 @@ out/
 
 ### VS Code ###
 .vscode/
-
-### Environment Variables ###
-.env
-env.local
-
-# .gitignore 파일에 추가할 내용
-# IDE 설정 파일을 무시
-.idea/

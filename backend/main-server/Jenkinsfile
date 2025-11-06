@@ -1,0 +1,42 @@
+pipeline {
+    agent any
+
+    environment {
+        APP_NAME = "jde-backend"
+        IMAGE_NAME = "jde-backend:latest"
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                sh '''
+                    cd backend/main-server
+                    docker build -t ${IMAGE_NAME} .
+                '''
+            }
+        }
+
+        stage('Deploy') {
+            steps {
+                sh '''
+                    docker stop ${APP_NAME} || true
+                    docker rm ${APP_NAME} || true
+                    docker run -d --name ${APP_NAME} -p 8080:8080 ${IMAGE_NAME}
+                    // 독커 네트워크 묵기
+                '''
+            }
+        }
+    }
+
+    post {
+        always {
+            cleanWs()
+        }
+    }
+}
