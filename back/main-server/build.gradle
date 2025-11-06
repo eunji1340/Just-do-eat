@@ -67,6 +67,7 @@ dependencies {
     implementation 'org.flywaydb:flyway-core'
     // PostgreSQL
     runtimeOnly 'org.postgresql:postgresql'
+    implementation 'org.flywaydb:flyway-database-postgresql'
 
     // JWT 쓸려면 아래 필요함 대신 버전 관리 할 것
     // JJWT의 'API' 모듈(컴파일 타임에 필요한 인터페이스/타입)
