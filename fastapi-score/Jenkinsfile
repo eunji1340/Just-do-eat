@@ -1,0 +1,58 @@
+pipeline {
+    agent any
+
+    environment {
+        CONTAINER_NAME = 'JDE-ai-local'
+        SERVICE_NAME = 'ai'  // docker-compose 내 서비스명
+        COMPOSE_FILE = './backend/docker-compose.local.yml'
+    }
+
+    stages {
+        stage('📦 Checkout') {
+            steps {
+                echo "==== Pulling latest source code ===="
+                checkout scm
+            }
+        }
+
+        stage('🐍 Build FastAPI Image') {
+            steps {
+                echo "==== Building FastAPI Docker image ===="
+                sh """
+                    docker compose -f ${COMPOSE_FILE} build ${SERVICE_NAME}
+                """
+            }
+        }
+
+        stage('🧹 Stop Old Container') {
+            steps {
+                echo "==== Stopping old FastAPI container (if exists) ===="
+                sh """
+                    docker stop ${CONTAINER_NAME} || true
+                    docker rm ${CONTAINER_NAME} || true
+                """
+            }
+        }
+
+        stage('🚀 Run New FastAPI Container') {
+            steps {
+                echo "==== Running new FastAPI container ===="
+                sh """
+                    docker compose -f ${COMPOSE_FILE} up -d ${SERVICE_NAME}
+                """
+            }
+        }
+
+        stage('✅ Health Check') {
+            steps {
+                echo "==== Checking FastAPI Health ===="
+                sh """
+                    sleep 5
+                    curl -f http://localhost:8000/docs || echo "⚠️ FastAPI not responding yet"
+                """
+            }
+        }
+    }
+
+    post {
+        succe
