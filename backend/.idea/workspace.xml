@@ -5,37 +5,94 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="266b5704-353d-4c17-9720-348e9a0c32aa" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/main-server/src/main/java/com/JDE/mainserver/global/config/RedisConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/../back/main-server/src/main/java/com/jde/mainserver/global/config/RedisConfig.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/main-server/src/main/java/com/JDE/mainserver/global/config/SecurityConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/../back/main-server/src/main/java/com/jde/mainserver/global/config/SecurityConfig.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/main-server/src/main/java/com/JDE/mainserver/global/config/SwaggerConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/../back/main-server/src/main/java/com/jde/mainserver/global/config/SwaggerConfig.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/main-server/src/main/java/com/JDE/mainserver/main/converter/FastApiConverter.java" beforeDir="false" afterPath="$PROJECT_DIR$/../back/main-server/src/main/java/com/jde/mainserver/main/converter/FastApiConverter.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/main-server/src/main/java/com/JDE/mainserver/main/entity/UserTagPref.java" beforeDir="false" afterPath="$PROJECT_DIR$/../back/main-server/src/main/java/com/jde/mainserver/main/entity/UserTagPref.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/main-server/src/main/java/com/JDE/mainserver/main/repository/CandidateRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/../back/main-server/src/main/java/com/jde/mainserver/main/repository/CandidateRepository.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/main-server/src/main/java/com/JDE/mainserver/main/repository/UserTagPrefRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/../back/main-server/src/main/java/com/jde/mainserver/main/repository/UserTagPrefRepository.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/main-server/src/main/java/com/JDE/mainserver/main/repository/http/ScoreEngineHttpClient.java" beforeDir="false" afterPath="$PROJECT_DIR$/../back/main-server/src/main/java/com/jde/mainserver/main/repository/http/ScoreEngineHttpClient.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/main-server/src/main/java/com/JDE/mainserver/main/service/command/PersonalFeedService.java" beforeDir="false" afterPath="$PROJECT_DIR$/../back/main-server/src/main/java/com/jde/mainserver/main/service/command/PersonalFeedService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/main-server/src/main/java/com/JDE/mainserver/main/service/query/CandidateRetrievalService.java" beforeDir="false" afterPath="$PROJECT_DIR$/../back/main-server/src/main/java/com/jde/mainserver/main/service/query/CandidateRetrievalService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/main-server/src/main/java/com/JDE/mainserver/main/service/query/FeedService.java" beforeDir="false" afterPath="$PROJECT_DIR$/../back/main-server/src/main/java/com/jde/mainserver/main/service/query/FeedService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/main-server/src/main/java/com/JDE/mainserver/main/service/query/ScoreEngineClient.java" beforeDir="false" afterPath="$PROJECT_DIR$/../back/main-server/src/main/java/com/jde/mainserver/main/service/query/ScoreEngineClient.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/main-server/src/main/java/com/JDE/mainserver/main/service/query/UserTagPrefProvider.java" beforeDir="false" afterPath="$PROJECT_DIR$/../back/main-server/src/main/java/com/jde/mainserver/main/service/query/UserTagPrefProvider.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/main-server/src/main/java/com/JDE/mainserver/main/web/controller/MainController.java" beforeDir="false" afterPath="$PROJECT_DIR$/../back/main-server/src/main/java/com/jde/mainserver/main/web/controller/MainController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/main-server/src/main/java/com/JDE/mainserver/main/web/dto/request/PersonalScoreRequest.java" beforeDir="false" afterPath="$PROJECT_DIR$/../back/main-server/src/main/java/com/jde/mainserver/main/web/dto/request/PersonalScoreRequest.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/main-server/src/main/java/com/JDE/mainserver/main/web/dto/response/FeedResponse.java" beforeDir="false" afterPath="$PROJECT_DIR$/../back/main-server/src/main/java/com/jde/mainserver/main/web/dto/response/FeedResponse.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/main-server/src/main/java/com/JDE/mainserver/main/web/dto/response/PersonalScoreResponse.java" beforeDir="false" afterPath="$PROJECT_DIR$/../back/main-server/src/main/java/com/jde/mainserver/main/web/dto/response/PersonalScoreResponse.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/main-server/src/main/java/com/JDE/mainserver/restaurants/entity/Restaurant.java" beforeDir="false" afterPath="$PROJECT_DIR$/../back/main-server/src/main/java/com/jde/mainserver/restaurants/entity/Restaurant.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/main-server/src/main/java/com/JDE/mainserver/restaurants/entity/RestaurantHour.java" beforeDir="false" afterPath="$PROJECT_DIR$/../back/main-server/src/main/java/com/jde/mainserver/restaurants/entity/RestaurantHour.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/main-server/src/main/java/com/JDE/mainserver/restaurants/entity/RestaurantTag.java" beforeDir="false" afterPath="$PROJECT_DIR$/../back/main-server/src/main/java/com/jde/mainserver/restaurants/entity/RestaurantTag.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/main-server/src/main/java/com/JDE/mainserver/restaurants/entity/Tag.java" beforeDir="false" afterPath="$PROJECT_DIR$/../back/main-server/src/main/java/com/jde/mainserver/restaurants/entity/Tag.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/main-server/src/main/java/com/JDE/mainserver/restaurants/repository/RestaurantHourRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/../back/main-server/src/main/java/com/jde/mainserver/restaurants/repository/RestaurantHourRepository.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/main-server/src/main/java/com/JDE/mainserver/restaurants/repository/RestaurantRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/../back/main-server/src/main/java/com/jde/mainserver/restaurants/repository/RestaurantRepository.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/main-server/src/main/java/com/JDE/mainserver/restaurants/repository/RestaurantTagRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/../back/main-server/src/main/java/com/jde/mainserver/restaurants/repository/RestaurantTagRepository.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/main-server/src/main/java/com/JDE/mainserver/restaurants/repository/TagRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/../back/main-server/src/main/java/com/jde/mainserver/restaurants/repository/TagRepository.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/main-server/src/main/java/com/JDE/mainserver/restaurants/service/OpenStatusUtil.java" beforeDir="false" afterPath="$PROJECT_DIR$/../back/main-server/src/main/java/com/jde/mainserver/restaurants/service/OpenStatusUtil.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.dockerignore" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docker-compose.local.yml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/main-server/Jenkinsfile" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/main-server/.dockerignore" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/main-server/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/main-server/.gitignore" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/main-server/Dockerfile" beforeDir="false" afterPath="$PROJECT_DIR$/main-server/Dockerfile" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/main-server/build.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/main-server/build.gradle" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/main-server/docker-compose.local.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vote/.gitattributes" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vote/.gitignore" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vote/build.gradle" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vote/docker-compose.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vote/gradle/wrapper/gradle-wrapper.jar" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vote/gradle/wrapper/gradle-wrapper.properties" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vote/gradlew" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vote/gradlew.bat" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vote/settings.gradle" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vote/src/main/java/com/JDE/mainserver/MainServerApplication.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vote/src/main/java/com/JDE/mainserver/global/api/ApiResponse.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vote/src/main/java/com/JDE/mainserver/global/config/RedisConfig.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vote/src/main/java/com/JDE/mainserver/global/exception/CustomException.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vote/src/main/java/com/JDE/mainserver/global/exception/UnauthorizedException.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vote/src/main/java/com/JDE/mainserver/global/exception/code/BaseErrorCode.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vote/src/main/java/com/JDE/mainserver/global/exception/code/BaseSuccessCode.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vote/src/main/java/com/JDE/mainserver/global/exception/code/GeneralErrorCode.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vote/src/main/java/com/JDE/mainserver/global/exception/code/GeneralSuccessCode.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vote/src/main/java/com/JDE/mainserver/global/exception/code/MemberErrorCode.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vote/src/main/java/com/JDE/mainserver/global/exception/handler/ExceptionAdvice.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vote/src/main/java/com/JDE/mainserver/global/security/config/SecurityConfig.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vote/src/main/java/com/JDE/mainserver/global/security/jwt/JwtFilter.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vote/src/main/java/com/JDE/mainserver/global/security/jwt/JwtUtil.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vote/src/main/java/com/JDE/mainserver/global/security/password/PasswordEncoderConfig.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vote/src/main/java/com/JDE/mainserver/global/storage/ImageStorageService.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vote/src/main/java/com/JDE/mainserver/global/storage/LocalImageStorageService.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vote/src/main/java/com/JDE/mainserver/member/entity/Member.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vote/src/main/java/com/JDE/mainserver/member/entity/enums/AgeGroup.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vote/src/main/java/com/JDE/mainserver/member/entity/enums/Gender.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vote/src/main/java/com/JDE/mainserver/member/entity/enums/Role.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vote/src/main/java/com/JDE/mainserver/member/repository/MemberRepository.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vote/src/main/java/com/JDE/mainserver/member/service/AuthCommandService.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vote/src/main/java/com/JDE/mainserver/member/service/MemberQueryService.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vote/src/main/java/com/JDE/mainserver/onboarding/OnboardingSurveyStore.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vote/src/main/java/com/JDE/mainserver/plans/decision/entity/PlanDecision.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vote/src/main/java/com/JDE/mainserver/plans/decision/entity/PlanVote.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vote/src/main/java/com/JDE/mainserver/plans/decision/enums/DecisionStatus.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vote/src/main/java/com/JDE/mainserver/plans/decision/enums/DecisionToolType.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vote/src/main/java/com/JDE/mainserver/plans/decision/repository/PlanDecisionRepository.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vote/src/main/java/com/JDE/mainserver/plans/decision/repository/PlanVoteRepository.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vote/src/main/java/com/JDE/mainserver/plans/decision/service/PlanDecisionService.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vote/src/main/java/com/JDE/mainserver/web/controller/AuthController.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vote/src/main/java/com/JDE/mainserver/web/controller/OnboardingController.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vote/src/main/java/com/JDE/mainserver/web/controller/PlansDecisionController.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vote/src/main/java/com/JDE/mainserver/web/controller/UserController.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vote/src/main/java/com/JDE/mainserver/web/dto/request/LoginRequest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vote/src/main/java/com/JDE/mainserver/web/dto/request/SignUpMultipartRequest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vote/src/main/java/com/JDE/mainserver/web/dto/request/SignUpRequest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vote/src/main/java/com/JDE/mainserver/web/dto/request/SubmitSurveyRequest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vote/src/main/java/com/JDE/mainserver/web/dto/request/UpdateImageRequest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vote/src/main/java/com/JDE/mainserver/web/dto/request/decision/ConfirmDecisionRequest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vote/src/main/java/com/JDE/mainserver/web/dto/request/decision/SubmitBallotRequest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vote/src/main/java/com/JDE/mainserver/web/dto/response/MemberInfoResponse.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vote/src/main/java/com/JDE/mainserver/web/dto/response/TokenResponse.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vote/src/main/java/com/JDE/mainserver/web/dto/response/dicision/TallyResponse.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vote/src/main/resources/application.properties" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="ExternalProjectsData">
+    <projectState path="$PROJECT_DIR$/main-server">
+      <ProjectState />
+    </projectState>
+  </component>
+  <component name="ExternalProjectsManager">
+    <system id="GRADLE">
+      <state>
+        <projects_view>
+          <tree_state>
+            <expand />
+            <select />
+          </tree_state>
+        </projects_view>
+      </state>
+    </system>
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
@@ -51,19 +108,46 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "RunOnceActivity.OpenProjectViewOnStart": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "git-widget-placeholder": "BE-dev",
+    "kotlin-language-version-configured": "true",
+    "last_opened_file_path": "C:/Users/SSAFY/Desktop/S13P31A701/backend",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "project.structure.last.edited": "Modules",
+    "project.structure.proportion": "0.15",
+    "project.structure.side.proportion": "0.2",
+    "vue.rearranger.settings.migration": "true"
   }
-}</component>
+}]]></component>
+  <component name="RunManager">
+    <configuration default="true" type="JetRunConfigurationType">
+      <module name="backend" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration default="true" type="KotlinStandaloneScriptRunConfigurationType">
+      <module name="backend" />
+      <option name="filePath" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="MainServerApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" nameIsGenerated="true">
+      <module name="main-server.main" />
+      <option name="SPRING_BOOT_MAIN_CLASS" value="com.JDE.mainserver.MainServerApplication" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+  </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
@@ -74,6 +158,7 @@
       <updated>1762244825339</updated>
       <workItem from="1762244827460" duration="2902000" />
       <workItem from="1762248714697" duration="735000" />
+      <workItem from="1762413038898" duration="1144000" />
     </task>
     <servers />
   </component>

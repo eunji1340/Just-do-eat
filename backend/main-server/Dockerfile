@@ -1,16 +1,30 @@
-# ---------- Build stage ----------
-FROM gradle:8.7-jdk21-alpine AS build
-WORKDIR /home/gradle/project
-COPY build.gradle settings.gradle gradle gradlew ./
-RUN chmod +x gradlew || true
-RUN ./gradlew --no-daemon dependencies || true
-COPY . .
-RUN ./gradlew --no-daemon clean bootJar -x test
-
-# ---------- Run stage ----------
-FROM eclipse-temurin:21-jre-alpine
+# ---------- builder ----------
+FROM public.ecr.aws/docker/library/eclipse-temurin:21-jdk AS builder
 WORKDIR /app
-ENV TZ=Asia/Seoul
-COPY --from=build /home/gradle/project/build/libs/*SNAPSHOT.jar app.jar
+
+# 1) Gradle 관련 파일만 먼저 복사 (레이어 캐시)
+COPY gradlew gradlew
+COPY gradle/ gradle/
+COPY settings.gradle settings.gradle
+COPY build.gradle build.gradle
+
+RUN chmod +x gradlew
+
+# 2) 의존성 선캐싱 (BuildKit 캐시 마운트)
+RUN --mount=type=cache,target=/root/.gradle \
+    ./gradlew --no-daemon dependencies || true
+
+# 3) 소스는 나중에
+COPY src/ src/
+
+# 4) 빌드 (Gradle 캐시 재사용)
+RUN --mount=type=cache,target=/root/.gradle \
+    ./gradlew --no-daemon build -x test
+
+# ---------- runtime ----------
+FROM public.ecr.aws/docker/library/eclipse-temurin:21-jre
+WORKDIR /app
+COPY --from=builder /app/build/libs/*.jar app.jar
 EXPOSE 8080
-ENTRYPOINT ["java","-jar","/app/app.jar"]
+
+ENTRYPOINT ["java","-jar","app.jar"]

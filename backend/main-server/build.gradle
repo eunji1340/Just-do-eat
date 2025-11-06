@@ -4,73 +4,49 @@ plugins {
     id 'io.spring.dependency-management' version '1.1.7'
 }
 
-group = 'com.ssafy.mvc'
+group = 'com.jde'
 version = '0.0.1-SNAPSHOT'
 description = 'main-server'
 
-java {
-    toolchain {
-        languageVersion = JavaLanguageVersion.of(21)
-    }
-}
-
-configurations {
-    compileOnly {
-        extendsFrom annotationProcessor
-    }
-}
+java { toolchain { languageVersion = JavaLanguageVersion.of(21) } }
 
 repositories { mavenCentral() }
 
-ext {
-    set('springCloudVersion', "2025.0.0")
-}
-
 dependencies {
-    // --- Spring ---
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'org.springframework.boot:spring-boot-starter-security'
     implementation 'org.springframework.boot:spring-boot-starter-data-redis'
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
-    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.11'
-    implementation 'org.springframework.boot:spring-boot-starter-webflux' // 필요 시 유지
 
-    // --- DB (PostgreSQL + PostGIS/JSONB용) ---
+    // OpenAPI(Swagger)
+    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.11'
+    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-api:2.8.11'
+
+    // DB/Spatial
     implementation 'org.hibernate.orm:hibernate-spatial'
     implementation 'com.vladmihalcea:hibernate-types-60:2.21.1'
-    runtimeOnly   'org.postgresql:postgresql:42.7.4'
-    // ❌ H2 제거: jsonb/geometry 때문에 로컬도 Postgres만 사용
-    // runtimeOnly 'com.h2database:h2'
+    runtimeOnly   'org.postgresql:postgresql'   // ← 중복 한 줄만 남김
 
-    // --- JWT (JJWT 0.12.x) ---
+    // Flyway
+    implementation 'org.flywaydb:flyway-core'
+    implementation 'org.flywaydb:flyway-database-postgresql'
+
+    // JJWT (0.11.5: SignatureAlgorithm 사용 코드와 호환)
     implementation 'io.jsonwebtoken:jjwt-api:0.12.6'
     runtimeOnly   'io.jsonwebtoken:jjwt-impl:0.12.6'
     runtimeOnly   'io.jsonwebtoken:jjwt-jackson:0.12.6'
 
-    // --- Flyway ---
-    implementation 'org.flywaydb:flyway-core'
-    implementation 'org.flywaydb:flyway-database-postgresql:11.7.2'
+    // 선택: WebClient만 쓰려면 그대로 OK (MVC 우선 적용됨)
+    implementation 'org.springframework.boot:spring-boot-starter-webflux'
 
-    // --- dotenv (.env.local 자동 로드) ---
-    implementation 'me.paulschwarz:spring-dotenv:4.0.0'
-
-    // --- Lombok ---
+    // Lombok
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
 
-    // --- Test ---
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.security:spring-security-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
-dependencyManagement {
-    imports {
-        mavenBom "org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}"
-    }
-}
-
-tasks.named('test') {
-    useJUnitPlatform()
-}
+tasks.named('test') { useJUnitPlatform() }
