@@ -30,7 +30,7 @@ pipeline {
 		    
 		    # 독커 네트워크 묵기
 		    docker network inspect JDE-local-network >/dev/null 2>&1 || docker network create JDE-local-network
-                    docker run -d --name ${APP_NAME} -p 8080:8080 ${IMAGE_NAME}
+                    docker run -d --name ${APP_NAME} --network JDE-local-network -p 8080:8080 ${IMAGE_NAME}
                     
                 '''
             }
