@@ -1,7 +1,7 @@
 // src/entities/feedback/model/types.ts
 // 목적: 피드백 관련 타입 정의
 
-import { Restaurant } from "@/entities/restaurant/types";
+import type { Restaurant } from "@/entities/restaurant";
 
 /**
  * 피드백 단계 타입

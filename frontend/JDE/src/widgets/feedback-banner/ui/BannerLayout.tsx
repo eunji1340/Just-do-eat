@@ -1,16 +1,12 @@
 // src/widgets/feedback-banner/ui/BannerLayout.tsx
 // 목적: 피드백 배너 공통 레이아웃
 
-import { Restaurant } from "@/entities/restaurant/types";
-import MapPinIcon from "@/shared/ui/icons/MapPinIcon";
-import CountBadge from "@/shared/ui/badge/CountBadge";
-
 interface BannerLayoutProps {
-  /** 식당 정보 */
-  restaurant: Restaurant;
-  /** 남은 질문 개수 */
-  remainingCount: number;
-  /** 자식 컴포넌트 (질문 Step 컴포넌트) */
+  /** 제목 */
+  title: string;
+  /** 설명 */
+  description: string;
+  /** 버튼 그룹 */
   children: React.ReactNode;
 }
 
@@ -18,39 +14,35 @@ interface BannerLayoutProps {
  * 피드백 배너 공통 레이아웃
  *
  * 레이아웃:
- * ┌────────────────────────────────────────┐
- * │ 📍 {식당 이름}           남은 질문 {N} │
- * │                                        │
- * │ {children} - 질문 컴포넌트              │
- * └────────────────────────────────────────┘
+ * ┌────────────────────────┐
+ * │ 제목                    │
+ * │ 설명                    │
+ * │         [버튼] [버튼]   │
+ * └────────────────────────┘
  */
 export default function BannerLayout({
-  restaurant,
-  remainingCount,
+  title,
+  description,
   children,
 }: BannerLayoutProps) {
   return (
-    <div className="mx-3 my-4 rounded-lg bg-white shadow-md border border-gray-100 overflow-hidden">
-      {/* 헤더: 식당 이름 + 남은 질문 개수 */}
-      <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
-        {/* 왼쪽: 식당 이름 */}
-        <div className="flex items-center gap-2">
-          <MapPinIcon size={16} />
-          <span className="font-semibold text-gray-900 text-sm">
-            {restaurant.name}
-          </span>
-        </div>
+    <div className="mx-7 rounded-xl shadow-md bg-white border border-neutral-300 px-6 pt-6 pb-5">
+      {/* 제목, 설명, 버튼을 세로로 배치하고 좌측 정렬 */}
+      <div className="flex flex-col items-start gap-4">
+        {/* 제목 */}
+        <h3 className="text-base font-semibold text-neutral-900 w-full text-left">
+          {title}
+        </h3>
 
-        {/* 오른쪽: 남은 질문 개수 */}
-        <div className="flex items-center gap-1.5">
-          <span className="text-xs text-gray-500">남은 질문</span>
-          <CountBadge count={remainingCount} size="sm" />
-        </div>
-      </div>
+        {/* 설명 (2줄 높이 유지) */}
+        <p className="text-sm text-neutral-500 w-full text-left whitespace-pre-line min-h-[2.5rem] leading-relaxed">
+          {description}
+        </p>
 
-      {/* 본문: 질문 컴포넌트 */}
-      <div className="px-4 py-4">
-        {children}
+        {/* 버튼 그룹 (가로 정렬, 전체 너비 채움) */}
+        <div className="flex gap-2 w-full">
+          {children}
+        </div>
       </div>
     </div>
   );
