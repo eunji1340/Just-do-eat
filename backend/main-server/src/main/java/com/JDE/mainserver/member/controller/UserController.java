@@ -1,11 +1,11 @@
-package com.JDE.mainserver.web.controller;
+package com.JDE.mainserver.member.controller;
 
 import com.JDE.mainserver.global.api.ApiResponse;
 import com.JDE.mainserver.global.exception.code.GeneralSuccessCode;
 import com.JDE.mainserver.member.service.AuthCommandService;
 import com.JDE.mainserver.member.service.MemberQueryService;
-import com.JDE.mainserver.web.dto.request.UpdateImageRequest;
-import com.JDE.mainserver.web.dto.response.MemberInfoResponse;
+import com.JDE.mainserver.member.dto.request.UpdateImageRequest;
+import com.JDE.mainserver.member.dto.response.MemberInfoResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
