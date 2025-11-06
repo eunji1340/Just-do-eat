@@ -53,3 +53,5 @@ spring:
       password:      # 필요 시 주입
       repositories:
         enabled: false                  # Redis 리포지토리 오인 경고 억제
+
+
