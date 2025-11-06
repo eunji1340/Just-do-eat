@@ -16,9 +16,11 @@ public class SecurityConfig {
                         .requestMatchers(
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**",
-                                "/main/**"
+                                "/swagger-ui.html",
+                                "/api/test/**" // 테스트 API도 열어둡니다.
                         ).permitAll()
-                        .anyRequest().permitAll()
+                        // --- 👆 이 부분을 추가하거나 확인합니다. 👆 ---
+                        .anyRequest().authenticated()
                 )
                 .httpBasic(Customizer.withDefaults());
 
