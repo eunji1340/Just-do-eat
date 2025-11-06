@@ -3,6 +3,7 @@
 // =============================================
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import customAxios from '../../shared/api/http';
 
 export default function LoginPage() {
   const nav = useNavigate();
@@ -25,27 +26,33 @@ export default function LoginPage() {
     setError(null);
 
     try {
-      const res = await fetch('/api/auth/login', {
+      const response = await customAxios({
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
-      });
+        url: '/auth/login',
+        data: formData,
+        meta: { authRequired: false }
+      }) as any;
 
-      const data = await res.json();
+      const data = response.data;
 
-      if (!res.ok) {
+      if (data.status !== 'OK') {
         throw new Error(data.message || '로그인에 실패했습니다.');
       }
 
       // 토큰 저장 (localStorage 또는 secure cookie)
-      localStorage.setItem('accessToken', data.result.accessToken);
-      localStorage.setItem('refreshToken', data.result.refreshToken);
+      if (data.result?.accessToken) {
+        localStorage.setItem('accessToken', data.result.accessToken);
+      }
+      if (data.result?.refreshToken) {
+        localStorage.setItem('refreshToken', data.result.refreshToken);
+      }
 
       // 성공 시 메인 페이지로 이동
       alert('로그인 성공!');
       nav('/'); // 또는 대시보드로 이동
     } catch (e: any) {
-      setError(e.message || '로그인 중 오류가 발생했습니다.');
+      const errorMessage = e.response?.data?.message || e.message || '로그인 중 오류가 발생했습니다.';
+      setError(errorMessage);
     } finally {
       setSubmitting(false);
     }
