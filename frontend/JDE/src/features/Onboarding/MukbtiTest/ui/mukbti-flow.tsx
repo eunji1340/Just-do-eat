@@ -117,18 +117,22 @@ export default function MukbtiFlow({ onDone }: MukbtiFlowProps) {
         </div>
       </div>
 
-      {/* 중앙 질문 영역 (질문 텍스트만) */}
+      {/* 중앙 질문 영역 (연한 회색 박스 내에 질문 번호와 함께 표시) */}
       <div className="flex-1 flex items-center justify-center overflow-auto">
-        <h2 className="m-0 text-2xl font-semibold text-center text-[var(--color-fg)]">{current.text}</h2>
+        <div className="w-full p-6 rounded-xl bg-[var(--color-surface)]">
+          <h2 className="m-0 text-2xl font-semibold text-left text-[var(--color-fg)]">
+            Q{currentIndex + 1}.<br />{current.text}
+          </h2>
+        </div>
       </div>
 
-      {/* 하단 고정 선택지 */}
-      <div className="mt-5 grid gap-2">
+      {/* 하단 고정 선택지 (간격 확대 및 텍스트 가운데 정렬) */}
+      <div className="mt-5 grid gap-4 pb-10">
         {current.choices.map((c) => (
           <button
             key={c.id}
             onClick={() => handleSelect(c.id)}
-            className="px-4 py-3 rounded-xl border border-[var(--color-border)] bg-[var(--color-primary)] text-[var(--color-primary-fg)] text-left cursor-pointer hover:opacity-90 transition-colors text-base"
+            className="px-4 py-3 rounded-xl border border-[var(--color-border)] bg-[var(--color-primary)] text-[var(--color-primary-fg)] text-center cursor-pointer hover:opacity-90 transition-colors text-base"
           >
             {c.text}
           </button>

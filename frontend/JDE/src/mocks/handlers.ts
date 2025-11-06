@@ -85,6 +85,112 @@ function computeTagPrefsServerSide(
 }
 
 // ----------------------------------------------------
+// 공통 핸들러 함수
+// ----------------------------------------------------
+// 비회원 온보딩 세션 발급 핸들러 함수 (공통)
+const handleOnboardingSession = async () => {
+  await delay(200);
+  
+  // UUID 형식의 세션 ID 생성
+  const sessionId = crypto.randomUUID();
+  
+  return HttpResponse.json({
+    status: 'OK',
+    code: 'OK',
+    message: '성공',
+    data: {
+      sessionId: sessionId,
+    },
+  });
+};
+
+// 아이디 중복 확인 핸들러 함수 (공통)
+const handleUserIdExists = async ({ request }: { request: Request }) => {
+  await delay(300);
+  
+  const url = new URL(request.url);
+  const userId = url.searchParams.get('userId');
+  
+  if (!userId) {
+    return HttpResponse.json(
+      {
+        status: 'BAD_REQUEST',
+        code: 'VALIDATION_ERROR',
+        message: '아이디를 입력해주세요.',
+        data: false,
+      },
+      { status: 400 }
+    );
+  }
+
+  // 간단한 중복 체크 (모킹)
+  // 'existing_user', 'test', 'admin', 'demo_user_01' 등은 중복으로 처리
+  const existingUsers = ['existing_user', 'test', 'admin', 'demo_user_01'];
+  const exists = existingUsers.includes(userId);
+
+  // boolean 값을 직접 반환 (true = 중복됨, false = 사용 가능)
+  return HttpResponse.json({
+    status: 'OK',
+    code: 'OK',
+    message: '성공',
+    data: exists,  // boolean 직접 반환
+  });
+};
+
+// 회원가입 핸들러 함수 (공통)
+const handleSignup = async ({ request }: { request: Request }) => {
+  const body = (await request.json()) as {
+    userId?: string;
+    password?: string;
+    imageUrl?: string | null;
+    ageGroup?: string;
+    gender?: string;
+    sessionId?: string;
+  };
+
+  await delay(500);
+
+  // 유효성 검사
+  if (!body.userId || !body.password) {
+    return HttpResponse.json(
+      {
+        status: 'BAD_REQUEST',
+        code: 'VALIDATION_ERROR',
+        message: '아이디와 비밀번호는 필수입니다.',
+        data: null,
+      },
+      { status: 400 }
+    );
+  }
+
+  // userId 중복 체크
+  if (body.userId === 'existing_user' || body.userId === 'test' || body.userId === 'admin') {
+    return HttpResponse.json(
+      {
+        status: 'CONFLICT',
+        code: 'USER_ALREADY_EXISTS',
+        message: '이미 존재하는 아이디입니다.',
+        data: null,
+      },
+      { status: 409 }
+    );
+  }
+
+  // 세션 ID가 있으면 로그 출력 (디버깅용)
+  if (body.sessionId) {
+    console.log('[Mock] 회원가입 시 세션 ID 포함:', body.sessionId);
+  }
+
+  // 성공
+  return HttpResponse.json({
+    status: 'CREATED',
+    code: 'CREATED',
+    message: '회원가입 성공',
+    data: null,
+  });
+};
+
+// ----------------------------------------------------
 // 핸들러
 // ----------------------------------------------------
 export const handlers = [
@@ -178,7 +284,29 @@ export const handlers = [
     });
   }),
 
-  // 6) 회원가입: POST /api/auth/signup
+  // === 새로 추가: 비회원 온보딩 세션 발급 ===
+  // 상대 경로 핸들러 (fetch 사용 시)
+  http.post('/onboarding/session', handleOnboardingSession),
+  
+  // 절대 URL 핸들러 (customAxios baseURL 사용 시)
+  http.post('http://localhost:8080/onboarding/session', handleOnboardingSession),
+
+  // === 새로 추가: 아이디 중복 확인 ===
+  // 상대 경로 핸들러 (fetch 사용 시)
+  http.get('/users/exists', handleUserIdExists),
+  
+  // 절대 URL 핸들러 (customAxios baseURL 사용 시)
+  http.get('http://localhost:8080/users/exists', handleUserIdExists),
+
+  // === 수정: 회원가입 (응답 형식 변경: result → data) ===
+  // 상대 경로 핸들러 (fetch 사용 시)
+  http.post('/auth/signup', handleSignup),
+  
+  // 절대 URL 핸들러 (customAxios baseURL 사용 시)
+  http.post('http://localhost:8080/auth/signup', handleSignup),
+
+  // === 기존 유지: 회원가입 (fetch 사용 시 /api/ 접두사) ===
+  // POST /api/auth/signup
   http.post('/api/auth/signup', async ({ request }) => {
     const body = (await request.json()) as {
       userId?: string;
@@ -198,23 +326,28 @@ export const handlers = [
           status: 'BAD_REQUEST',
           code: 'VALIDATION_ERROR',
           message: '아이디와 비밀번호는 필수입니다.',
-          result: null,
+          data: null,
         },
         { status: 400 }
       );
     }
 
-    // userId 중복 체크 (간단한 모킹)
-    if (body.userId === 'existing_user') {
+    // userId 중복 체크
+    if (body.userId === 'existing_user' || body.userId === 'test' || body.userId === 'admin') {
       return HttpResponse.json(
         {
           status: 'CONFLICT',
           code: 'USER_ALREADY_EXISTS',
           message: '이미 존재하는 아이디입니다.',
-          result: null,
+          data: null,
         },
         { status: 409 }
       );
+    }
+
+    // 세션 ID가 있으면 로그 출력 (디버깅용)
+    if (body.sessionId) {
+      console.log('[Mock] 회원가입 시 세션 ID 포함:', body.sessionId);
     }
 
     // 성공
@@ -222,12 +355,61 @@ export const handlers = [
       status: 'CREATED',
       code: 'CREATED',
       message: '회원가입 성공',
-      result: null,
+      data: null,
     });
   }),
 
-  // 7) 로그인: POST /api/auth/login
+  // === 기존 유지: 로그인 (응답 형식은 result 사용, 명세서에 맞춤) ===
+  // POST /api/auth/login
   http.post('/api/auth/login', async ({ request }) => {
+    const body = (await request.json()) as {
+      userId?: string;
+      password?: string;
+    };
+
+    await delay(300);
+
+    // 유효성 검사
+    if (!body.userId || !body.password) {
+      return HttpResponse.json(
+        {
+          status: 'BAD_REQUEST',
+          code: 'VALIDATION_ERROR',
+          message: '아이디와 비밀번호를 입력해주세요.',
+          result: null,
+        },
+        { status: 400 }
+      );
+    }
+
+    // 간단한 인증 로직 (모킹)
+    if (body.userId === 'demo_user_01' && body.password === 'DemoPassw0rd!') {
+      return HttpResponse.json({
+        status: 'OK',
+        code: 'OK',
+        message: '로그인 성공',
+        result: {
+          accessToken: 'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxIiwiaWF0IjoxNzYxNzA0MTE5LCJleHAiOjE3NjE3MDc3MTl9.q4MglaS3t6kmpvQyLcTtLqGuSV5gCkMNO8aadz99t-E',
+          refreshToken: 'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxIiwiaWF0IjoxNzYxNzA0MTE5LCJleHAiOjE3NjI5MTM3MTl9.i9LvL7Zwst__nfv-fVq9BIHcchp8qT4k5-iJtTx000o',
+        },
+      });
+    }
+
+    // 인증 실패
+    return HttpResponse.json(
+      {
+        status: 'UNAUTHORIZED',
+        code: 'INVALID_CREDENTIALS',
+        message: '아이디 또는 비밀번호가 일치하지 않습니다.',
+        result: null,
+      },
+      { status: 401 }
+    );
+  }),
+
+  // === 추가: 로그인 (customAxios 사용 시 /auth/login) ===
+  // POST /auth/login
+  http.post('/auth/login', async ({ request }) => {
     const body = (await request.json()) as {
       userId?: string;
       password?: string;

@@ -116,11 +116,11 @@ export default function LoginPage() {
         </form>
 
         {/* 테스트 계정 안내 */}
-        <div className="p-3 rounded-lg bg-[var(--color-info)]/10 text-xs text-[var(--color-muted)]">
+        {/* <div className="p-3 rounded-lg bg-[var(--color-info)]/10 text-xs text-[var(--color-muted)]">
           <strong>테스트 계정:</strong><br />
           아이디: demo_user_01<br />
           비밀번호: DemoPassw0rd!
-        </div>
+        </div> */}
 
         {/* 회원가입 링크 */}
         <div className="text-center text-sm text-[var(--color-muted)]">
@@ -130,7 +130,7 @@ export default function LoginPage() {
             onClick={(e) => { e.preventDefault(); nav('/onboarding/landing'); }}
             className="text-[var(--color-primary)] font-bold underline hover:opacity-80"
           >
-            온보딩 시작하기
+            테스트 시작하기
           </a>
         </div>
       </div>

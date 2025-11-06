@@ -6,13 +6,40 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import MukbtiFlow from '../../features/Onboarding/MukbtiTest/ui/mukbti-flow';
 import BingoFlow from '../../features/Onboarding/Bingo/ui/bingo-flow';
 import { useUserStore } from '../../entities/user/model/user-store';
+import customAxios from '../../shared/api/http';
 
 export default function OnboardingPage() {
   const loc = useLocation() as { state?: { step?: 'mukbti' | 'bingo' } };
   const nav = useNavigate();
   const initial = loc.state?.step ?? 'mukbti';
   const [step, setStep] = React.useState<'mukbti' | 'bingo'>(initial);
-  const { mukbtiAnswers, setMukbtiResult } = useUserStore();
+  const { mukbtiAnswers, setMukbtiResult, onboardingSessionId, setOnboardingSessionId } = useUserStore();
+
+  // 온보딩 시작 시 세션 발급
+  React.useEffect(() => {
+    // 세션이 이미 있으면 발급하지 않음
+    if (onboardingSessionId) return;
+
+    const issueSession = async () => {
+      try {
+        const response = await customAxios({
+          method: 'POST',
+          url: '/onboarding/session',
+          data: {},
+          meta: { authRequired: false }
+        }) as any;
+
+        if (response?.data?.data?.sessionId) {
+          setOnboardingSessionId(response.data.data.sessionId);
+        }
+      } catch (error) {
+        console.error('세션 발급 실패:', error);
+        // 세션 발급 실패해도 온보딩은 진행 가능하도록 함
+      }
+    };
+
+    issueSession();
+  }, [onboardingSessionId, setOnboardingSessionId]);
 
   // 먹BTI 완료 후
   const handleMukbtiDone = () => {
