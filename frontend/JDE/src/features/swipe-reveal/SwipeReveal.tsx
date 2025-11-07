@@ -55,13 +55,12 @@ export default function SwipeReveal({
 
       {/* (3) 우측 에지 가드(마스킹) — sub-pixel 잔상 숨김 */}
       <div
-        className="pointer-events-none absolute inset-y-0 right-0 w-[2px] bg-white rounded-r-2xl z-[5]"
+        className="pointer-events-none absolute inset-y-0 right-0 w-[2px] bg-white rounded-r-2xl z-[1]"
       />
 
       {/* (4) 앞 레이어도 둥근모서리+오버플로우로 2중 클리핑 */}
       <div
-        className="relative bg-gray-50 shadow-sm transition-transform duration-200 will-change-transform 
-                   select-none touch-pan-y rounded-2xl overflow-hidden"
+        className='relative z-[2]'
         style={{ transform: `translate3d(${state.translateX}px,0,0)`, backfaceVisibility: 'hidden' }}
         {...handlers}
         onClick={handleFrontClick}

@@ -32,7 +32,7 @@ export default function MyMeetingCard({ group, onLeave, onOpenGroup }: Props) {
       onFrontClick={() => onOpenGroup?.(group.id)}
     >
       {/* === 카드 본문(앞 레이어) === */}
-      <div>
+      <div className='bg-white rounded-2xl border border-neutral-300'>
         {/* 썸네일 4분할 */}
         <div className="grid grid-cols-4 gap-3 p-4">
           {Array.from({ length: 4 }).map((_, i) => (
