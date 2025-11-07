@@ -5,72 +5,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="266b5704-353d-4c17-9720-348e9a0c32aa" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/.dockerignore" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/docker-compose.local.yml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/main-server/Jenkinsfile" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/main-server/.dockerignore" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/main-server/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/main-server/.gitignore" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/main-server/Dockerfile" beforeDir="false" afterPath="$PROJECT_DIR$/main-server/Dockerfile" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/main-server/build.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/main-server/build.gradle" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/main-server/docker-compose.local.yml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/vote/.gitattributes" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/vote/.gitignore" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/vote/build.gradle" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/vote/docker-compose.yml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/vote/gradle/wrapper/gradle-wrapper.jar" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/vote/gradle/wrapper/gradle-wrapper.properties" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/vote/gradlew" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/vote/gradlew.bat" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/vote/settings.gradle" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/vote/src/main/java/com/JDE/mainserver/MainServerApplication.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/vote/src/main/java/com/JDE/mainserver/global/api/ApiResponse.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/vote/src/main/java/com/JDE/mainserver/global/config/RedisConfig.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/vote/src/main/java/com/JDE/mainserver/global/exception/CustomException.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/vote/src/main/java/com/JDE/mainserver/global/exception/UnauthorizedException.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/vote/src/main/java/com/JDE/mainserver/global/exception/code/BaseErrorCode.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/vote/src/main/java/com/JDE/mainserver/global/exception/code/BaseSuccessCode.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/vote/src/main/java/com/JDE/mainserver/global/exception/code/GeneralErrorCode.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/vote/src/main/java/com/JDE/mainserver/global/exception/code/GeneralSuccessCode.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/vote/src/main/java/com/JDE/mainserver/global/exception/code/MemberErrorCode.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/vote/src/main/java/com/JDE/mainserver/global/exception/handler/ExceptionAdvice.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/vote/src/main/java/com/JDE/mainserver/global/security/config/SecurityConfig.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/vote/src/main/java/com/JDE/mainserver/global/security/jwt/JwtFilter.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/vote/src/main/java/com/JDE/mainserver/global/security/jwt/JwtUtil.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/vote/src/main/java/com/JDE/mainserver/global/security/password/PasswordEncoderConfig.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/vote/src/main/java/com/JDE/mainserver/global/storage/ImageStorageService.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/vote/src/main/java/com/JDE/mainserver/global/storage/LocalImageStorageService.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/vote/src/main/java/com/JDE/mainserver/member/entity/Member.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/vote/src/main/java/com/JDE/mainserver/member/entity/enums/AgeGroup.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/vote/src/main/java/com/JDE/mainserver/member/entity/enums/Gender.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/vote/src/main/java/com/JDE/mainserver/member/entity/enums/Role.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/vote/src/main/java/com/JDE/mainserver/member/repository/MemberRepository.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/vote/src/main/java/com/JDE/mainserver/member/service/AuthCommandService.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/vote/src/main/java/com/JDE/mainserver/member/service/MemberQueryService.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/vote/src/main/java/com/JDE/mainserver/onboarding/OnboardingSurveyStore.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/vote/src/main/java/com/JDE/mainserver/plans/decision/entity/PlanDecision.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/vote/src/main/java/com/JDE/mainserver/plans/decision/entity/PlanVote.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/vote/src/main/java/com/JDE/mainserver/plans/decision/enums/DecisionStatus.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/vote/src/main/java/com/JDE/mainserver/plans/decision/enums/DecisionToolType.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/vote/src/main/java/com/JDE/mainserver/plans/decision/repository/PlanDecisionRepository.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/vote/src/main/java/com/JDE/mainserver/plans/decision/repository/PlanVoteRepository.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/vote/src/main/java/com/JDE/mainserver/plans/decision/service/PlanDecisionService.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/vote/src/main/java/com/JDE/mainserver/web/controller/AuthController.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/vote/src/main/java/com/JDE/mainserver/web/controller/OnboardingController.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/vote/src/main/java/com/JDE/mainserver/web/controller/PlansDecisionController.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/vote/src/main/java/com/JDE/mainserver/web/controller/UserController.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/vote/src/main/java/com/JDE/mainserver/web/dto/request/LoginRequest.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/vote/src/main/java/com/JDE/mainserver/web/dto/request/SignUpMultipartRequest.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/vote/src/main/java/com/JDE/mainserver/web/dto/request/SignUpRequest.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/vote/src/main/java/com/JDE/mainserver/web/dto/request/SubmitSurveyRequest.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/vote/src/main/java/com/JDE/mainserver/web/dto/request/UpdateImageRequest.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/vote/src/main/java/com/JDE/mainserver/web/dto/request/decision/ConfirmDecisionRequest.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/vote/src/main/java/com/JDE/mainserver/web/dto/request/decision/SubmitBallotRequest.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/vote/src/main/java/com/JDE/mainserver/web/dto/response/MemberInfoResponse.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/vote/src/main/java/com/JDE/mainserver/web/dto/response/TokenResponse.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/vote/src/main/java/com/JDE/mainserver/web/dto/response/dicision/TallyResponse.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/vote/src/main/resources/application.properties" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -87,7 +22,12 @@
       <state>
         <projects_view>
           <tree_state>
-            <expand />
+            <expand>
+              <path>
+                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
+                <item name="main-server" type="f1a62948:ProjectNode" />
+              </path>
+            </expand>
             <select />
           </tree_state>
         </projects_view>
@@ -108,24 +48,24 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "RunOnceActivity.OpenProjectViewOnStart": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "git-widget-placeholder": "BE-dev",
-    "kotlin-language-version-configured": "true",
-    "last_opened_file_path": "C:/Users/SSAFY/Desktop/S13P31A701/backend",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "project.structure.last.edited": "Modules",
-    "project.structure.proportion": "0.15",
-    "project.structure.side.proportion": "0.2",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;BE-dev&quot;,
+    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/SSAFY/Desktop/S13P31A701/backend&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;project.structure.last.edited&quot;: &quot;Modules&quot;,
+    &quot;project.structure.proportion&quot;: &quot;0.15&quot;,
+    &quot;project.structure.side.proportion&quot;: &quot;0.2&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="RunManager">
     <configuration default="true" type="JetRunConfigurationType">
       <module name="backend" />
@@ -159,6 +99,8 @@
       <workItem from="1762244827460" duration="2902000" />
       <workItem from="1762248714697" duration="735000" />
       <workItem from="1762413038898" duration="1144000" />
+      <workItem from="1762414206115" duration="4653000" />
+      <workItem from="1762472894242" duration="24000" />
     </task>
     <servers />
   </component>
