@@ -17,7 +17,7 @@ const tabs = [
   {
     icon: Users,
     label: "모임",
-    path: "/meetings",
+    path: "/groups",
   },
   {
     icon: Star,

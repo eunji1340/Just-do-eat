@@ -58,7 +58,7 @@ export default function RestaurantSwipeDeck({ items, onTopSwiped, overlayHoldMs 
       </div>
     )}
 
-    {/* ✅ 여기가 “Deck 반환부에 버튼 추가” 부분 */}
+    {/* 하단 스와이프 보조도구 */}
     <div className="pointer-events-none absolute bottom-6 left-0 right-0 flex items-center justify-center gap-4">
       <div className="pointer-events-auto flex items-center gap-4">
         <CircularButton
