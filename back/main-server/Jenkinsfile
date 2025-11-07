@@ -23,7 +23,7 @@ pipeline {
       steps {
         sh '''
           cd /home/ubuntu/projects/S13P31A701/back
-          docker-compose -f docker-compose.yml --env-file .env up -d --build
+          docker compose -f docker-compose.yml --env-file .env up -d --build
         '''
       }
     }
