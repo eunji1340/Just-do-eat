@@ -1,7 +1,7 @@
 spring:
   datasource:
     driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://postgres:5432/justdoeat
+    url: jdbc:postgresql://JDE-postgres-local:5432/jde
     username: justdoeat
     password: justdoeat
 
