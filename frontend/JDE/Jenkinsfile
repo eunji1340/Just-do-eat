@@ -2,32 +2,57 @@ pipeline {
     agent any
 
     environment {
+        PROJECT_DIR = "/home/ubuntu/projects/S13P31A701"
         APP_NAME = "jde-frontend"
-        IMAGE_NAME = "jde-frontend:latest"
+        NGINX_CONTAINER = "JDE-nginx"
+        WORK_DIR = "${PROJECT_DIR}/frontend/JDE"
     }
 
     stages {
-        stage('Checkout') {
+        stage('Update') {
             steps {
-                checkout scm
-            }
-        }
+        withCredentials([usernamePassword(credentialsId: 'nomio4001', usernameVariable: 'GIT_USER', passwordVariable: 'GIT_PASS')]) {
+          sh '''
+            cd ${PROJECT_DIR}
+            git config --global user.name "$GIT_USER"
+            git config --global user.email "$GIT_USER@naver.com"
+            git remote set-url origin https://$GIT_USER:$GIT_PASS@lab.ssafy.com/s13-final/S13P31A701.git
 
-        stage('Build Docker Image') {
+
+            git fetch origin FE
+            git checkout FE
+            git pull origin FE
+          '''
+        }
+      }
+    }  
+
+        stage('Build Frontend') {
             steps {
                 sh '''
-                    cd frontend/JDE
-                    docker build -t ${IMAGE_NAME} .
+                    cd ${WORK_DIR}
+
+                    echo "📦 Installing dependencies..."
+                    npm install
+
+                    echo "🏗️ Building frontend..."
+                    npm run build
                 '''
             }
         }
 
-        stage('Deploy') {
+        stage('Deploy to Nginx') {
             steps {
                 sh '''
-                    docker stop ${APP_NAME} || true
-                    docker rm ${APP_NAME} || true
-                    docker run -d --name ${APP_NAME} -p 80:80 ${IMAGE_NAME}
+                    echo "🚀 Deploying build files to Nginx container..."
+
+                    # Nginx 컨테이너가 실제 서비스 담당
+                    docker cp ${WORK_DIR}/dist/. ${NGINX_CONTAINER}:/usr/share/nginx/html/
+
+                    # nginx reload로 새 파일 반영
+                    docker exec ${NGINX_CONTAINER} nginx -s reload
+
+                    echo "✅ Deployment completed successfully!"
                 '''
             }
         }
@@ -35,6 +60,7 @@ pipeline {
 
     post {
         always {
+            echo "🧹 Cleaning workspace..."
             cleanWs()
         }
     }
