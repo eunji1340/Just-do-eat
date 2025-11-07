@@ -4,8 +4,8 @@
 import { useNavigate } from "react-router-dom";
 import { TopNavBar } from "@/widgets/top-navbar";
 import { FeedbackBanner } from "@/widgets/feedback-banner";
-import NearbyRankingSection from "../../widgets/ranking/NearbyRankingSection";
 import PersonalizedEntryButton from "../../widgets/entry/PersonalizedEntryButton";
+import { RecommendationSection } from "@/widgets/recommendation-section/ui";
 
 export default function MainPage() {
   const navigate = useNavigate();
@@ -26,37 +26,9 @@ export default function MainPage() {
         {/* 개인 추천 피드 진입 */}
         <PersonalizedEntryButton />
 
-        {/* 주제별 추천 식당 2개 */}
-        {/* 
-        [{강남역} 주변 겨울철 인기 식당]
-        [{강남역} 주변 데이트 맛집 추천]
-        등등 여러개 추가 */}
-        {/* h-20 */}
-
-        {/* 강남역 인기 식당 Top 10 */}
-        {/* 카드 옆으로 스크롤해서 확인 가능 */}
-        {/* 카드
-        ┌─────────────────────┐
-        | (0등)               |
-        | 이미지               |
-        |                     |
-        |                     |
-        |                     |
-        |                     |
-        |                     |
-        |_____________________|
-        |식당이름              |
-        |식당 주소             |
-        └─────────────────────┘ */}
-
-        <NearbyRankingSection />
-
-        {/* 유형별 맛집 추천(예: 한식, 중식, 일식 등) */}
-        {/* (한식이미지) (중식이미지) (일식 이미지)
-        가로 스크롤로 추가 유형 볼 수 있음 */}
+        {/* 다양한 타입의 추천 식당리스트 */}
+        <RecommendationSection />
       </div>
-
-      {/* 푸터내용은 마이>서비스 정보에 넣기 */}
     </>
   );
 }

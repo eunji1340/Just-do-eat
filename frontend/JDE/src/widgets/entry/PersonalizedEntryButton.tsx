@@ -10,7 +10,7 @@ export default function PersonalizedEntryButton() {
   return (
     // 개인추천피드 페이지로 변경하기
     <Link to="/swipe" className="block w-full">
-      <Card className="mx-4 overflow-hidden shadow-md">
+      <Card className="mx-4 overflow-hidden shadow-md pb-0">
         {/* 상단: 이미지 + 텍스트 */}
         <CardContent className="p-4">
           <div className="flex items-center">
@@ -23,7 +23,7 @@ export default function PersonalizedEntryButton() {
 
             {/* 텍스트 영역 */}
             <div className="flex flex-col justify-center gap-1">
-              <p className="text-sm font-large text-orange-500">
+              <p className="text-sm font-large text-primary">
                 고민은 그만, <br />
                 먹으러 가자!
               </p>
@@ -36,8 +36,10 @@ export default function PersonalizedEntryButton() {
 
         {/* 하단: 버튼 */}
         <CardFooter className="p-0 w-full">
-          <div className="w-full bg-primary px-6 py-4 flex items-center justify-between hover:bg-orange-500 transition-colors">
-            <span className="text-white font-semibold">지금 추천받기</span>
+          <div className="w-full bg-primary px-6 py-4 flex items-center justify-between hover:bg-s2 transition-colors rounded-b-xl">
+            <span className="text-white font-semibold">
+              내 취향의 식당 둘러보기
+            </span>
             <ArrowRight className="w-6 h-6 text-white" strokeWidth={3} />
           </div>
         </CardFooter>
