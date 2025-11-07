@@ -4,7 +4,7 @@ pipeline {
     environment {
         CONTAINER_NAME = 'JDE-ai'
         SERVICE_NAME = 'ai'
-        COMPOSE_FILE = '/home/ubuntu/projects/S13A701/back/docker-compose.yml'
+        COMPOSE_FILE = '/home/ubuntu/projects/S13P31A701/back/docker-compose.yml'
     }
 
     stages {
