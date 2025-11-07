@@ -2,65 +2,41 @@ pipeline {
     agent any
 
     environment {
-        PROJECT_NAME = "JDE-main-server"
-        DOCKER_COMPOSE_PATH = "/home/ubuntu/scripts/docker-compose.yml"
-        ENV_FILE = "/home/ubuntu/scripts/env.local"
-        WORKDIR = "backend/main-server"
+        APP_NAME = "jde-backend"
+        IMAGE_NAME = "jde-backend:latest"
     }
 
     stages {
-        stage('🔁 Clean Workspace') {
+        stage('Checkout') {
             steps {
-                echo "Cleaning previous workspace..."
-                deleteDir()
+                checkout scm
             }
         }
 
-        stage('📦 Git Clone') {
+        stage('Build Docker Image') {
             steps {
-                echo "Cloning project from GitLab..."
-                git branch: 'BE',
-                    credentialsId: 'nomio4001',
-                    url: 'https://lab.ssafy.com/s13-final/S13P31A701.git'
+                sh '''
+                    cd backend/main-server
+                    docker build -t ${IMAGE_NAME} .
+                '''
             }
         }
 
-        stage('⚙️ Build Spring Boot JAR') {
+        stage('Deploy') {
             steps {
-                echo "Building backend JAR file..."
-                dir("${WORKDIR}") {
-		    sh 'chmod +x gradlew'     
-                    sh './gradlew clean build -x test'
-                }
-            }
-        }
-
-        stage('🐳 Build & Deploy Docker Container') {
-            steps {
-                echo "Stopping old container and rebuilding..."
-                sh """
-                cd /home/ubuntu/scripts
-                docker compose --env-file ${ENV_FILE} down
-                docker compose --env-file ${ENV_FILE} build
-                docker compose --env-file ${ENV_FILE} up -d
-                """
-            }
-        }
-
-        stage('✅ Verify Deployment') {
-            steps {
-                echo "Checking backend container status..."
-                sh "docker ps | grep ${PROJECT_NAME} || echo 'Container not running'"
+                sh '''
+                    docker stop ${APP_NAME} || true
+                    docker rm ${APP_NAME} || true
+                    docker run -d --name ${APP_NAME} -p 8080:8080 ${IMAGE_NAME}
+                    // 독커 네트워크 묵기
+                '''
             }
         }
     }
 
     post {
-        success {
-            echo "✅ Backend deployment completed successfully!"
-        }
-        failure {
-            echo "❌ Backend pipeline failed. Please check Jenkins logs."
+        always {
+            cleanWs()
         }
     }
 }
