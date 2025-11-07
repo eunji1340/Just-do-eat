@@ -5,6 +5,11 @@ pipeline {
       steps {
         withCredentials([usernamePassword(credentialsId: 'nomio4001', usernameVariable: 'GIT_USER', passwordVariable: 'GIT_PASS')]) {
           sh '''
+
+            git config --global user.name "$GIT_USER"
+            git config --global user.email "$GIT_USER@naver.com"
+            git remote set-url origin https://$GIT_USER:$GIT_PASS@lab.ssafy.com/s13-final/S13P31A701.git
+
             cd /home/ubuntu/projects/S13P31A701
             git fetch origin BE
             git checkout BE
