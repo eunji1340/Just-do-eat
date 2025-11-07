@@ -1,8 +1,21 @@
-import { useLogin } from '../model/useLogin';
+import type { FormEvent } from 'react';
 import { Button } from '@/shared/ui/button';
 
-export default function LoginForm() {
-  const { formData, handleChange, submitting, error, handleSubmit } = useLogin();
+interface LoginFormProps {
+  formData: { userId: string; password: string };
+  handleChange: (field: string, value: string) => void;
+  submitting: boolean;
+  error: string | null;
+  handleSubmit: (e: FormEvent) => void;
+}
+
+export default function LoginForm({
+  formData,
+  handleChange,
+  submitting,
+  error,
+  handleSubmit,
+}: LoginFormProps) {
 
   return (
     <form onSubmit={handleSubmit} className="grid gap-4">

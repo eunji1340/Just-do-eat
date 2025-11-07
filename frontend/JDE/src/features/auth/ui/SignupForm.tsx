@@ -1,19 +1,35 @@
-import React from 'react';
-import { useSignup } from '../model/useSignup';
+import type { FormEvent } from 'react';
 import { Button } from '@/shared/ui/button';
 import UserIdCheckInput from './UserIdCheckInput';
 import { OnboardingSummary } from '@/widgets/onboarding/OnboardingSummary';
 
-export default function SignupForm() {
-  const {
-    formData,
-    handleChange,
-    submitting,
-    error,
-    handleSubmit,
-    userIdCheck,
-    setUserIdCheckResult,
-  } = useSignup();
+type AgeGroup = 'TEENS' | 'TWENTIES' | 'THIRTIES' | 'FORTIES' | 'FIFTIES_PLUS';
+type Gender = 'MALE' | 'FEMALE' | 'OTHER';
+
+interface SignupFormProps {
+  formData: {
+    userId: string;
+    password: string;
+    passwordConfirm: string;
+    imageUrl: string | null;
+    ageGroup: AgeGroup;
+    gender: Gender;
+  };
+  handleChange: (field: string, value: string) => void;
+  submitting: boolean;
+  error: string | null;
+  handleSubmit: (e: FormEvent) => void;
+  setUserIdCheckResult: (result: { checking: boolean; available: boolean | null; message: string }) => void;
+}
+
+export default function SignupForm({
+  formData,
+  handleChange,
+  submitting,
+  error,
+  handleSubmit,
+  setUserIdCheckResult,
+}: SignupFormProps) {
 
   return (
     <>
