@@ -342,4 +342,63 @@ export const handlers = [
       { status: 401 }
     );
   }),
+
+  // 10) 사용자 정보 조회: GET http://localhost:8080/users/me
+  http.get('http://localhost:8080/users/me', async ({ request }) => {
+    await delay(200);
+
+    // Authorization 헤더 확인
+    const authHeader = request.headers.get('Authorization');
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return HttpResponse.json(
+        {
+          status: 'UNAUTHORIZED',
+          code: 'UNAUTHORIZED',
+          message: '인증이 필요합니다.',
+          result: null,
+        },
+        { status: 401 }
+      );
+    }
+
+    // Mock 사용자 정보 반환
+    return HttpResponse.json({
+      status: 'OK',
+      code: '200',
+      message: '요청 성공',
+      result: {
+        memberId: 1,
+        userId: 'demo_user_01',
+        imageUrl: 'https://api.dicebear.com/7.x/avataaars/svg?seed=demo_user_01',
+        ageGroup: 'TWENTIES',
+        gender: 'MALE',
+        role: 'USER',
+      },
+    });
+  }),
+
+  // 11) 로그아웃: POST http://localhost:8080/auth/logout
+  http.post('http://localhost:8080/auth/logout', async ({ request }) => {
+    await delay(200);
+
+    // Authorization 헤더 확인 (선택적)
+    const authHeader = request.headers.get('Authorization');
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      // 로그아웃은 토큰 없어도 성공 처리 가능
+      return HttpResponse.json({
+        status: 'OK',
+        code: 'OK',
+        message: '로그아웃 성공',
+        result: null,
+      });
+    }
+
+    // 로그아웃 성공
+    return HttpResponse.json({
+      status: 'OK',
+      code: 'OK',
+      message: '로그아웃 성공',
+      result: null,
+    });
+  }),
 ];

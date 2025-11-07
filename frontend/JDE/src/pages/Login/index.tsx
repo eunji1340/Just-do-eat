@@ -2,9 +2,12 @@ import { useNavigate } from 'react-router-dom';
 import AuthLayout from '@/widgets/auth/AuthLayout';
 import LoginForm from '@/features/auth/ui/LoginForm';
 import { useLogin } from '@/features/auth/model/useLogin';
+import { useUserStore } from '@/entities/user/model/user-store';
+import customAxios from '@/shared/api/http';
 
 export default function LoginPage() {
   const nav = useNavigate();
+  const { setUser } = useUserStore();
   const {
     formData,
     handleChange,
@@ -15,9 +18,26 @@ export default function LoginPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     const result = await submit(e);
-    if (result) {
-      alert('로그인 성공!');
-      nav('/');
+    if (result && result.accessToken) {
+      // 로그인 성공 후 사용자 정보 불러오기
+      try {
+        const response = await customAxios({
+          method: 'GET',
+          url: '/users/me',
+        }) as any;
+        
+        if (response.data?.result) {
+          setUser(response.data.result);
+          nav('/');
+        } else {
+          console.error('사용자 정보를 불러올 수 없습니다.');
+          nav('/');
+        }
+      } catch (error) {
+        console.error('사용자 정보 불러오기 실패:', error);
+        // 실패해도 메인 페이지로 이동
+        nav('/');
+      }
     }
   };
 
