@@ -113,3 +113,7 @@ dependencies {
 tasks.named('test') {
     useJUnitPlatform()
 }
+
+springBoot {
+    mainClass = 'com.jde.mainserver.MainServerApplication'
+}
