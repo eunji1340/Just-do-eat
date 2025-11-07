@@ -18,7 +18,7 @@ export default function GroupsListPage() {
 
       {/* 메인 콘텐츠 */}
       {/* 모임 카드 목록 */}
-      <section className="grid grid-cols-1 gap-y-4 p-4">
+      <section className="grid grid-cols-1 gap-y-2 p-4">
         {dummyGroup.map((g) => (
           <GroupCard key={g.id} group={g} />
         ))}
