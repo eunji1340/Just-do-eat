@@ -32,7 +32,7 @@ export default function CountBadge({
       className={cn(
         // 기본 스타일
         "inline-flex items-center justify-center rounded-full",
-        "bg-[#FF8904] text-white font-medium",
+        "bg-t2 text-white font-medium",
         "shadow-sm",
         // 크기별 스타일
         sizeClasses[size],
