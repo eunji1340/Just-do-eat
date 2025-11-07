@@ -4,7 +4,7 @@ pipeline {
     stage('Update') {
       steps {
         sh '''
-          cd /home/ubuntu/projects/S13A701
+          cd /home/ubuntu/projects/S13P31A701
           git fetch origin BE
           git checkout BE
           git pull origin BE
