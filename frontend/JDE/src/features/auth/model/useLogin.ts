@@ -1,9 +1,12 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import customAxios from '@/shared/api/http';
 
+export type LoginResult = {
+  accessToken?: string;
+  refreshToken?: string;
+};
+
 export function useLogin() {
-  const nav = useNavigate();
   const [formData, setFormData] = useState({ userId: '', password: '' });
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -12,7 +15,7 @@ export function useLogin() {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent): Promise<LoginResult | null> => {
     e.preventDefault();
     setSubmitting(true);
     setError(null);
@@ -31,18 +34,22 @@ export function useLogin() {
         throw new Error(data.message || '로그인에 실패했습니다.');
       }
 
+      const result: LoginResult = {};
+
       if (data.result?.accessToken) {
         localStorage.setItem('accessToken', data.result.accessToken);
+        result.accessToken = data.result.accessToken;
       }
       if (data.result?.refreshToken) {
         localStorage.setItem('refreshToken', data.result.refreshToken);
+        result.refreshToken = data.result.refreshToken;
       }
 
-      alert('로그인 성공!');
-      nav('/');
+      return result;
     } catch (e: any) {
       const errorMessage = e.response?.data?.message || e.message || '로그인 중 오류가 발생했습니다.';
       setError(errorMessage);
+      return null;
     } finally {
       setSubmitting(false);
     }

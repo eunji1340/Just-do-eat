@@ -3,8 +3,8 @@
 // =============================================
 import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import MukbtiFlow from '../../features/Onboarding/MukbtiTest/ui/mukbti-flow';
-import BingoFlow from '../../features/Onboarding/Bingo/ui/bingo-flow';
+import MukbtiFlow from '../../features/onboarding/MukbtiTest/ui/mukbti-flow';
+import BingoFlow from '../../features/onboarding/Bingo/ui/bingo-flow';
 import { useUserStore } from '../../entities/user/model/user-store';
 import customAxios from '../../shared/api/http';
 
