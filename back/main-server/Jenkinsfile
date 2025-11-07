@@ -3,14 +3,16 @@ pipeline {
   stages {
     stage('Update') {
       steps {
-        sh '''
-          cd /home/ubuntu/projects/S13P31A701
-          git fetch origin BE
-          git checkout BE
-          git pull origin BE
-        '''
+        withCredentials([usernamePassword(credentialsId: 'nomio4001', usernameVariable: 'GIT_USER', passwordVariable: 'GIT_PASS')]) {
+          sh '''
+            cd /home/ubuntu/projects/S13P31A701
+            git fetch origin BE
+            git checkout BE
+            git pull origin BE
+          '''
+        }
       }
-    }
+    }  
 
     stage('Deploy') {
       steps {
