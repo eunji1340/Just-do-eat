@@ -16,7 +16,7 @@ export default function MainPage() {
       <TopNavBar variant="default" onSearchClick={() => navigate("/search")} />
 
       {/* 메인 콘텐츠 */}
-      <div className="bg-gradient-to-b from-gray-50 to-white md:py-10 space-y-6">
+      <div className="md:py-10 space-y-6">
         {/* 추천받을 상권 선택 섹션, 왼쪽정렬 px-3,
         [<PinIcon>강남역 <아래다운츄버아이콘> */}
 
@@ -24,9 +24,7 @@ export default function MainPage() {
         <FeedbackBanner />
 
         {/* 개인 추천 피드 진입 */}
-        <section>
-          <PersonalizedEntryButton />
-        </section>
+        <PersonalizedEntryButton />
 
         {/* 주제별 추천 식당 2개 */}
         {/* 
