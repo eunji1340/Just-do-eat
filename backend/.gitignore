@@ -1,0 +1,26 @@
+# 환경변수 파일 (로컬 개발용)
+env.local
+.env.local
+.env
+
+# Docker 관련
+docker-compose.override.yml
+
+# IDE 관련
+.vscode/
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# OS 관련
+.DS_Store
+Thumbs.db
+
+# 로그 파일
+*.log
+logs/
+
+# 임시 파일
+*.tmp
+*.temp
