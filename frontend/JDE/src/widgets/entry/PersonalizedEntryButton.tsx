@@ -10,24 +10,24 @@ export default function PersonalizedEntryButton() {
   return (
     // 개인추천피드 페이지로 변경하기
     <Link to="/swipe" className="block w-full">
-      <Card className="mx-4 overflow-hidden shadow-md pb-0">
+      <Card className="mx-4 overflow-hidden shadow-md pb-0 gap-0">
         {/* 상단: 이미지 + 텍스트 */}
-        <CardContent className="p-4">
-          <div className="flex items-center">
+        <CardContent className="px-2 sm:px-12">
+          <div className="flex items-center gap-2">
             {/* 캐릭터 이미지 */}
             <img
               src="/cute_man.png"
               alt="JDE 캐릭터"
-              className="w-28 h-28 object-contain flex-shrink-0"
+              className="w-40 object-contain flex-shrink-0"
             />
 
             {/* 텍스트 영역 */}
-            <div className="flex flex-col justify-center gap-1">
-              <p className="text-sm font-large text-primary">
+            <div className="flex flex-col justify-center">
+              <p className="text-lg font-large text-primary">
                 고민은 그만, <br />
                 먹으러 가자!
               </p>
-              <h2 className="text-xl font-black text-neutral-950 mt-1">
+              <h2 className="text-3xl font-black text-neutral-950">
                 JUST DO EAT
               </h2>
             </div>
@@ -36,9 +36,9 @@ export default function PersonalizedEntryButton() {
 
         {/* 하단: 버튼 */}
         <CardFooter className="p-0 w-full">
-          <div className="w-full bg-primary px-6 py-4 flex items-center justify-between hover:bg-s2 transition-colors rounded-b-xl">
-            <span className="text-white font-semibold">
-              내 취향의 식당 둘러보기
+          <div className="w-full bg-primary px-8 py-4 flex items-center justify-between hover:bg-s2 transition-colors rounded-b-xl">
+            <span className="text-xl text-white font-semibold">
+              취향 저격 맛집 리스트
             </span>
             <ArrowRight className="w-6 h-6 text-white" strokeWidth={3} />
           </div>
