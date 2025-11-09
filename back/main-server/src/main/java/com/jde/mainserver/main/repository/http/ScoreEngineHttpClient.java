@@ -1,130 +1,124 @@
-package com.jde.mainserver.main.repository.http;
-
 /**
  * main/repository/http/ScoreEngineHttpClient.java
- * FastAPI 점수 엔진 HTTP 클라이언트
+ * FastAPI 점수 엔진 HTTP 클라이언트 (외부 API 데이터 접근)
  * Author: Jang
  * Date: 2025-11-04
  */
 
+package com.jde.mainserver.main.repository.http;
 
-import com.jde.mainserver.main.converter.FastApiConverter;
-import com.jde.mainserver.main.service.query.ScoreEngineClient;
+import com.jde.mainserver.main.converter.MainConverter;
 import com.jde.mainserver.main.web.dto.request.PersonalScoreRequest;
 import com.jde.mainserver.main.web.dto.response.PersonalScoreResponse;
+
 import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
+
+import reactor.netty.http.client.HttpClient;
 import reactor.util.retry.Retry;
+import io.netty.channel.ChannelOption;
 
 import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 
-
 @Slf4j
 @Component
-public class ScoreEngineHttpClient implements ScoreEngineClient {
+public class ScoreEngineHttpClient {
 
-    private final WebClient webClient;
-    private final FastApiConverter converter;
-    private final String baseUrl;
-    private static final String SCORE_ENDPOINT = "/score/personal";
+	private static final String SCORE_ENDPOINT = "/score/personal";
+	private static final Duration CONNECT_TIMEOUT = Duration.ofSeconds(3);
+	private static final Duration RESPONSE_TIMEOUT = Duration.ofSeconds(10);
+	private static final int MAX_RETRIES = 2;
 
-    public ScoreEngineHttpClient(
-            @Value("${score.api.base:http://localhost:8000}") String baseUrl,
-            FastApiConverter converter
-    ) {
-        this.baseUrl = baseUrl;
-        this.converter = converter;
-        this.webClient = WebClient.builder()
-                .baseUrl(baseUrl)
-                .build();
-    }
+	private final WebClient webClient;
 
-    /**
-     * FastAPI 점수 엔진에 점수 계산 요청
-     * @param req 개인화 점수 계산 요청
-     * @return 점수 계산 결과
-     * @throws RuntimeException FastAPI 호출 실패 시
-     */
-    @Override
-    public PersonalScoreResponse score(PersonalScoreRequest req) {
-        try {
-            log.debug("FastAPI 점수 계산 요청: userId={}, candidateCount={}",
-                    req.userId(), req.candidates().size());
+	public ScoreEngineHttpClient(
+		@Value("${score.api.base:http://localhost:8000}") String baseUrl
+	) {
+		HttpClient httpClient = HttpClient.create()
+			.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, (int)CONNECT_TIMEOUT.toMillis())
+			.responseTimeout(RESPONSE_TIMEOUT)
+			.compress(true);
 
-            // 1. 백엔드 DTO를 FastAPI 스키마로 변환
-            Map<String, Object> fastApiReq = converter.convertToFastApiSchema(req);
+		this.webClient = WebClient.builder()
+			.baseUrl(baseUrl)
+			.clientConnector(new ReactorClientHttpConnector(httpClient))
+			.build();
 
-            // 2. FastAPI 호출
-            Map<String, Object> response = webClient.post()
-                    .uri(SCORE_ENDPOINT)
-                    .bodyValue(fastApiReq)
-                    .retrieve()
-                    .bodyToMono(Map.class)
-                    .retryWhen(Retry.backoff(2, Duration.ofSeconds(1)))
-                    .timeout(Duration.ofSeconds(10))
-                    .block();
+		log.info("ScoreEngineHttpClient initialized with baseUrl={}", baseUrl);
+	}
 
-            if (response == null) {
-                throw new RuntimeException("FastAPI 응답이 null입니다");
-            }
+	/**
+	 * FastAPI 점수 엔진에 점수 계산 요청
+	 *
+	 * @param req 개인화 점수 계산 요청
+	 * @return 점수 계산 결과
+	 * @throws RuntimeException FastAPI 호출 실패 시
+	 */
+	public PersonalScoreResponse score(PersonalScoreRequest req) {
+		try {
+			log.debug("FastAPI 점수 계산 요청: userId={}, candidateCount={}",
+				req.userId(), req.candidates().size());
 
-            // 3. FastAPI 응답을 PersonalScoreResponse로 변환
-            PersonalScoreResponse result = convertResponse(response);
+			Map<String, Object> fastApiReq = MainConverter.convertToFastApiSchema(req);
 
-            // 디버깅: 점수 확인 (첫 3개만)
-            log.debug("FastAPI 점수 계산 완료: userId={}, top3 scores:", req.userId());
-            result.items().stream()
-                    .limit(3)
-                    .forEach(item -> log.debug("  Restaurant {}: {}", item.restaurantId(), item.score()));
+			Map<String, Object> response = webClient.post()
+				.uri(SCORE_ENDPOINT)
+				.bodyValue(fastApiReq)
+				.retrieve()
+				.bodyToMono(Map.class)
+				.retryWhen(Retry.backoff(MAX_RETRIES, Duration.ofSeconds(1)))
+				.timeout(RESPONSE_TIMEOUT)
+				.block();
 
-            return result;
+			if (response == null) {
+				throw new RuntimeException("FastAPI 응답이 null입니다");
+			}
 
-        } catch (Exception e) {
-            log.error("FastAPI 점수 계산 실패: userId={}, error={}", req.userId(), e.getMessage(), e);
-            throw new RuntimeException("FastAPI 점수 계산 실패: " + e.getMessage(), e);
-        }
-    }
+			PersonalScoreResponse result = convertResponse(response);
 
-    /**
-     * FastAPI 응답을 PersonalScoreResponse로 변환
-     * FastAPI 응답 형식:
-     * {
-     *   "scores": [{"restaurant_id": ..., "score": ..., "debug": {...}}],
-     *   "algo_version": "...",
-     *   "elapsed_ms": ...
-     * }
-     * @param response FastAPI 응답 Map
-     * @return PersonalScoreResponse
-     */
-    @SuppressWarnings("unchecked")
-    private PersonalScoreResponse convertResponse(Map<String, Object> response) {
-        List<Map<String, Object>> scores = (List<Map<String, Object>>) response.getOrDefault("scores", List.of());
+			log.debug("FastAPI 점수 계산 완료: userId={}, itemCount={}",
+				req.userId(), result.items().size());
 
-        List<PersonalScoreResponse.ScoredItem> items = scores.stream()
-                .map(scoreMap -> {
-                    Long restaurantId = ((Number) scoreMap.get("restaurant_id")).longValue();
-                    double score = ((Number) scoreMap.get("score")).doubleValue();
-                    Map<String, Object> reasons = (Map<String, Object>) scoreMap.getOrDefault("debug", Map.of());
+			return result;
 
-                    return new PersonalScoreResponse.ScoredItem(
-                            restaurantId,
-                            score,
-                            reasons
-                    );
-                })
-                .toList();
+		} catch (Exception e) {
+			log.error("FastAPI 점수 계산 실패: userId={}, error={}", req.userId(), e.getMessage(), e);
+			throw new RuntimeException("FastAPI 점수 계산 실패: " + e.getMessage(), e);
+		}
+	}
 
-        // debug 정보 (전체 메타데이터)
-        Map<String, Object> debug = Map.of(
-                "algo_version", response.getOrDefault("algo_version", "unknown"),
-                "elapsed_ms", response.getOrDefault("elapsed_ms", 0)
-        );
+	/**
+	 * FastAPI 응답을 PersonalScoreResponse로 변환
+	 *
+	 * @param response FastAPI 응답 Map
+	 * @return PersonalScoreResponse
+	 */
+	@SuppressWarnings("unchecked")
+	private PersonalScoreResponse convertResponse(Map<String, Object> response) {
+		List<Map<String, Object>> scores = (List<Map<String, Object>>)response.getOrDefault("scores", List.of());
 
-        return new PersonalScoreResponse(items, debug);
-    }
+		List<PersonalScoreResponse.ScoredItem> items = scores.stream()
+			.map(scoreMap -> {
+				Long restaurantId = ((Number)scoreMap.get("restaurant_id")).longValue();
+				double score = ((Number)scoreMap.get("score")).doubleValue();
+				Map<String, Object> reasons = (Map<String, Object>)scoreMap.getOrDefault("debug", Map.of());
+
+				return new PersonalScoreResponse.ScoredItem(restaurantId, score, reasons);
+			})
+			.toList();
+
+		Map<String, Object> debug = Map.of(
+			"algo_version", response.getOrDefault("algo_version", "unknown"),
+			"elapsed_ms", response.getOrDefault("elapsed_ms", 0)
+		);
+
+		return new PersonalScoreResponse(items, debug);
+	}
 }
 
