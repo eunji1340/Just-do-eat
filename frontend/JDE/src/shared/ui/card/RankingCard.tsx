@@ -2,9 +2,42 @@
 // 목적: 상권 인기식당 Top10 카드 컴포넌트
 
 import * as React from "react";
+import { ImageOff, Medal } from "lucide-react";
 import { cn } from "@/shared/lib/utils";
 
-interface RankingCardProps extends React.HTMLAttributes<HTMLDivElement> {
+/**
+ * 순위에 따른 배지 스타일 결정
+ */
+const getRankBadgeStyle = (rank: number) => {
+  switch (rank) {
+    case 1:
+      return {
+        bgColor: "bg-[var(--color-rank-gold)]",
+        textColor: "text-white",
+        showMedal: true,
+      };
+    case 2:
+      return {
+        bgColor: "bg-[var(--color-rank-silver)]",
+        textColor: "text-gray-800",
+        showMedal: true,
+      };
+    case 3:
+      return {
+        bgColor: "bg-[var(--color-rank-bronze)]",
+        textColor: "text-white",
+        showMedal: true,
+      };
+    default:
+      return {
+        bgColor: "bg-[var(--color-rank-default)]",
+        textColor: "text-white",
+        showMedal: false,
+      };
+  }
+};
+
+interface RankingCardProps extends Omit<React.HTMLAttributes<HTMLDivElement>, 'id'> {
   /** 식당 ID */
   id: string | number;
   /** 순위 (1~10) */
@@ -13,8 +46,8 @@ interface RankingCardProps extends React.HTMLAttributes<HTMLDivElement> {
   restaurantName: string;
   /** 음식 카테고리 */
   category: string;
-  /** 식당 이미지 URL */
-  imageUrl: string;
+  /** 식당 이미지 URL (선택적) */
+  imageUrl?: string;
   /** 상권 정보 (선택) */
   location?: string;
 }
@@ -39,12 +72,16 @@ export const RankingCard = React.forwardRef<HTMLDivElement, RankingCardProps>(
     },
     ref
   ) => {
+    const [imageError, setImageError] = React.useState(false);
+    const showPlaceholder = !imageUrl || imageError;
+    const badgeStyle = getRankBadgeStyle(rank);
+
     return (
       <div
         ref={ref}
         className={cn(
           // 크기
-          "w-[144px]",
+          "w-40",
           // 커서
           "cursor-pointer",
           // 트랜지션
@@ -59,16 +96,30 @@ export const RankingCard = React.forwardRef<HTMLDivElement, RankingCardProps>(
         {...props}
       >
         {/* 이미지 + 순위 배지 */}
-        <div className="relative w-full aspect-square">
-          {/* 식당 이미지 */}
-          <img
-            src={imageUrl}
-            alt={restaurantName}
-            className="w-full h-full object-cover rounded-lg"
-          />
+        <div className="relative w-40 h-40">
+          {/* 식당 이미지 또는 Placeholder */}
+          {showPlaceholder ? (
+            <div className="w-40 h-40 bg-muted rounded-lg flex items-center justify-center">
+              <ImageOff className="w-12 h-12 text-muted-foreground" strokeWidth={1.5} />
+            </div>
+          ) : (
+            <img
+              src={imageUrl}
+              alt={restaurantName}
+              className="w-40 h-40 object-cover rounded-lg"
+              onError={() => setImageError(true)}
+            />
+          )}
 
           {/* 순위 배지 (좌상단) */}
-          <div className="absolute top-2 left-2 bg-primary text-white text-xs font-bold px-2 py-1 rounded-md shadow-md">
+          <div
+            className={cn(
+              "absolute top-2 left-2 text-xs font-bold px-2 py-1 rounded-md shadow-md flex items-center gap-1",
+              badgeStyle.bgColor,
+              badgeStyle.textColor
+            )}
+          >
+            {badgeStyle.showMedal && <Medal className="w-3.5 h-3.5" strokeWidth={2.5} />}
             {rank}등
           </div>
         </div>

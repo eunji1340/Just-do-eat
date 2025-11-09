@@ -8,7 +8,7 @@ export const rankingMockData = [
     rank: 1,
     restaurantName: "맛있는 한식당",
     category: "한식",
-    imageUrl: "https://via.placeholder.com/144",
+    imageUrl: undefined, // placeholder 표시됨
     location: "강남역",
   },
   {

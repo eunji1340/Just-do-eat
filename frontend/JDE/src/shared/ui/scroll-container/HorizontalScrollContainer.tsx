@@ -22,7 +22,7 @@ interface HorizontalScrollContainerProps
 export const HorizontalScrollContainer = React.forwardRef<
   HTMLDivElement,
   HorizontalScrollContainerProps
->(({ children, padding = "px-4", gap = "gap-3", className, ...props }, ref) => {
+>(({ children, padding = "pr-4", gap = "gap-2.5", className, ...props }, ref) => {
   return (
     <div
       ref={ref}
