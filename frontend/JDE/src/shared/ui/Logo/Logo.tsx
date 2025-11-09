@@ -25,7 +25,7 @@ export const Logo = React.forwardRef<HTMLDivElement, LogoProps>(
       <div
         ref={ref}
         className={cn(
-          "font-bold text-orange-500 select-none",
+          "font-bold text-primary select-none",
           sizeStyles[size],
           className
         )}
