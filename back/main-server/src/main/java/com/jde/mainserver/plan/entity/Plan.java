@@ -1,7 +1,7 @@
 package com.jde.mainserver.plan.entity;
 
 import com.jde.mainserver.global.common.BaseEntity;
-import com.jde.mainserver.groups.entity.Group;
+import com.jde.mainserver.rooms.entity.Room;
 import com.jde.mainserver.plan.entity.enums.PlanDecisionTool;
 import com.jde.mainserver.plan.entity.enums.PlanPriceRange;
 import com.jde.mainserver.plan.entity.enums.PlanStatus;
@@ -9,6 +9,7 @@ import com.jde.mainserver.restaurants.entity.Restaurant;
 
 // JPA (Jakarta Persistence)  관련, 엔티티와 DB 매핑할 때 사용하는 어노테이션
 import jakarta.persistence.Column; // 필드를 DB 칼럼과 매핑하면서 세부 옵션 지정 (길이, not null ...)
+import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity; // "DB 테이블과 매핑되는 JPA 엔티티임"
 import jakarta.persistence.Enumerated; // ENUM 사용
 import jakarta.persistence.EnumType;
@@ -20,7 +21,6 @@ import jakarta.persistence.Table; // 매핑될 DB 테이블 이름 지정
 import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToOne;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -32,6 +32,7 @@ import lombok.AllArgsConstructor; // 모든 필드를 받는 생성자 자동 �
 import lombok.AccessLevel; // 생성자 접근 수준 지정할 때 사용
 import lombok.Builder; // 빌더 패턴 자동 생성
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
@@ -66,9 +67,9 @@ public class Plan extends BaseEntity {
 
     // DateTime? LocalDateTime?
     @Column(name = "starts_at", nullable = true)
-    private String startsAt;
+    private LocalDateTime startsAt;
 
-    // @ElementCollection
+    @ElementCollection
     @Column(name = "dislike_categories", nullable = true)
     private List<String> dislikeCategories;
 
@@ -84,15 +85,11 @@ public class Plan extends BaseEntity {
     @Column(name = "decision_tool", nullable = true)
     private PlanDecisionTool decisionTool;
 
-    // 참조는 대문자로 하는 것이 낫지 않을까?
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "group_id")
-    private Group Group;
+    @JoinColumn(name = "room_id")
+    private Room room;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "restaurant_id")
-    private Restaurant Restaurant;
-
-//    @OneToOne(fetch = FetchType.EAGER, mappedBy = "planParticipantId")
-//    private User hostUser;
+    private Restaurant restaurant;
 }
