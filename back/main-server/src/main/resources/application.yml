@@ -7,7 +7,7 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: update  # (또는 validate, create-drop)
+      ddl-auto: update # (또는 validate, create-drop)
     properties:
       hibernate:
         format_sql: true
@@ -33,3 +33,9 @@ logging:
   level:
     org.hibernate.SQL: debug
     org.hibernate.type.descriptor.sql.BasicBinder: trace
+
+# 외부 점수 엔진(FastAPI) 호출 base URL
+# 환경 변수 SCORE_API_BASE로 오버라이드 가능 (배포 환경에서 사용)
+score:
+  api:
+    base: ${SCORE_API_BASE:http://ai:8000}
