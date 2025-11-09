@@ -12,32 +12,32 @@ interface CircularButtonProps
   icon: React.ReactNode;
 }
 
-// 타입별 색상 정의
+// 타입별 색상 정의 (global.css의 @theme 색상 사용)
 const typeConfig = {
   dislike: {
-    color: "#EF4444", // red-500
-    hover: "hover:bg-[#EF4444]",
-    focus: "focus-visible:shadow-[0_0_0_8px_rgba(239,68,68,0.3)]",
+    text: "text-error", // 에러 색상
+    hover: "hover:bg-error",
+    focus: "focus-visible:ring-4 focus-visible:ring-error/30",
   },
   confirm: {
-    color: "#22C55E", // green-500
-    hover: "hover:bg-[#22C55E]",
-    focus: "focus-visible:shadow-[0_0_0_8px_rgba(34,197,94,0.3)]",
+    text: "text-success", // 성공 색상
+    hover: "hover:bg-success",
+    focus: "focus-visible:ring-4 focus-visible:ring-success/30",
   },
   next: {
-    color: "#EAB308", // yellow-500
-    hover: "hover:bg-[#EAB308]",
-    focus: "focus-visible:shadow-[0_0_0_8px_rgba(234,179,8,0.3)]",
+    text: "text-warning", // 경고 색상
+    hover: "hover:bg-warning",
+    focus: "focus-visible:ring-4 focus-visible:ring-warning/30",
   },
   bookmark: {
-    color: "#FF8904", // 브랜드 컬러
-    hover: "hover:bg-[#FF8904]",
-    focus: "focus-visible:shadow-[0_0_0_8px_rgba(255,137,4,0.3)]",
+    text: "text-primary", // 브랜드 주요 색상
+    hover: "hover:bg-primary",
+    focus: "focus-visible:ring-4 focus-visible:ring-primary/30",
   },
   info: {
-    color: "#3B82F6", // blue-500
-    hover: "hover:bg-[#3B82F6]",
-    focus: "focus-visible:shadow-[0_0_0_8px_rgba(59,130,246,0.3)]",
+    text: "text-info", // 정보 색상
+    hover: "hover:bg-info",
+    focus: "focus-visible:ring-4 focus-visible:ring-info/30",
   },
 };
 
@@ -62,10 +62,13 @@ export const CircularButton = React.forwardRef<
         "hover:text-white active:text-white",
         "disabled:bg-white",
 
-        // hover/active 시 배경 색상 (모든 타입 동일)
+        // 기본 아이콘 색상 (Tailwind 클래스)
+        config.text,
+
+        // hover/active 시 배경 색상
         config.hover,
 
-        // focus 상태 (모든 타입 동일)
+        // focus 상태
         "focus-visible:bg-white",
         "focus-visible:outline-none",
         config.focus,
@@ -79,13 +82,6 @@ export const CircularButton = React.forwardRef<
 
         className
       )}
-      style={
-        {
-          // 기본 아이콘 색상
-          color: config.color,
-          // focus 시 아이콘 색상 유지
-        } as React.CSSProperties
-      }
       {...props}
     >
       {/* 아이콘 크기 자동 조절 */}
