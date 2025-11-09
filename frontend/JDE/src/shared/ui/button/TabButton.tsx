@@ -26,17 +26,17 @@ export const TabButton = React.forwardRef<HTMLButtonElement, TabButtonProps>(
           "flex flex-col items-center justify-center",
           "gap-1",
 
-          // 색상 (활성/비활성)
-          isActive ? "text-orange-500" : "text-neutral-500",
+          // 색상 (활성/비활성) - global.css 정의 색상 사용
+          isActive ? "text-primary" : "text-muted",
 
           // 트랜지션 효과
           "transition-colors duration-200",
 
           // 호버 효과
-          !isActive && "hover:text-neutral-700",
+          !isActive && "hover:text-secondary",
 
           // 포커스 효과
-          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2 rounded-lg",
+          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 rounded-lg",
 
           className
         )}

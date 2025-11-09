@@ -42,10 +42,10 @@ export default function AppLayout({ children }: Props) {
   const showNavBar = shouldShowBottomNavBar();
 
   return (
-    <div className="min-h-screen bg-gray-100 flex justify-center">
+    <div className="min-h-screen flex justify-center">
       {/* 메인 콘텐츠 컨테이너: 모바일 전체 너비, sm 이상에서 max-w-[640px] */}
       <main
-        className={`w-full min-w-[320px] sm:max-w-[640px] bg-white shadow-sm ${
+        className={`w-full min-w-[320px] sm:max-w-[640px] shadow-sm ${
           showNavBar ? "pb-[86px]" : ""
         }`}
       >
