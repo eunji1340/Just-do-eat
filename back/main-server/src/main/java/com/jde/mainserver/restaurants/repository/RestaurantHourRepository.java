@@ -1,5 +1,3 @@
-package com.jde.mainserver.restaurants.repository;
-
 /**
  * restaurants/repository/RestaurantHourRepository.java
  * 식당 영업 시간 레포지토리
@@ -8,6 +6,7 @@ package com.jde.mainserver.restaurants.repository;
  *
  */
 
+package com.jde.mainserver.restaurants.repository;
 
 import com.jde.mainserver.restaurants.entity.RestaurantHour;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -27,7 +26,4 @@ public interface RestaurantHourRepository extends JpaRepository<RestaurantHour, 
 
     /** 여러 식당에 대한 영업시간 일괄 조회 (Feed/추천용 배치 조회 시 유용) */
     List<RestaurantHour> findByRestaurant_IdIn(List<Long> restaurantIds);
-
-    /** 특정 식당의 영업시간 모두 삭제 (식당 삭제/재수집 시 정리) */
-    long deleteByRestaurant_Id(Long restaurantId);
 }

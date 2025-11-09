@@ -23,7 +23,7 @@ public class RestaurantHour extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "hour_id")
+    @Column(name = "restaurant_hour_id")
     private Long id;
 
     /** 식당 엔티티 참조 (N:1)
@@ -35,7 +35,7 @@ public class RestaurantHour extends BaseEntity {
     private Restaurant restaurant;
 
     /** 요일 (Day of Week)
-     *  - 1=월요일, 7=일요일
+     *  - 0=공휴일, 1=월요일, 2=화요일, 3=수요일, 4=목요일, 5=금요일, 6=토요일, 7=일요일
      *  - 주간 단위 영업패턴 관리용
      */
     private Integer dow;
@@ -57,7 +57,9 @@ public class RestaurantHour extends BaseEntity {
     private LocalTime breakClose;
 
     /** 휴무 여부
-     *  - true면 해당 요일은 영업하지 않음
+     *  - true면 해당 요일은 영업하지 않음 (쉬는날)
+     *  - SQL에서는 period='공휴일'일 때 true로 설정됨
+     *  - 일반 요일에서 휴무인 경우도 true로 설정 가능
      */
     @Column(name = "is_holiday")
     private Boolean isHoliday;
