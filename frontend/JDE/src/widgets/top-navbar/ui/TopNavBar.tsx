@@ -2,7 +2,7 @@ import * as React from "react";
 import { Search, Bell, ChevronLeft } from "lucide-react";
 import { cn } from "@/shared/lib/utils";
 import { Logo } from "@/shared/ui/Logo";
-import type { TopNavBarAllProps } from "../model/types";
+import type { TopNavBarAllProps, DefaultTopNavBarProps, AuthTopNavBarProps, SearchTopNavBarProps } from "../model/types";
 
 /**
  * 상단 네비게이션 바
@@ -26,7 +26,7 @@ export const TopNavBar = (props: TopNavBarAllProps) => {
    * Default variant: 로고 + 검색 + 알림
    */
   if (variant === "default") {
-    const { onSearchClick, onNotificationClick } = props;
+    const { onSearchClick, onNotificationClick } = props as DefaultTopNavBarProps;
 
     return (
       <header className={containerClass}>
@@ -57,7 +57,7 @@ export const TopNavBar = (props: TopNavBarAllProps) => {
    * Auth variant: 뒤로가기 + 제목
    */
   if (variant === "auth") {
-    const { title, onBack } = props;
+    const { title, onBack } = props as AuthTopNavBarProps;
 
     return (
       <header className={containerClass}>
@@ -77,7 +77,7 @@ export const TopNavBar = (props: TopNavBarAllProps) => {
    * Search variant: 뒤로가기 + 검색 입력창 + 검색 버튼
    */
   if (variant === "search") {
-    const { searchValue, onSearchChange, onSearch, onBack } = props;
+    const { searchValue, onSearchChange, onSearch, onBack } = props as SearchTopNavBarProps;
 
     return (
       <header className={containerClass}>
@@ -114,7 +114,7 @@ export const TopNavBar = (props: TopNavBarAllProps) => {
    * My variant: 마이 + 검색 + 알림
    */
   if (variant === "my") {
-    const { onSearchClick, onNotificationClick } = props;
+    const { onSearchClick, onNotificationClick } = props as DefaultTopNavBarProps;
 
     return (
       <header className={containerClass}>
