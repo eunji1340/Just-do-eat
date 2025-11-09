@@ -1,49 +1,58 @@
-// src/pages/home/HomePage.tsx
+// src/pages/main/MainPage.tsx
 // 목적: 메인(홈) 화면 레이아웃 구성 (단일 책임: 배치와 섹션 호출)
-// 교체 포인트: Header/Footer → shared/ui 컴포넌트 교체, 섹션들 API 연동
 
-import NearbyRankingSection from '../../widgets/ranking/NearbyRankingSection'
-import PersonalizedEntryButton from '../../widgets/entry/PersonalizedEntryButton'
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { TopNavBar } from "@/widgets/top-navbar";
+import { LocationSelector } from "@/widgets/location-selector";
+import { FeedbackBanner } from "@/widgets/feedback-banner";
+import PersonalizedEntryButton from "../../widgets/entry/PersonalizedEntryButton";
+import { RecommendationSection } from "@/widgets/recommendation-section/ui";
+import { DistrictSelectorModal } from "@/features/district-selector";
+import type { District } from "@/entities/district";
+import { popularDistricts } from "@/entities/district";
 
 export default function MainPage() {
+  const navigate = useNavigate();
+
+  // 상권 선택 상태
+  const [selectedDistrict, setSelectedDistrict] = useState<District>(
+    popularDistricts[0] // 기본값: 역삼역
+  );
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
   return (
-    
-    <main className="min-h-dvh bg-gradient-to-b from-gray-50 to-white">
-      {/* 교체 포인트: 공통 헤더 */}
-      <header className="sticky top-0 z-10 backdrop-blur bg-white/70 border-b">
-        <div className="max-w-5xl mx-auto px-4 py-3">
-          <div className="flex items-center justify-between">
-            <h1 className="font-bold tracking-tight">JUST DO EAT</h1>
-            <nav className="text-sm text-gray-600">
-              {/* 예비: 로그인 / 마이페이지 */}
-              <button className="px-3 py-1.5 rounded-lg border hover:bg-gray-50">로그인</button>
-            </nav>
-          </div>
+    <>
+      {/* 상단 네비바 */}
+      <TopNavBar variant="default" onSearchClick={() => navigate("/search")} />
+
+      {/* 메인 콘텐츠 */}
+      <div className="md:py-10 space-y-4">
+        {/* 상권 선택 섹션 */}
+        <div className="flex justify-center px-3">
+          <LocationSelector
+            location={selectedDistrict.name}
+            onClick={() => setIsModalOpen(true)}
+          />
         </div>
-      </header>
 
-      {/* 콘텐츠 */}
-      <div className="max-w-5xl mx-auto px-4 py-6 md:py-10 space-y-6">
-        {/* CTA: 스와이프 진입 */}
-          <section className="flex flex-col items-center">
-            <div className="w-full max-w-[600px]">
-              <PersonalizedEntryButton />  {/* img: w-full h-auto block */}
-              <button className="block w-full rounded-none border-t-0">
-                지금 바로 추천받기 🍽️
-              </button>
-            </div>
-          </section>
+        {/* 최근 방문 식당 확인 배너 */}
+        <FeedbackBanner />
 
-        {/* 근처 인기 식당 Top 10 */}
-        <NearbyRankingSection />
+        {/* 개인 추천 피드 진입 */}
+        <PersonalizedEntryButton />
+
+        {/* 다양한 타입의 추천 식당리스트 */}
+        <RecommendationSection districtName={selectedDistrict.name} />
       </div>
 
-      {/* 교체 포인트: 공통 푸터 */}
-      <footer className="border-t mt-16">
-        <div className="max-w-5xl mx-auto px-4 py-6 text-xs text-gray-500">
-          © {new Date().getFullYear()} JUST DO EAT
-        </div>
-      </footer>
-    </main>
-  )
+      {/* 상권 선택 모달 */}
+      <DistrictSelectorModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        selectedDistrictId={selectedDistrict.id}
+        onSelect={setSelectedDistrict}
+      />
+    </>
+  );
 }
