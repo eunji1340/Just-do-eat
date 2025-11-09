@@ -35,11 +35,15 @@ pipeline {
                 sh '''
                     cd ${WORK_DIR}
 
-                    echo "📦 Installing dependencies..."
-                    npm install
+                    echo "🧹 Clean node_modules and lockfile..."
+      		    rm -rf node_modules package-lock.json
+      		    npm cache clean --force
 
-                    echo "🏗️ Building frontend..."
-                    npm run build
+      		    echo "📦 Installing dependencies (fresh)..."
+      		    npm install
+
+     		    echo "🏗️ Building frontend..."
+      		    npm run build
                 '''
             }
         }
