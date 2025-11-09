@@ -36,6 +36,10 @@ class CandidateFeature(BaseModel):
         default_factory=dict,
         description="ERD: Restaurant_tag - {tag_id: {weight, confidence}}"
     )
+    pref_score: float | None = Field(
+        default=None,
+        description="User_Restaurant_State.pref_score 전달용 개인 선호 점수"
+    )
 
 class UserPrefFeature(BaseModel):
     """
