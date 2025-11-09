@@ -3,6 +3,7 @@
 
 import { useNavigate } from "react-router-dom";
 import { TopNavBar } from "@/widgets/top-navbar";
+import { LocationSelector } from "@/widgets/location-selector";
 import { FeedbackBanner } from "@/widgets/feedback-banner";
 import PersonalizedEntryButton from "../../widgets/entry/PersonalizedEntryButton";
 import { RecommendationSection } from "@/widgets/recommendation-section/ui";
@@ -17,8 +18,10 @@ export default function MainPage() {
 
       {/* 메인 콘텐츠 */}
       <div className="md:py-10 space-y-6">
-        {/* 추천받을 상권 선택 섹션, 왼쪽정렬 px-3,
-        [<PinIcon>강남역 <아래다운츄버아이콘> */}
+        {/* 지역 선택 섹션 */}
+        <div className="flex justify-center px-3">
+          <LocationSelector location="지역선택" />
+        </div>
 
         {/* 최근 방문 식당 확인 배너 */}
         <FeedbackBanner />
