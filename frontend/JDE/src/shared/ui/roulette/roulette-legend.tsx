@@ -1,6 +1,5 @@
 // 목적: 후보 리스트/가중치/색상 범례 (단일 책임: 리스트 UI)
 
-import * as React from "react";
 import type { RouletteItem } from "@/entities/roulette/types";
 
 type Props = {
