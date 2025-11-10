@@ -39,3 +39,11 @@ logging:
 score:
   api:
     base: ${SCORE_API_BASE:http://ai:8000}
+
+# JWT 설정
+# 환경 변수로 오버라이드 가능 (배포 환경에서 사용)
+# secret은 Base64로 인코딩된 256비트(32바이트) 키여야 합니다
+jwt:
+  secret: ${JWT_SECRET:dGhpc2lzYXNlY3JldGtleWZvcmp3dHRva2Vuc2lnbmluZ2FuZHZlcmlmaWNhdGlvbg==}
+  access-token-ttl-ms: ${JWT_ACCESS_TOKEN_TTL_MS:3600000}  # 1시간 (기본값)
+  refresh-token-ttl-ms: ${JWT_REFRESH_TOKEN_TTL_MS:604800000}  # 7일 (기본값)
