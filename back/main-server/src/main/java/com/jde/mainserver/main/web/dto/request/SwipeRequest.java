@@ -19,7 +19,6 @@ import lombok.Setter;
 	description = "스와이프 액션 요청",
 	example = """
 		{
-		  "userId": 1,
 		  "restaurantId": 1001,
 		  "action": "SELECT"
 		}
@@ -30,10 +29,6 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class SwipeRequest {
-
-    @Schema(description = "유저 ID", example = "1")
-    @NotNull
-    private Long userId;
 
     @Schema(description = "식당 ID", example = "1001")
     @NotNull
