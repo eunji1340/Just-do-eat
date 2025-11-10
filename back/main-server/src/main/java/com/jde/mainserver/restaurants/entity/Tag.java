@@ -1,5 +1,3 @@
-package com.jde.mainserver.restaurants.entity;
-
 /**
  * restaurants/entity/Tag.java
  * 태그 엔티티
@@ -7,12 +5,16 @@ package com.jde.mainserver.restaurants.entity;
  * Date: 2025-11-03
  */
 
+package com.jde.mainserver.restaurants.entity;
+
 import com.jde.mainserver.global.common.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
-@Table(name = "tag")
+@Table(name = "tag", uniqueConstraints = {
+    @UniqueConstraint(columnNames = {"type", "name"})
+})
 @Getter
 @Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -23,8 +25,8 @@ public class Tag extends BaseEntity {
     @Column(name = "tag_id")
     private Long id;
 
-    /** 태그명 (유니크) */
-    @Column(nullable = false, length = 50, unique = true)
+    /** 태그명 */
+    @Column(nullable = false, length = 100)
     private String name;
 
     /** 태그 유형(분류) */
@@ -33,14 +35,17 @@ public class Tag extends BaseEntity {
     private TagType type;
 
     public enum TagType {
-        /** 맛(매운맛/달달함 등) */          FLAVOR,
-        /** 재료(소고기/문어 등) */          INGREDIENT,
-        /** 조리법(튀김/구이 등) */          METHOD,
-        /** 식감(바삭함/촉촉함 등) */        TEXTURE,
-        /** 온도(냉/온 등) */               TEMPERATURE,
-        /** 베이스(국물/비빔 등) */          BASE,
-        /** 분위기(캐주얼/모던 등) */        AMBIENCE,
-        /** 상황/목적(회식/데이트 등) */     SITUATION_PURPOSE,
-        /** 가격/편의(가성비/주차 등) */     PRICE_AMENITY
+        FLAVOR,        // 맛(달달한/고급진)
+        INGREDIENT,    // 재료
+        METHOD,        // 조리법
+        TEXTURE,       // 식감
+        TEMPERATURE,   // 온도
+        BASE,          // 기본
+        AMBIENCE,      // 분위기(고급스러운/귀여운)
+        SITUATION,       // 상황
+        PRICE_AMENITY, // 가격/편의
+        PURPOSE,       // 방문 목적(기념일/데이트)
+        COMPANION,     // 동반인(친구·지인/가족)
+        TBC            // 분류 대기
     }
 }
