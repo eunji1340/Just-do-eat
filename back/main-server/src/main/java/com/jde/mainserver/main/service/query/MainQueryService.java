@@ -39,5 +39,15 @@ public interface MainQueryService {
 	 * @return 점수 계산 결과를 담은 응답 DTO
 	 */
 	PersonalScoreResponse getPersonalFeed(long userId, int top, boolean debug, Map<String, Object> ctx);
+
+	/**
+	 * 최근 선택한 식당을 조회합니다.
+	 *
+	 * 사용자가 가장 최근에 SELECT 액션으로 선택한 식당을 조회합니다.
+	 *
+	 * @param userId 사용자 ID
+	 * @return 최근 선택한 식당 정보 (없으면 null)
+	 */
+	com.jde.mainserver.main.web.dto.response.LastSelectedRestaurantResponse getLastSelectedRestaurant(Long userId);
 }
 

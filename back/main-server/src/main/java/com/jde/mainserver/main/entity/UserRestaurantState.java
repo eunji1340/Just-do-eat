@@ -77,6 +77,9 @@ public class UserRestaurantState extends BaseEntity{
 	@Column(name = "pref_score", precision = 6, scale = 3, nullable = false)
 	private BigDecimal prefScore;
 
+	@Column(name = "is_visited")
+	private Boolean isVisited;  // null = 미응답, true = 방문함, false = 방문 안 함
+
 	@PrePersist
 	private void prePersist() {
 		if (isSaved == null) isSaved = false;                  // null 방지
