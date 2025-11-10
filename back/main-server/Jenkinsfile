@@ -1,45 +1,47 @@
 pipeline {
-    agent any
+  agent any
+  options { disableConcurrentBuilds(); timestamps() }
 
-    environment {
-        APP_NAME = "jde-backend"
-        IMAGE_NAME = "jde-backend:latest"
+  stages {
+    stage('Checkout') {
+      steps {
+        cleanWs()
+        checkout scm
+      }
     }
 
-    stages {
-        stage('Checkout') {
-            steps {
-                checkout scm
-            }
-        }
-
-        stage('Build Docker Image') {
-            steps {
-                sh '''
-                    cd back/main-server
-                    docker build -t ${IMAGE_NAME} .
-                '''
-            }
-        }
-
-        stage('Deploy') {
-            steps {
-                sh '''
-                    docker stop ${APP_NAME} || true
-                    docker rm ${APP_NAME} || true
-		    
-		    # 독커 네트워크 묵기
-		    docker network inspect JDE-local-network >/dev/null 2>&1 || docker network create JDE-local-network
-                    docker run -d --name ${APP_NAME} --network JDE-local-network -p 8080:8080 ${IMAGE_NAME}
-                    
-                '''
-            }
-        }
+    stage('Build Backend') {
+      steps {
+        sh '''
+          set -e
+          cd back/main-server
+          chmod +x gradlew || true
+          ./gradlew clean build -x test
+          # 또는 도커 빌드라면:
+          # cd ../
+          # docker compose -f docker-compose.yml --env-file .env build
+        '''
+      }
     }
 
-    post {
-        always {
-            cleanWs()
-        }
+    stage('Deploy (copy only)') {
+      steps {
+        sh '''
+          set -e
+          # rsync가 없다면: sudo apt-get update && sudo apt-get install -y rsync
+          # 배포 폴더로 "복사만" (여기선 git 금지)
+          rsync -a --delete \
+            --exclude 'back/.env' \
+            --exclude 'back/docker-compose.yml' \
+            --exclude 'frontend/.env' \
+            --exclude '**/uploads/**' \
+            --exclude '**/data/**' \
+            "$WORKSPACE"/ /home/ubuntu/projects/S13P31A701/
+
+          # 필요 시 권한 한 번만 맞추세요(처음 1회)
+          # sudo chown -R ubuntu:ubuntu /home/ubuntu/projects/S13P31A701
+        '''
+      }
     }
+  }
 }
