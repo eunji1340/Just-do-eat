@@ -12,6 +12,7 @@ docker-compose.override.yml
 *.iml
 *.ipr
 *.iws
+*.jar
 
 # OS 관련
 .DS_Store
@@ -24,3 +25,22 @@ logs/
 # 임시 파일
 *.tmp
 *.temp
+
+# Gradle
+.gradle/
+build/
+
+# Eclipse 계열 (혹시 쓴다면)
+.classpath
+.project
+.settings/
+
+# 컴파일 산출물
+out/
+bin/
+*.class
+
+# 임시/캐시
+tmp/
+*.swp
+*.swo
