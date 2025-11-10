@@ -4,6 +4,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useUserStore } from '../../entities/user/model/user-store';
+import customAxios from '../../shared/api/http';
 
 type MukbtiMatchType = {
   type: string;
@@ -41,17 +42,18 @@ export default function OnboardingResultPage() {
     }
 
     // API에서 상세 결과 정보 가져오기
-    fetch(`/api/onboarding/result/types/${targetTypeId}`)
-      .then((res) => {
-        if (!res.ok) throw new Error('결과를 불러올 수 없습니다.');
-        return res.json();
-      })
-      .then((data: MukbtiResultDetail) => {
-        setResultDetail(data);
+    customAxios({
+      method: 'GET',
+      url: `/onboarding/result/types/${targetTypeId}`,
+      meta: { authRequired: false }
+    })
+      .then((response: any) => {
+        setResultDetail(response.data);
         setLoading(false);
       })
-      .catch((err) => {
-        setError(err.message);
+      .catch((err: any) => {
+        const errorMessage = err.response?.data?.message || err.message || '결과를 불러올 수 없습니다.';
+        setError(errorMessage);
         setLoading(false);
       });
   }, [targetTypeId]);
@@ -61,12 +63,11 @@ export default function OnboardingResultPage() {
     
     setSharing(true);
     try {
-      await fetch('/api/onboarding/share', {
+      await customAxios({
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ typeId: targetTypeId }),
+        url: '/onboarding/share',
+        data: { typeId: targetTypeId },
+        meta: { authRequired: false }
       });
     } catch (err) {
       console.error('공유하기 요청 실패:', err);

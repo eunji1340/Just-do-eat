@@ -8,7 +8,8 @@ async function bootstrap() {
   // 라이트 모드를 기본으로 설정
   document.documentElement.setAttribute("data-theme", "light");
 
-  if (import.meta.env.DEV) {
+  // 환경 변수로 MSW 활성화 여부 제어
+  if (import.meta.env.DEV && import.meta.env.VITE_USE_MSW !== 'false') {
     const { initMsw } = await import("./mocks/browser");
     await initMsw();
   }
