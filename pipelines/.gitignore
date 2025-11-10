@@ -1,0 +1,7 @@
+# Python venv
+venv/
+.env/
+.env*/        # e.g. .env36, .env38
+.venv/
+**/venv/
+**/.venv/
