@@ -1,7 +1,7 @@
 // 목적: 룰렛 스핀 로직 + 회전 각도 계산 (단일 책임: 비즈니스 로직만)
 // 사용: 컴포넌트는 angle/transition만 받아서 그려주고, 결과 콜백으로 알림
 
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { RouletteItem } from "@/entities/roulette/types";
 import { weightedPick } from "@/shared/lib/random";
 
@@ -26,10 +26,15 @@ export type SpinResult = {
 type Options = {
   items: RouletteItem[];
   onFinish?: (result: SpinResult) => void;
-  /** 스핀 한 바퀴 수(기본 6)와 추가 랜덤 회전값을 조합 */
-  baseTurns?: number; // 기본 6
-  durationMs?: number; // 기본 4200ms
+  /** 스핀 한 바퀴 수(기본 6) + 목표 정렬에 필요한 잔여각 */
+  baseTurns?: number;   // 기본 6
+  durationMs?: number;  // 기본 4200
 };
+
+/** 각도 정규화(0~360) */
+const norm = (d: number) => ((d % 360) + 360) % 360;
+
+const POINTER_DEG = 0;
 
 export function useRoulette({
   items,
@@ -37,73 +42,27 @@ export function useRoulette({
   baseTurns = 6,
   durationMs = 4200,
 }: Options) {
-  const [angle, setAngle] = useState(0); // 현재 총 회전 각도 (누적)
+  const [angle, setAngle] = useState(0);      // 누적 각도(CSS rotate에 그대로 적용)
   const [spinning, setSpinning] = useState(false);
   const [lastIndex, setLastIndex] = useState<number | null>(null);
   const timerRef = useRef<number | null>(null);
 
-  // 섹터 각도(가중치 반영). 단, 렌더링은 conic-gradient로 간단화.
+  /** 가중치/팔레트/그라디언트 준비 */
   const weights = useMemo(() => items.map((it) => it.weight ?? 1), [items]);
   const totalWeight = useMemo(
     () => weights.reduce((a, b) => a + b, 0),
     [weights]
   );
-
-  const palette = useMemo(() => {
-    return items.map(
-      (it, i) => it.color || DEFAULT_COLORS[i % DEFAULT_COLORS.length]
-    );
-  }, [items]);
-
-  /** index를 룰렛 포인터(12시 방향)에 맞추기 위한 목표 각도 계산 */
-  const calcTargetAngle = useCallback(
-    (targetIndex: number) => {
-      // conic-gradient는 0deg가 3시 방향, 시계방향 증가. 여기선 12시 포인터에 맞추고 싶음.
-      // 각 섹터의 시작각/중앙각을 가중치 기반으로 구해 중앙에 포인터가 멈추게 함.
-      let start = 0; // 0~360 누적
-      for (let i = 0; i < items.length; i++) {
-        const share = (weights[i] / totalWeight) * 360;
-        if (i === targetIndex) {
-          const mid = start + share / 2; // 섹터 중앙각(3시 기준)
-          // 12시(= -90deg)에서 mid로 정렬하려면, 총 회전각을 (baseTurns*360 + (270 - mid)) 추가
-          const randomJitter = (Math.random() - 0.5) * 10; // ±5도 흔들림으로 덜 기계적 느낌
-          const target = baseTurns * 360 + (270 - (mid + randomJitter));
-          return target;
-        }
-        start += share;
-      }
-      // 방어적: 못 찾으면 0
-      return baseTurns * 360;
-    },
-    [items.length, totalWeight, weights, baseTurns]
+  const palette = useMemo(
+    () => items.map((it, i) => it.color || DEFAULT_COLORS[i % DEFAULT_COLORS.length]),
+    [items]
   );
-
-  const spin = useCallback(() => {
-    if (spinning || items.length === 0) return;
-    setSpinning(true);
-
-    const picked = weightedPick(items);
-    setLastIndex(picked);
-
-    const delta = calcTargetAngle(picked);
-    // 새 목표 각도 = 현 각도 + delta (항상 누적 회전)
-    const next = angle + delta;
-    setAngle(next);
-
-    // CSS transition 종료 시점 알림
-    if (timerRef.current) window.clearTimeout(timerRef.current);
-    timerRef.current = window.setTimeout(() => {
-      setSpinning(false);
-      onFinish?.({ index: picked, item: items[picked] });
-    }, durationMs);
-  }, [spinning, items, angle, calcTargetAngle, durationMs, onFinish]);
-
   const gradientStops = useMemo(() => {
-    // conic-gradient 문자열 생성 (가중치 기반 비율)
+    // conic-gradient: 3시가 0°, 시계방향 증가
     let acc = 0;
     return items
-      .map((it, i) => {
-        const share = (weights[i] / totalWeight) * 100; // %
+      .map((_, i) => {
+        const share = (weights[i] / totalWeight) * 100;
         const from = acc;
         const to = acc + share;
         acc = to;
@@ -112,12 +71,69 @@ export function useRoulette({
       .join(", ");
   }, [items, palette, totalWeight, weights]);
 
+  /** targetIndex가 포인터(12시)에 오도록 '현재 각도 기준' 증분 각도 계산 */
+  const calcDeltaToCenter = useCallback(
+    (targetIndex: number, currentAngle: number) => {
+      let start = 0; // 0~360 누적(CW), 기준은 3시
+      for (let i = 0; i < items.length; i++) {
+        const shareDeg = (weights[i] / totalWeight) * 360;
+        if (i === targetIndex) {
+          const mid = start + shareDeg / 2; // 슬라이스 중앙각(3시 기준)
+
+          // 지터를 슬라이스 내부로만 제한 (경계 튐 방지)
+          const half = shareDeg / 2;
+          const margin = Math.min(2, Math.max(0, half * 0.15)); // 최대 2°
+          const maxJitter = Math.max(0, half - margin);
+          const jitter = maxJitter === 0 ? 0 : (Math.random() * 2 - 1) * maxJitter;
+
+          // 현재 각도에서 추가로 얼마나 돌리면 "mid+jitter"가 12시(=270°)에 오는가?
+          const cur = norm(currentAngle);
+          const need = norm(POINTER_DEG - (mid + jitter) - cur);
+
+          // baseTurns는 미관용 여분 회전, need는 정렬에 필요한 잔여각
+          return baseTurns * 360 + need;
+        }
+        start += shareDeg;
+      }
+      return baseTurns * 360; // 방어 코드
+    },
+    [items.length, totalWeight, weights, baseTurns]
+  );
+
+  /** 스핀 실행 */
+  const spin = useCallback(() => {
+    if (spinning || items.length === 0) return;
+    setSpinning(true);
+
+    const picked = weightedPick(items); // 가중치로 먼저 뽑음(화면/콜백 일치의 핵심)
+    setLastIndex(picked);
+
+    // 현재 angle 기준으로 정확히 12시에 맞도록 증분각 계산
+    const delta = calcDeltaToCenter(picked, angle);
+    const next = angle + delta;
+    setAngle(next);
+
+    // 트랜지션 종료 시점에 콜백(지금은 타이머 방식, 필요시 onTransitionEnd로 교체 가능)
+    if (timerRef.current) window.clearTimeout(timerRef.current);
+    timerRef.current = window.setTimeout(() => {
+      setSpinning(false);
+      onFinish?.({ index: picked, item: items[picked] });
+    }, durationMs);
+  }, [spinning, items, angle, calcDeltaToCenter, durationMs, onFinish]);
+
+  /** 언마운트/재실행 시 타이머 정리 */
+  useEffect(() => {
+    return () => {
+      if (timerRef.current) window.clearTimeout(timerRef.current);
+    };
+  }, []);
+
   return {
-    angle,
+    angle,          // CSS: transform: rotate(${angle}deg)
     spinning,
     lastIndex,
     durationMs,
-    gradientStops,
+    gradientStops,  // CSS: background: conic-gradient(${gradientStops})
     palette,
     spin,
   } as const;

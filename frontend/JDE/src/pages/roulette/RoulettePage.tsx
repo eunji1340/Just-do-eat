@@ -10,32 +10,31 @@ const MOCK: RouletteItem[] = [
   { id: "r2", label: "을지로 골뱅이", weight: 1, color: "#4ECDC4" },
   { id: "r3", label: "김밥행", weight: 1, color: "#FFD93D" },
   { id: "r4", label: "춘삼식당", weight: 1, color: "#6C5CE7" },
-  { id: "r5", label: "푸주옥", weight: 2, color: "#45AAF2" },
+  { id: "r5", label: "푸주옥", weight: 1, color: "#45AAF2" },
 ];
 
 export default function RoulettePage() {
   const [items] = React.useState<RouletteItem[]>(MOCK);
-
   const { angle, spinning, durationMs, gradientStops, spin } = useRoulette({
     items,
-    onFinish: ({ item }) => {
-      alert(`오늘은 ➜ ${item.label}!`);
-    },
+    onFinish: ({ item }) => alert(`오늘은 ➜ ${item.label}!`),
   });
 
   return (
-    <main className="min-h-dvh bg-gradient-to-b from-gray-50 to-white">
-      {/* 헤더 + 중앙정렬 영역 */}
+    <main className="min-h-dvh bg-surface">
       <div className="mx-auto max-w-7xl px-4 py-6 md:py-10">
-        <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight text-center">
-          모임 장소 룰렛
-        </h1>
-        <p className="mt-1 text-sm text-gray-600 text-center">
-          후보 중 하나를 랜덤으로 골라 보세요.
-        </p>
+        {/* 상단 제목/설명 */}
+        <header className="text-center space-y-1">
+          <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight">
+            모임 장소 룰렛
+          </h1>
+          <p className="text-sm text-muted-foreground">
+            후보 중 하나를 랜덤으로 골라 보세요.
+          </p>
+        </header>
 
-        {/* 룰렛 단독, 화면에 가득 차도록 */}
-        <div className="mt-6 grid place-items-center">
+        {/* 제목과 휠 사이 여백만 주기 */}
+        <section className="mt-6 md:mt-8 lg:mt-10 grid place-items-center">
           <RouletteWheel
             items={items}
             gradientStops={gradientStops}
@@ -44,8 +43,10 @@ export default function RoulettePage() {
             spinning={spinning}
             onSpin={spin}
           />
-        </div>
+        </section>
       </div>
     </main>
   );
 }
+
+
