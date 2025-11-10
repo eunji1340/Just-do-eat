@@ -3,6 +3,7 @@ package com.jde.mainserver.rooms.entity;
 import com.jde.mainserver.global.common.BaseEntity;
 
 // JPA (Jakarta Persistence)  관련, 엔티티와 DB 매핑할 때 사용하는 어노테이션
+import com.jde.mainserver.member.entity.Member;
 import jakarta.persistence.*;
 
 // Lombok 관련, 반복 코드(Getter, 생성자, Builder 등)를 자동으로 생성해주는 라이브러리
@@ -28,19 +29,19 @@ public class RoomMember extends BaseEntity {
     private boolean isDel;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "room_id")
+    @JoinColumn(name = "room_id", nullable = false)
     private Room room;
 
-//    @ManyToOne(fetch = FetchType.LAZY)
-//    @JoinColumn(name = "user_id")
-//    private User userId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private Member user;
 
     // 연관 관계 편의 메서드
     // Room과의 관계를 DB에서도 맞추기 위해 어느 room에 속해 있는지를 설정하는 메서드
     public void setRoom(Room room) {
         this.room = room;
     }
-
+    public void setUser(Member user) { this.user = user; }
     public void softDelete() {
         this.isDel = true;
     }

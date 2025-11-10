@@ -1,5 +1,6 @@
 package com.jde.mainserver.rooms.service.command;
 
+import com.jde.mainserver.member.entity.Member;
 import com.jde.mainserver.rooms.entity.Room;
 import com.jde.mainserver.rooms.entity.RoomMember;
 import com.jde.mainserver.rooms.repository.RoomRepository;
@@ -16,7 +17,7 @@ public class CreateRoomCommandServiceImpl implements CreateRoomCommandService {
 
     private final RoomRepository roomRepository;
     @Override
-    public CreateRoomResponse createRoom(CreateRoomRequest request) {
+    public CreateRoomResponse createRoom(CreateRoomRequest request, Member user) {
 
         String roomName = request.getRoomName();
 
@@ -25,15 +26,14 @@ public class CreateRoomCommandServiceImpl implements CreateRoomCommandService {
                 .build();
 
         RoomMember roomMember = RoomMember.builder()
-//                .userId(User.getUserId())
+                .user(user)
                 .isDel(false)
                 .build();
 
         room.addMember(roomMember);
 
         Room savedRoom = roomRepository.save(room);
-        CreateRoomResponse r = new CreateRoomResponse();
 
-        return r;
+        return CreateRoomResponse.
     }
 }

@@ -10,6 +10,7 @@ import jakarta.persistence.GeneratedValue; // PK 값을 자동 생성 (auto incr
 import jakarta.persistence.GenerationType; // Identity, sequence, auto 등 PK 생성 전략 설정
 import jakarta.persistence.Id; // 엔티티 기본 키 (PK) 필드 표시
 import jakarta.persistence.Table; // 매핑될 DB 테이블 이름 지정
+import jakarta.persistence.CascadeType;
 
 import jakarta.persistence.FetchType;
 import jakarta.persistence.OneToMany;
@@ -43,10 +44,10 @@ public class Room extends BaseEntity {
     @Column(name = "room_name", length = 10)
     private String roomName;
 
-    @OneToMany(fetch = FetchType.EAGER, mappedBy = "room")
+    @OneToMany(fetch = FetchType.EAGER, mappedBy = "room", cascade = CascadeType.ALL)
     private List<RoomMember> roomMemberList;
 
-    @OneToMany(fetch = FetchType.EAGER, mappedBy = "planId")
+    @OneToMany(fetch = FetchType.EAGER, mappedBy = "room")
     private List<Plan> planList;
 
     // 편의 method로 양방향 일관성 유지
