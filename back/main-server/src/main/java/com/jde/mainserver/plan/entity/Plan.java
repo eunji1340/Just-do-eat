@@ -31,6 +31,7 @@ import lombok.NoArgsConstructor; // 파라미터 없는 생성자 자동 생성
 import lombok.AllArgsConstructor; // 모든 필드를 받는 생성자 자동 생성
 import lombok.AccessLevel; // 생성자 접근 수준 지정할 때 사용
 import lombok.Builder; // 빌더 패턴 자동 생성
+import org.locationtech.jts.geom.Point;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -52,14 +53,8 @@ public class Plan extends BaseEntity {
     @Column(name = "plan_name", length = 10, nullable = false)
     private String planName;
 
-    // Kakao local API에서 String으로 받음
-    @NotBlank
-    @Column(name = "center_lat", nullable = false)
-    private String centerLat;
-
-    @NotBlank
-    @Column(name = "center_lng", nullable = false)
-    private String centerLng;
+    @Column(name = "plan_geom")
+    private Point planGeom;
 
     @NotBlank
     @Column(name = "radius_m", nullable = false)
