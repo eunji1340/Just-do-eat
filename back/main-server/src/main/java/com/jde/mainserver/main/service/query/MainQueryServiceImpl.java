@@ -12,6 +12,7 @@ import com.jde.mainserver.restaurants.entity.RestaurantTag;
 import com.jde.mainserver.restaurants.repository.RestaurantRepository;
 import com.jde.mainserver.restaurants.repository.RestaurantTagRepository;
 import com.jde.mainserver.main.repository.CandidateRepository;
+import com.jde.mainserver.main.repository.UserRestaurantStateRepository;
 import com.jde.mainserver.main.repository.UserTagPrefRepository;
 import com.jde.mainserver.main.repository.http.ScoreEngineHttpClient;
 import com.jde.mainserver.main.web.dto.request.PersonalScoreRequest;
@@ -49,6 +50,7 @@ public class MainQueryServiceImpl implements MainQueryService {
 	private final RestaurantRepository restaurantRepository;
 	private final RestaurantTagRepository restaurantTagRepository;
 	private final RedisTemplate<String, Object> redisTemplate;
+	private final UserRestaurantStateRepository userRestaurantStateRepository;
 
 	public MainQueryServiceImpl(
 		UserTagPrefRepository userTagPrefRepository,
@@ -56,7 +58,8 @@ public class MainQueryServiceImpl implements MainQueryService {
 		ScoreEngineHttpClient scoreEngineHttpClient,
 		RestaurantRepository restaurantRepository,
 		RestaurantTagRepository restaurantTagRepository,
-		RedisTemplate<String, Object> redisTemplate
+		RedisTemplate<String, Object> redisTemplate,
+		UserRestaurantStateRepository userRestaurantStateRepository
 	) {
 		this.userTagPrefRepository = userTagPrefRepository;
 		this.candidateRepository = candidateRepository;
@@ -64,6 +67,7 @@ public class MainQueryServiceImpl implements MainQueryService {
 		this.restaurantRepository = restaurantRepository;
 		this.restaurantTagRepository = restaurantTagRepository;
 		this.redisTemplate = redisTemplate;
+		this.userRestaurantStateRepository = userRestaurantStateRepository;
 	}
 
 	/** 피드 배치 조회 (cursor 없으면 첫 요청, 숫자면 해당 인덱스부터) */
@@ -473,6 +477,37 @@ public class MainQueryServiceImpl implements MainQueryService {
 			: sortedItems;
 
 		return new PersonalScoreResponse(finalItems, res.debug());
+	}
+
+	@Override
+	public com.jde.mainserver.main.web.dto.response.LastSelectedRestaurantResponse getLastSelectedRestaurant(Long userId) {
+		// 최근 SELECT 액션으로 선택한 식당 상태 조회
+		var stateOpt = userRestaurantStateRepository.findLastSelectedByUserId(userId);
+		if (stateOpt.isEmpty()) {
+			return null;
+		}
+
+		var state = stateOpt.get();
+		
+		// 방문 피드백을 처리한 경우(is_visited가 null이 아닌 경우) 최근 선택 식당으로 노출하지 않음
+		if (state.getIsVisited() != null) {
+			return null;
+		}
+
+		Long restaurantId = state.getId().getRestaurantId();
+
+		// 식당 정보 조회
+		var restaurantOpt = restaurantRepository.findById(restaurantId);
+		if (restaurantOpt.isEmpty()) {
+			return null;
+		}
+
+		var restaurant = restaurantOpt.get();
+
+		return com.jde.mainserver.main.web.dto.response.LastSelectedRestaurantResponse.builder()
+			.restaurantId(restaurantId)
+			.name(restaurant.getName())
+			.build();
 	}
 
 	/** 식당 ID와 메타정보 (거리, 영업 상태 등) - Redis 직렬화를 위해 일반 클래스로 정의 */
