@@ -4,39 +4,46 @@
 
 import { Link } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
+import { Card, CardContent, CardFooter } from "@/shared/ui/shadcn/card";
 
 export default function PersonalizedEntryButton() {
   return (
     // 개인추천피드 페이지로 변경하기
     <Link to="/swipe" className="block w-full">
-      <div className="bg-white overflow-hidden">
+      <Card className="mx-4 overflow-hidden shadow-md pb-0 gap-0">
         {/* 상단: 이미지 + 텍스트 */}
-        <div className="flex items-center p-6 gap-4">
-          {/* 캐릭터 이미지 */}
-          <img
-            src="/cute_man.png"
-            alt="JDE 캐릭터"
-            className="w-32 h-32 object-contain flex-shrink-0"
-          />
+        <CardContent className="px-2 sm:px-12">
+          <div className="flex items-center gap-2">
+            {/* 캐릭터 이미지 */}
+            <img
+              src="/cute_man.png"
+              alt="JDE 캐릭터"
+              className="w-40 object-contain flex-shrink-0"
+            />
 
-          {/* 텍스트 영역 */}
-          <div className="flex flex-col justify-center gap-1">
-            <p className="text-sm font-medium text-gray-900">
-              식당 고를 때 걱정없이
-            </p>
-            <p className="text-sm font-medium text-gray-900">맛있게</p>
-            <h2 className="text-xl font-bold text-gray-900 mt-1">
-              JUST DO EAT
-            </h2>
+            {/* 텍스트 영역 */}
+            <div className="flex flex-col justify-center">
+              <p className="text-lg font-large text-primary">
+                고민은 그만, <br />
+                먹으러 가자!
+              </p>
+              <h2 className="text-3xl font-black text-neutral-950">
+                JUST DO EAT
+              </h2>
+            </div>
           </div>
-        </div>
+        </CardContent>
 
         {/* 하단: 버튼 */}
-        <div className="bg-orange-400 px-6 py-4 flex items-center justify-between hover:bg-orange-500 transition-colors">
-          <span className="text-white font-semibold">지금 추천받기</span>
-          <ArrowRight className="w-6 h-6 text-white" strokeWidth={3} />
-        </div>
-      </div>
+        <CardFooter className="p-0 w-full">
+          <div className="w-full bg-primary px-8 py-4 flex items-center justify-between hover:bg-s2 transition-colors rounded-b-xl">
+            <span className="text-xl text-white font-semibold">
+              취향 저격 맛집 리스트
+            </span>
+            <ArrowRight className="w-6 h-6 text-white" strokeWidth={3} />
+          </div>
+        </CardFooter>
+      </Card>
     </Link>
   );
 }
