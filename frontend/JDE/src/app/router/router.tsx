@@ -11,6 +11,8 @@ import OnboardingPage from "../../pages/Onboarding";
 import OnboardingResult from "../../pages/Onboarding/result";
 import SignupPage from "../../pages/Signup";
 import LoginPage from "../../pages/Login";
+import GroupsListPage from "@/pages/groups/GroupsListPage";
+import RoulettePage from "@/pages/roulette/RoulettePage";
 
 const router = createBrowserRouter([
   {
@@ -49,13 +51,26 @@ const router = createBrowserRouter([
     path: "/login",
     element: <LoginPage />,
   },
+  {
+    path: "/groups",
+    element: (
+      <AppLayout>
+        <GroupsListPage />
+      </AppLayout>
+    ),
+  },
+  {
+    path: "/roulette",
+    element: (
+      <AppLayout>
+        <RoulettePage />
+      </AppLayout>
+    ),
+  },
 ]);
 
 export default function AppRouter() {
   return (
-    <RouterProvider
-      router={router}
-      future={{ v7_startTransition: true }}
-    />
+    <RouterProvider router={router} future={{ v7_startTransition: true }} />
   );
 }
