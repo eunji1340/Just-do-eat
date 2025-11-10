@@ -34,6 +34,9 @@ public class CreateRoomCommandServiceImpl implements CreateRoomCommandService {
 
         Room savedRoom = roomRepository.save(room);
 
-        return CreateRoomResponse.
+//        return CreateRoomResponse.
+        CreateRoomResponse r = new CreateRoomResponse();
+
+        return r;
     }
 }
