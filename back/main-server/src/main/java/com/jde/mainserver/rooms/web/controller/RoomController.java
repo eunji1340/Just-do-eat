@@ -3,6 +3,7 @@ package com.jde.mainserver.rooms.web.controller;
 import com.jde.mainserver.global.annotation.AuthUser;
 import com.jde.mainserver.global.api.ApiResponse;
 import com.jde.mainserver.member.entity.Member;
+import com.jde.mainserver.global.api.ApiResponse;
 import com.jde.mainserver.rooms.service.command.CreateRoomCommandService;
 import com.jde.mainserver.rooms.web.dto.request.CreateRoomRequest;
 import com.jde.mainserver.rooms.web.dto.response.CreateRoomResponse;

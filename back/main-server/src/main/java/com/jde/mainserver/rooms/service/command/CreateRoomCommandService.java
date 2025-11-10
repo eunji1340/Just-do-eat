@@ -5,6 +5,5 @@ import com.jde.mainserver.rooms.web.dto.request.CreateRoomRequest;
 import com.jde.mainserver.rooms.web.dto.response.CreateRoomResponse;
 
 public interface CreateRoomCommandService {
-
     CreateRoomResponse createRoom(CreateRoomRequest request, Member user);
 }
