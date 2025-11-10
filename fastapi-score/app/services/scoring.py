@@ -25,6 +25,12 @@ def _distance_decay(distance_m: float, lambda_per_km: float = 0.6) -> float:
     km = max(0.0, distance_m) / 1000.0
     return math.exp(-lambda_per_km * km)
 
+def _sigmoid(x: float) -> float:
+    try:
+        return 1.0 / (1.0 + math.exp(-x))
+    except OverflowError:
+        return 0.0 if x < 0 else 1.0
+
 def _tag_similarity(
     user_tags: Dict[int, TagPreference],
     restaurant_tags: Dict[int, TagPreference]
@@ -76,21 +82,31 @@ def score_personal(
         # 2) 북마크 가산 (비감쇠)
         w_saved = 0.5 if rid in saved_set else 0.0
         
-        # 3) 식당별 바이어스 (ERD: User_Restaurant_State.pref_score 기반)
-        w_bias = rest_bias.get(rid, 0.0)
+        # 3) 개인 선호 가중치 (pref_score) → 시그모이드 가중
+        #    - 우선순위: 후보 제공 pref_score > 과거 호환용 rest_bias
+        pref = None
+        try:
+            pref = c.pref_score
+        except Exception:
+            pref = None
+        if pref is None:
+            pref = rest_bias.get(rid, 0.0)
+        alpha = 1.5
+        w_personal = _sigmoid(alpha * float(pref)) if pref is not None else 1.0
         
         # 4) 거리 감쇠
         decay = _distance_decay(c.distance_m)
         
-        base = w_tag + w_saved + w_bias
-        score_val = base * decay
+        # base(CBF) * 개인가중 * 거리감쇠
+        base = w_tag + w_saved
+        score_val = base * w_personal * decay
         
         dbg = None
         if debug:
             dbg = {
                 "w_tag": round(w_tag, 4),
                 "w_saved": round(w_saved, 4),
-                "w_bias": round(w_bias, 4),
+                "w_personal": round(w_personal, 4),
                 "distance_decay": round(decay, 4),
                 "final": round(score_val, 4),
             }
