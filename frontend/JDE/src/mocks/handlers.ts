@@ -85,28 +85,138 @@ function computeTagPrefsServerSide(
 }
 
 // ----------------------------------------------------
-// 핸들러
+// 공통 핸들러 함수
+// ----------------------------------------------------
+// 비회원 온보딩 세션 발급 핸들러 함수 (공통)
+const handleOnboardingSession = async () => {
+  await delay(200);
+  
+  // UUID 형식의 세션 ID 생성
+  const sessionId = crypto.randomUUID();
+  
+  return HttpResponse.json({
+    status: 'OK',
+    code: 'OK',
+    message: '성공',
+    data: {
+      sessionId: sessionId,
+    },
+  });
+};
+
+// 아이디 중복 확인 핸들러 함수 (공통)
+const handleUserIdExists = async ({ request }: { request: Request }) => {
+  await delay(300);
+  
+  const url = new URL(request.url);
+  const userId = url.searchParams.get('userId');
+  
+  if (!userId) {
+    return HttpResponse.json(
+      {
+        status: 'BAD_REQUEST',
+        code: 'VALIDATION_ERROR',
+        message: '아이디를 입력해주세요.',
+        data: false,
+      },
+      { status: 400 }
+    );
+  }
+
+  // 간단한 중복 체크 (모킹)
+  // 'existing_user', 'test', 'admin', 'demo_user_01' 등은 중복으로 처리
+  const existingUsers = ['existing_user', 'test', 'admin', 'demo_user_01'];
+  const exists = existingUsers.includes(userId);
+
+  // boolean 값을 직접 반환 (true = 중복됨, false = 사용 가능)
+  return HttpResponse.json({
+    status: 'OK',
+    code: 'OK',
+    message: '성공',
+    data: exists,  // boolean 직접 반환
+  });
+};
+
+// 회원가입 핸들러 함수 (공통)
+const handleSignup = async ({ request }: { request: Request }) => {
+  const body = (await request.json()) as {
+    userId?: string;
+    password?: string;
+    imageUrl?: string | null;
+    ageGroup?: string;
+    gender?: string;
+    sessionId?: string;
+  };
+
+  await delay(500);
+
+  // 유효성 검사
+  if (!body.userId || !body.password) {
+    return HttpResponse.json(
+      {
+        status: 'BAD_REQUEST',
+        code: 'VALIDATION_ERROR',
+        message: '아이디와 비밀번호는 필수입니다.',
+        data: null,
+      },
+      { status: 400 }
+    );
+  }
+
+  // userId 중복 체크
+  if (body.userId === 'existing_user' || body.userId === 'test' || body.userId === 'admin') {
+    return HttpResponse.json(
+      {
+        status: 'CONFLICT',
+        code: 'USER_ALREADY_EXISTS',
+        message: '이미 존재하는 아이디입니다.',
+        data: null,
+      },
+      { status: 409 }
+    );
+  }
+
+  // 세션 ID가 있으면 로그 출력 (디버깅용)
+  if (body.sessionId) {
+    console.log('[Mock] 회원가입 시 세션 ID 포함:', body.sessionId);
+  }
+
+  // 성공
+  return HttpResponse.json({
+    status: 'CREATED',
+    code: 'CREATED',
+    message: '회원가입 성공',
+    data: null,
+  });
+};
+
+// ----------------------------------------------------
+// 핸들러 (customAxios 방식만 사용)
 // ----------------------------------------------------
 export const handlers = [
-  // 1) 먹BTI 문항 조회: GET /api/onboarding/mbtis
-  http.get('/api/onboarding/mbtis', async () => {
+  // === 온보딩 관련 API ===
+  
+  // 1) 비회원 온보딩 세션 발급: POST http://localhost:8080/onboarding/session
+  http.post('http://localhost:8080/onboarding/session', handleOnboardingSession),
+  
+  // 2) 먹BTI 문항 조회: GET http://localhost:8080/onboarding/mbtis
+  http.get('http://localhost:8080/onboarding/mbtis', async () => {
     await delay(150);
     return HttpResponse.json({
       items: MUKBTI_QUESTIONS,
     });
   }),
 
-  // 2) 빙고 문항 조회: GET /api/onboarding/bingo
-  http.get('/api/onboarding/bingo', async () => {
+  // 3) 빙고 문항 조회: GET http://localhost:8080/onboarding/bingo
+  http.get('http://localhost:8080/onboarding/bingo', async () => {
     await delay(120);
     return HttpResponse.json({
       items: BINGO_5x5,
     });
   }),
 
-  // 3) 온보딩 결과 반영: POST /api/onboarding/import
-  //    body: { mukbtiAnswers: MukbtiAnswer[], bingoResponses: Array<{ id: string; vote: Tri }> }
-  http.post('/api/onboarding/import', async ({ request }) => {
+  // 4) 온보딩 결과 반영: POST http://localhost:8080/onboarding/import
+  http.post('http://localhost:8080/onboarding/import', async ({ request }) => {
     const body = (await request.json()) as {
       mukbtiAnswers?: MukbtiAnswer[];
       bingoResponses?: Array<{ id: string; vote: Tri }>;
@@ -120,27 +230,27 @@ export const handlers = [
     // 태그 선호도 계산
     const tagPrefsResult = computeTagPrefsServerSide(body.bingoResponses ?? []);
 
-          // 확장된 결과 정보 가져오기
-      const fullMeta = MUKBTI_TYPES[mukbtiResult.code];
-      const extendedResult = fullMeta ? {
-        ...mukbtiResult,
-        nickname: fullMeta.nickname,
-        keywords: fullMeta.keywords,
-        goodMatch: fullMeta.goodMatch,
-        badMatch: fullMeta.badMatch,
-        imagePath: fullMeta.imagePath,
-      } : mukbtiResult;
+    // 확장된 결과 정보 가져오기
+    const fullMeta = MUKBTI_TYPES[mukbtiResult.code];
+    const extendedResult = fullMeta ? {
+      ...mukbtiResult,
+      nickname: fullMeta.nickname,
+      keywords: fullMeta.keywords,
+      goodMatch: fullMeta.goodMatch,
+      badMatch: fullMeta.badMatch,
+      imagePath: fullMeta.imagePath,
+    } : mukbtiResult;
 
     return HttpResponse.json({
       success: true,
       typeId: mukbtiResult.code,
       mukbtiResult: extendedResult,
-      tagPrefs: tagPrefsResult.tag_prefs, // 중첩 구조 제거
+      tagPrefs: tagPrefsResult.tag_prefs,
     });
   }),
 
-  // 4) 결과 유형 조회: GET /api/onboarding/result/types/:typeId
-  http.get('/api/onboarding/result/types/:typeId', async ({ params }) => {
+  // 5) 결과 유형 조회: GET http://localhost:8080/onboarding/result/types/:typeId
+  http.get('http://localhost:8080/onboarding/result/types/:typeId', async ({ params }) => {
     const { typeId } = params;
     await delay(150);
 
@@ -166,8 +276,8 @@ export const handlers = [
     });
   }),
 
-  // 5) 온보딩 결과 공유: POST /api/onboarding/share
-  http.post('/api/onboarding/share', async ({ request }) => {
+  // 6) 온보딩 결과 공유: POST http://localhost:8080/onboarding/share
+  http.post('http://localhost:8080/onboarding/share', async ({ request }) => {
     const body = (await request.json()) as { typeId?: string };
     await delay(200);
 
@@ -178,56 +288,16 @@ export const handlers = [
     });
   }),
 
-  // 6) 회원가입: POST /api/auth/signup
-  http.post('/api/auth/signup', async ({ request }) => {
-    const body = (await request.json()) as {
-      userId?: string;
-      password?: string;
-      imageUrl?: string | null;
-      ageGroup?: string;
-      gender?: string;
-      sessionId?: string;
-    };
+  // === 인증 관련 API ===
+  
+  // 7) 아이디 중복 확인: GET http://localhost:8080/users/exists
+  http.get('http://localhost:8080/users/exists', handleUserIdExists),
 
-    await delay(500);
+  // 8) 회원가입: POST http://localhost:8080/auth/signup
+  http.post('http://localhost:8080/auth/signup', handleSignup),
 
-    // 유효성 검사
-    if (!body.userId || !body.password) {
-      return HttpResponse.json(
-        {
-          status: 'BAD_REQUEST',
-          code: 'VALIDATION_ERROR',
-          message: '아이디와 비밀번호는 필수입니다.',
-          result: null,
-        },
-        { status: 400 }
-      );
-    }
-
-    // userId 중복 체크 (간단한 모킹)
-    if (body.userId === 'existing_user') {
-      return HttpResponse.json(
-        {
-          status: 'CONFLICT',
-          code: 'USER_ALREADY_EXISTS',
-          message: '이미 존재하는 아이디입니다.',
-          result: null,
-        },
-        { status: 409 }
-      );
-    }
-
-    // 성공
-    return HttpResponse.json({
-      status: 'CREATED',
-      code: 'CREATED',
-      message: '회원가입 성공',
-      result: null,
-    });
-  }),
-
-  // 7) 로그인: POST /api/auth/login
-  http.post('/api/auth/login', async ({ request }) => {
+  // 9) 로그인: POST http://localhost:8080/auth/login
+  http.post('http://localhost:8080/auth/login', async ({ request }) => {
     const body = (await request.json()) as {
       userId?: string;
       password?: string;
@@ -271,5 +341,64 @@ export const handlers = [
       },
       { status: 401 }
     );
+  }),
+
+  // 10) 사용자 정보 조회: GET http://localhost:8080/users/me
+  http.get('http://localhost:8080/users/me', async ({ request }) => {
+    await delay(200);
+
+    // Authorization 헤더 확인
+    const authHeader = request.headers.get('Authorization');
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return HttpResponse.json(
+        {
+          status: 'UNAUTHORIZED',
+          code: 'UNAUTHORIZED',
+          message: '인증이 필요합니다.',
+          result: null,
+        },
+        { status: 401 }
+      );
+    }
+
+    // Mock 사용자 정보 반환
+    return HttpResponse.json({
+      status: 'OK',
+      code: '200',
+      message: '요청 성공',
+      result: {
+        memberId: 1,
+        userId: 'demo_user_01',
+        imageUrl: 'https://api.dicebear.com/7.x/avataaars/svg?seed=demo_user_01',
+        ageGroup: 'TWENTIES',
+        gender: 'MALE',
+        role: 'USER',
+      },
+    });
+  }),
+
+  // 11) 로그아웃: POST http://localhost:8080/auth/logout
+  http.post('http://localhost:8080/auth/logout', async ({ request }) => {
+    await delay(200);
+
+    // Authorization 헤더 확인 (선택적)
+    const authHeader = request.headers.get('Authorization');
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      // 로그아웃은 토큰 없어도 성공 처리 가능
+      return HttpResponse.json({
+        status: 'OK',
+        code: 'OK',
+        message: '로그아웃 성공',
+        result: null,
+      });
+    }
+
+    // 로그아웃 성공
+    return HttpResponse.json({
+      status: 'OK',
+      code: 'OK',
+      message: '로그아웃 성공',
+      result: null,
+    });
   }),
 ];

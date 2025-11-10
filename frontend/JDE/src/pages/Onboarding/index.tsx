@@ -3,16 +3,43 @@
 // =============================================
 import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import MukbtiFlow from '../../features/Onboarding/MukbtiTest/ui/mukbti-flow';
-import BingoFlow from '../../features/Onboarding/Bingo/ui/bingo-flow';
+import MukbtiFlow from '../../features/onboarding/MukbtiTest/ui/mukbti-flow';
+import BingoFlow from '../../features/onboarding/Bingo/ui/bingo-flow';
 import { useUserStore } from '../../entities/user/model/user-store';
+import customAxios from '../../shared/api/http';
 
 export default function OnboardingPage() {
   const loc = useLocation() as { state?: { step?: 'mukbti' | 'bingo' } };
   const nav = useNavigate();
   const initial = loc.state?.step ?? 'mukbti';
   const [step, setStep] = React.useState<'mukbti' | 'bingo'>(initial);
-  const { mukbtiAnswers, setMukbtiResult } = useUserStore();
+  const { mukbtiAnswers, setMukbtiResult, onboardingSessionId, setOnboardingSessionId } = useUserStore();
+
+  // 온보딩 시작 시 세션 발급
+  React.useEffect(() => {
+    // 세션이 이미 있으면 발급하지 않음
+    if (onboardingSessionId) return;
+
+    const issueSession = async () => {
+      try {
+        const response = await customAxios({
+          method: 'POST',
+          url: '/onboarding/session',
+          data: {},
+          meta: { authRequired: false }
+        }) as any;
+
+        if (response?.data?.data?.sessionId) {
+          setOnboardingSessionId(response.data.data.sessionId);
+        }
+      } catch (error) {
+        console.error('세션 발급 실패:', error);
+        // 세션 발급 실패해도 온보딩은 진행 가능하도록 함
+      }
+    };
+
+    issueSession();
+  }, [onboardingSessionId, setOnboardingSessionId]);
 
   // 먹BTI 완료 후
   const handleMukbtiDone = () => {
@@ -22,27 +49,27 @@ export default function OnboardingPage() {
   // 빙고 완료 후 - 통합 POST 요청
   const handleBingoDone = async (bingoResponses: Array<{ id: string; vote: number }>) => {
     try {
-      const response = await fetch('/api/onboarding/import', {
+      const response = await customAxios({
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
+        url: '/onboarding/import',
+        data: {
           mukbtiAnswers,
           bingoResponses,
-        }),
-      });
+        },
+        meta: { authRequired: false }
+      }) as any;
 
-      if (!response.ok) throw new Error('온보딩 결과 저장 실패');
-
-      const data = await response.json();
+      const data = response.data;
       
       // 결과 저장
       setMukbtiResult(data.mukbtiResult);
 
       // 결과 페이지로 이동
       nav(`/onboarding/result?typeId=${data.typeId}`);
-    } catch (error) {
+    } catch (error: any) {
       console.error('온보딩 결과 저장 오류:', error);
-      alert('결과 저장에 실패했습니다. 다시 시도해주세요.');
+      const errorMessage = error.response?.data?.message || error.message || '결과 저장에 실패했습니다. 다시 시도해주세요.';
+      alert(errorMessage);
     }
   };
 
