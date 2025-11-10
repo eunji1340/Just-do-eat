@@ -1,8 +1,11 @@
 export type {
   TopNavBarVariant,
   TopNavBarProps,
+  DefaultTopNavBarProps,
   AuthTopNavBarProps,
   SearchTopNavBarProps,
-  DefaultTopNavBarProps,
+  LabelTopNavBarProps,
+  SimpleTopNavBarProps,
+  NoneTopNavBarProps,
   TopNavBarAllProps,
 } from "./types";
