@@ -47,7 +47,7 @@ export default function SwipeReveal({
       {/* (2) 뒤 레이어: 우측 라운드 + 1px 안쪽으로 + 상하 1px inset */}
       <div
         className="absolute right-0 left-auto flex items-stretch justify-end bg-red-500 text-white rounded-r-2xl"
-        style={{ width: absReveal, top: 1, bottom: 1, right: -1 }} // ← 핵심
+        style={{ width: absReveal + 12, top: 1, bottom: 1, right: -1 }} // ← 핵심
         aria-hidden={false}
       >
         {reveal}
