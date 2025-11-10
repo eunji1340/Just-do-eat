@@ -1,45 +1,29 @@
 pipeline {
   agent any
-  options { disableConcurrentBuilds(); timestamps() }
-
   stages {
-    stage('Checkout') {
+    stage('Update') {
       steps {
-        cleanWs()
-        checkout scm
-      }
-    }
+        withCredentials([usernamePassword(credentialsId: 'nomio4001', usernameVariable: 'GIT_USER', passwordVariable: 'GIT_PASS')]) {
+          sh '''
+            cd /home/ubuntu/projects/S13P31A701
+            git config --global user.name "$GIT_USER"
+            git config --global user.email "$GIT_USER@naver.com"
+            git remote set-url origin https://$GIT_USER:$GIT_PASS@lab.ssafy.com/s13-final/S13P31A701.git
 
-    stage('Build Backend') {
+
+            git fetch origin BE
+            git checkout BE
+            git pull origin BE
+          '''
+        }
+      }
+    }  
+
+    stage('Deploy') {
       steps {
         sh '''
-          set -e
-          cd back/main-server
-          chmod +x gradlew || true
-          ./gradlew clean build -x test
-          # 또는 도커 빌드라면:
-          # cd ../
-          # docker compose -f docker-compose.yml --env-file .env build
-        '''
-      }
-    }
-
-    stage('Deploy (copy only)') {
-      steps {
-        sh '''
-          set -e
-          # rsync가 없다면: sudo apt-get update && sudo apt-get install -y rsync
-          # 배포 폴더로 "복사만" (여기선 git 금지)
-          rsync -a --delete \
-            --exclude 'back/.env' \
-            --exclude 'back/docker-compose.yml' \
-            --exclude 'frontend/.env' \
-            --exclude '**/uploads/**' \
-            --exclude '**/data/**' \
-            "$WORKSPACE"/ /home/ubuntu/projects/S13P31A701/
-
-          # 필요 시 권한 한 번만 맞추세요(처음 1회)
-          # sudo chown -R ubuntu:ubuntu /home/ubuntu/projects/S13P31A701
+          cd /home/ubuntu/projects/S13P31A701/back
+          docker compose -f docker-compose.yml --env-file .env up -d --build
         '''
       }
     }
