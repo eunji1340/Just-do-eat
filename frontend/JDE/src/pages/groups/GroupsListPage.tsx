@@ -24,7 +24,7 @@ export default function GroupsListPage() {
         ))}
       </section>
 
-    <div className="fixed bottom-[110px] right-5 z-50">
+      <div className="fixed bottom-[100px] right-5 z-50 sm:right-[calc(50%-320px+20px)]">
         <Button
           className="rounded-full shadow-lg"
           aria-label="그룹 만들기"
@@ -34,6 +34,7 @@ export default function GroupsListPage() {
           그룹 만들기
         </Button>
       </div>
+      
     </>
   );
 }
