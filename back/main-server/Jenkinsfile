@@ -13,7 +13,7 @@ pipeline {
 
             git fetch origin BE
             git checkout BE
-            git pull origin BE
+
           '''
         }
       }
