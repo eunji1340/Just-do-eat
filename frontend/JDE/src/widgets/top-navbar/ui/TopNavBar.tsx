@@ -2,7 +2,14 @@ import * as React from "react";
 import { Search, ChevronLeft, Home } from "lucide-react";
 import { cn } from "@/shared/lib/utils";
 import { Logo } from "@/shared/ui/Logo";
-import type { TopNavBarAllProps } from "../model/types";
+import type {
+  TopNavBarAllProps,
+  DefaultTopNavBarProps,
+  AuthTopNavBarProps,
+  SearchTopNavBarProps,
+  LabelTopNavBarProps,
+  SimpleTopNavBarProps,
+} from "../model/types";
 
 /**
  * 상단 네비게이션 바
@@ -23,7 +30,7 @@ export const TopNavBar = (props: TopNavBarAllProps) => {
    * 메인, 모임, 즐겨찾기 페이지
    */
   if (variant === "default") {
-    const { onSearchClick } = props;
+    const { onSearchClick } = props as DefaultTopNavBarProps;
 
     return (
       <header className={containerClass}>
@@ -47,7 +54,7 @@ export const TopNavBar = (props: TopNavBarAllProps) => {
    * 로그인, 회원가입 페이지
    */
   if (variant === "auth") {
-    const { label, onBack } = props;
+    const { label, onBack } = props as AuthTopNavBarProps;
 
     return (
       <header className={containerClass}>
@@ -68,7 +75,8 @@ export const TopNavBar = (props: TopNavBarAllProps) => {
    * 검색어 입력, 검색 페이지
    */
   if (variant === "search") {
-    const { searchValue, onSearchChange, onSearch, onBack } = props;
+    const { searchValue, onSearchChange, onSearch, onBack } =
+      props as SearchTopNavBarProps;
 
     return (
       <header className={containerClass}>
@@ -106,7 +114,7 @@ export const TopNavBar = (props: TopNavBarAllProps) => {
    * 마이, 약속, 결정도구(투표, 룰렛) 페이지
    */
   if (variant === "label") {
-    const { label, onSearchClick } = props;
+    const { label, onSearchClick } = props as LabelTopNavBarProps;
 
     return (
       <header className={containerClass}>
@@ -130,7 +138,12 @@ export const TopNavBar = (props: TopNavBarAllProps) => {
    * 개인추천 피드, 식당 상세 페이지
    */
   if (variant === "simple") {
-    const { onBack, onHomeClick, onSearchClick, showHomeButton = true } = props;
+    const {
+      onBack,
+      onHomeClick,
+      onSearchClick,
+      showHomeButton = true,
+    } = props as SimpleTopNavBarProps;
 
     // Simple variant는 투명 배경, 보더 없음
     const simpleContainerClass = cn(
