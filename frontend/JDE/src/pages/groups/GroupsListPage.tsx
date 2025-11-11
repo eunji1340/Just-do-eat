@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { TopNavBar } from "@/widgets/top-navbar";
 import { dummyGroup } from "@/entities/groups/dummy";
-import { Button } from "@/shared/ui/button";
+import { Button } from "@/shared/ui/shadcn/button";
 import GroupCard from "@/widgets/groups/GroupCard";
 import { Plus } from "lucide-react";
 import * as React from "react";
