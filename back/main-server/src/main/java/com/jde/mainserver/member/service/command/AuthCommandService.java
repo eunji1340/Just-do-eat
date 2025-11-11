@@ -2,15 +2,15 @@ package com.jde.mainserver.member.service.command;
 
 import com.jde.mainserver.global.exception.CustomException;
 import com.jde.mainserver.global.security.jwt.JwtUtil;
+import com.jde.mainserver.member.dto.request.LoginRequest;
+import com.jde.mainserver.member.dto.request.SignUpRequest;
+import com.jde.mainserver.member.dto.response.TokenResponse;
 import com.jde.mainserver.member.entity.Member;
 import com.jde.mainserver.member.entity.enums.AgeGroup;
 import com.jde.mainserver.member.entity.enums.Gender;
 import com.jde.mainserver.member.entity.enums.Role;
 import com.jde.mainserver.member.repository.MemberRepository;
 import com.jde.mainserver.onboarding.OnboardingSurveyStore;
-import com.jde.mainserver.member.dto.request.LoginRequest;
-import com.jde.mainserver.member.dto.request.SignUpRequest;
-import com.jde.mainserver.member.dto.response.TokenResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -26,7 +26,7 @@ public class AuthCommandService {
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
 
-    // ✅ 추가: 온보딩 이관을 위한 저장소 주입
+    // 온보딩 이관 저장소
     private final OnboardingSurveyStore onboardingSurveyStore;
 
     @Transactional
@@ -34,22 +34,25 @@ public class AuthCommandService {
         if (memberRepository.existsByUserId(req.getUserId())) {
             throw new CustomException(USER_ID_DUPLICATED);
         }
+
         String encoded = passwordEncoder.encode(req.getPassword());
         AgeGroup ageGroup = req.getAgeGroup();
         Gender gender = req.getGender();
         Role role = Role.USER;
 
+        // ✅ region은 초기 null: 6-파라미터 생성자 사용
         Member m = new Member(
                 req.getUserId(),
                 encoded,
                 req.getImageUrl(),
                 role,
                 ageGroup,
-                gender
+                gender,
+                null
         );
         memberRepository.save(m);
 
-        // ✅ 핵심: 세션 → 유저로 온보딩 데이터 이관
+        // 온보딩 세션 데이터 → 유저로 이관
         String sid = req.getSessionId();
         if (sid != null && !sid.isBlank()) {
             onboardingSurveyStore.migrateSessionToUser(sid, m.getId());
@@ -85,6 +88,6 @@ public class AuthCommandService {
     }
 
     public void logout(Long memberId) {
-        // (옵션) RefreshToken/블랙리스트 사용 시 처리
+        // (옵션) RefreshToken 블랙리스트 등 사용 시 처리
     }
 }

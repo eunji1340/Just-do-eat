@@ -1,11 +1,12 @@
 package com.jde.mainserver.global.exception.code;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 
+// 기존 주석 유지
 @Getter
-@AllArgsConstructor
+@RequiredArgsConstructor
 public enum GeneralSuccessCode implements BaseSuccessCode {
 
     OK(HttpStatus.OK, "200", "요청 성공"),
