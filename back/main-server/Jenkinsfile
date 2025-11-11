@@ -22,7 +22,7 @@ pipeline {
     stage('Deploy') {
       steps {
         sh '''
-          cd /home/ubuntu/projects/S13P31A701/back
+          cd /var/jenkins_home/workspace/back
           docker compose -f docker-compose.yml --env-file .env up -d --build
         '''
       }
