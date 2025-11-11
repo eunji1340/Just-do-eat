@@ -5,8 +5,11 @@ export { TopNavBar } from "./ui";
 export type {
   TopNavBarVariant,
   TopNavBarProps,
+  DefaultTopNavBarProps,
   AuthTopNavBarProps,
   SearchTopNavBarProps,
-  DefaultTopNavBarProps,
+  LabelTopNavBarProps,
+  SimpleTopNavBarProps,
+  NoneTopNavBarProps,
   TopNavBarAllProps,
 } from "./model/types";
