@@ -17,7 +17,7 @@ const tabs = [
   {
     icon: Users,
     label: "모임",
-    path: "/meetings",
+    path: "/groups",
   },
   {
     icon: Star,
@@ -60,10 +60,10 @@ export const BottomNavBar = () => {
 
   return (
     <nav
-      className="fixed bottom-0 left-1/2 -translate-x-1/2 z-50 h-[86px] w-full min-w-[320px] sm:max-w-[640px] bg-card shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]"
+      className="fixed bottom-0 left-1/2 -translate-x-1/2 z-50  w-full min-w-[320px] sm:max-w-[640px] bg-card shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]"
       aria-label="하단 네비게이션"
     >
-      <div className="flex h-full items-center justify-between px-4 py-3">
+      <div className="flex h-full items-center justify-between px-5 pt-1 pb-4">
         {tabs.map((tab) => (
           <TabButton
             key={tab.path}
