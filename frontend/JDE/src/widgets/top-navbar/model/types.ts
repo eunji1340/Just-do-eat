@@ -41,8 +41,8 @@ export interface DefaultTopNavBarProps extends TopNavBarProps {
  */
 export interface AuthTopNavBarProps extends TopNavBarProps {
   variant: "auth";
-  /** 페이지 제목 (예: "로그인", "회원가입") */
-  title: string;
+  /** 페이지 라벨 (예: "로그인", "회원가입") */
+  label: string;
   /** 뒤로가기 핸들러 */
   onBack?: () => void;
 }
@@ -87,6 +87,8 @@ export interface SimpleTopNavBarProps extends TopNavBarProps {
   onHomeClick?: () => void;
   /** 검색 핸들러 */
   onSearchClick?: () => void;
+  /** 홈 버튼 표시 여부 (기본값: true, 개인추천 피드는 false) */
+  showHomeButton?: boolean;
 }
 
 /**
