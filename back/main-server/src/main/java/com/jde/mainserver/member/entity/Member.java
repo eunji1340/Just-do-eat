@@ -10,77 +10,62 @@ import com.jde.mainserver.member.entity.enums.Gender;
 import com.jde.mainserver.member.entity.enums.Role;
 import com.jde.mainserver.region.entity.Region;
 import jakarta.persistence.*;
-import static jakarta.persistence.FetchType.LAZY;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedDate;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.Instant;
 
+@Entity
+@Table(name = "members")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@Entity
-@EntityListeners(AuditingEntityListener.class)
-@Table(name = "members")
+@AllArgsConstructor
+@Builder
 public class Member {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @Column(name = "user_id")
+    private Long userId;
 
-    @Column(name = "user_id", nullable = false, unique = true, length = 64)
-    private String userId;
+    @Column(nullable = false, unique = true, length = 100)
+    private String name;
 
     @Column(nullable = false)
-    private String password; // BCrypt
+    private String password;
 
     @Column(name = "image_url")
     private String imageUrl;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 16)
+    @Column(nullable = false)
     private Role role;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "age_group", nullable = false, length = 16)
+    @Column(name = "age_group", nullable = false)
     private AgeGroup ageGroup;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 16)
+    @Column(nullable = false)
     private Gender gender;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "region_id")
     private Region region;
 
-    public Region getRegion() { return region; }
-
-    /** 기본 상권 변경 */
-    public void changeRegion(Region region) { this.region = region; }
-
-    /** 기본 상권 해제 */
-    public void clearRegion() { this.region = null; }
-
-
-    @CreatedDate
-    @Column(name = "created_at", nullable = false, updatable = false, columnDefinition = "TIMESTAMPTZ")
+    @CreationTimestamp
+    @Column(name = "created_at", updatable = false, nullable = false)
     private Instant createdAt;
 
-    @LastModifiedDate
-    @Column(name = "updated_at", nullable = false, columnDefinition = "TIMESTAMPTZ")
+    @UpdateTimestamp
+    @Column(name = "updated_at", nullable = false)
     private Instant updatedAt;
 
-    public Member(String userId,
-                  String password,
-                  String imageUrl,
-                  Role role,
-                  AgeGroup ageGroup,
-                  Gender gender,
-                  Region region) {
-        this.userId = userId;
+    // 회원가입용 생성자
+    public Member(String name, String password, String imageUrl, Role role,
+                  AgeGroup ageGroup, Gender gender, Region region) {
+        this.name = name;
         this.password = password;
         this.imageUrl = imageUrl;
         this.role = role;
@@ -91,5 +76,13 @@ public class Member {
 
     public void setImageUrl(String imageUrl) {
         this.imageUrl = imageUrl;
+    }
+
+    public void clearRegion() {
+        this.region = null;
+    }
+
+    public void changeRegion(Region newRegion) {
+        this.region = newRegion;
     }
 }

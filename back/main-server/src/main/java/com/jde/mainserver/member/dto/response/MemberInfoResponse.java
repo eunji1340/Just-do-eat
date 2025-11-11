@@ -12,8 +12,8 @@ import java.time.Instant;
 @Getter
 @AllArgsConstructor
 public class MemberInfoResponse {
-    private Long id;
-    private String userId;
+    private Long userId;
+    private String name;
     private String imageUrl;
     private Role role;
     private AgeGroup ageGroup;
@@ -29,8 +29,8 @@ public class MemberInfoResponse {
 
     public static MemberInfoResponse from(Member m) {
         return new MemberInfoResponse(
-                m.getId(),
-                m.getUserId(),
+                m.getUserId(),      // getId() → getUserId()
+                m.getName(),
                 m.getImageUrl(),
                 m.getRole(),
                 m.getAgeGroup(),

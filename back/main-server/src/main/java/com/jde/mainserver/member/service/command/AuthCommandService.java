@@ -29,10 +29,15 @@ public class AuthCommandService {
     // 온보딩 이관 저장소
     private final OnboardingSurveyStore onboardingSurveyStore;
 
+    /**
+     * 회원가입
+     * - userId: PK (AUTO_INCREMENT)
+     * - name: 로그인용 문자열
+     */
     @Transactional
     public void signUp(SignUpRequest req) {
-        if (memberRepository.existsByUserId(req.getUserId())) {
-            throw new CustomException(USER_ID_DUPLICATED);
+        if (memberRepository.existsByName(req.getName())) {
+            throw new CustomException(USER_ID_DUPLICATED); // 기존 코드 그대로 사용
         }
 
         String encoded = passwordEncoder.encode(req.getPassword());
@@ -40,9 +45,8 @@ public class AuthCommandService {
         Gender gender = req.getGender();
         Role role = Role.USER;
 
-        // ✅ region은 초기 null: 6-파라미터 생성자 사용
-        Member m = new Member(
-                req.getUserId(),
+        Member member = new Member(
+                req.getName(),
                 encoded,
                 req.getImageUrl(),
                 role,
@@ -50,44 +54,59 @@ public class AuthCommandService {
                 gender,
                 null
         );
-        memberRepository.save(m);
 
-        // 온보딩 세션 데이터 → 유저로 이관
+        memberRepository.save(member);
+
         String sid = req.getSessionId();
         if (sid != null && !sid.isBlank()) {
-            onboardingSurveyStore.migrateSessionToUser(sid, m.getId());
+            onboardingSurveyStore.migrateSessionToUser(sid, member.getUserId());
         }
     }
 
+    /**
+     * 로그인
+     * - name 기준으로 조회
+     * - 토큰 subject에는 userId(Long)을 사용
+     */
     @Transactional(readOnly = true)
     public TokenResponse login(LoginRequest req) {
-        Member m = memberRepository.findByUserId(req.getUserId())
+        Member member = memberRepository.findByName(req.getName())
                 .orElseThrow(() -> new CustomException(MEMBER_NOT_FOUND));
 
-        if (!passwordEncoder.matches(req.getPassword(), m.getPassword())) {
+        if (!passwordEncoder.matches(req.getPassword(), member.getPassword())) {
             throw new CustomException(INVALID_CREDENTIALS);
         }
 
-        String access = jwtUtil.createAccessToken(String.valueOf(m.getId()));
-        String refresh = jwtUtil.createRefreshToken(String.valueOf(m.getId()));
+        String access = jwtUtil.createAccessToken(String.valueOf(member.getUserId()));
+        String refresh = jwtUtil.createRefreshToken(String.valueOf(member.getUserId()));
+
         return new TokenResponse(access, refresh);
     }
 
+    /**
+     * 프로필 이미지 수정
+     */
     @Transactional
-    public void updateProfileImage(Long memberId, String imageUrl) {
-        Member m = memberRepository.findById(memberId)
+    public void updateProfileImage(Long userId, String imageUrl) {
+        Member member = memberRepository.findById(userId)
                 .orElseThrow(() -> new CustomException(MEMBER_NOT_FOUND));
-        m.setImageUrl(imageUrl);
+        member.setImageUrl(imageUrl);
     }
 
+    /**
+     * 회원 탈퇴
+     */
     @Transactional
-    public void deleteMe(Long memberId) {
-        Member m = memberRepository.findById(memberId)
+    public void deleteMe(Long userId) {
+        Member member = memberRepository.findById(userId)
                 .orElseThrow(() -> new CustomException(MEMBER_NOT_FOUND));
-        memberRepository.delete(m);
+        memberRepository.delete(member);
     }
 
-    public void logout(Long memberId) {
-        // (옵션) RefreshToken 블랙리스트 등 사용 시 처리
+    /**
+     * 로그아웃 (옵션)
+     */
+    public void logout(Long userId) {
+        // RefreshToken 블랙리스트 사용 시 구현
     }
 }
