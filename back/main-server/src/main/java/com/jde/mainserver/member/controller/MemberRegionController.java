@@ -20,24 +20,27 @@ public class MemberRegionController {
     private final MemberRepository memberRepository;
     private final RegionRepository regionRepository;
 
+    /** 내 상권 조회 */
     @GetMapping
     @Transactional(readOnly = true)
     public ApiResponse<MemberRegionResponse> getMyRegion(Authentication auth) {
-        Long memberId = currentMemberId(auth);
-        Member m = memberRepository.findById(memberId)
+        Long userId = currentUserId(auth);
+        Member m = memberRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("member not found"));
         return ApiResponse.onSuccess(MemberRegionResponse.of(m.getRegion()));
     }
 
+    /** 내 상권 수정 (null이면 해제) */
     @PatchMapping
     @Transactional
-    public ApiResponse<MemberRegionResponse> updateMyRegion(Authentication auth,
-                                                            @RequestBody RegionUpdateRequest req) {
-        Long memberId = currentMemberId(auth);
-        Member m = memberRepository.findById(memberId)
+    public ApiResponse<MemberRegionResponse> updateMyRegion(
+            Authentication auth,
+            @RequestBody RegionUpdateRequest req
+    ) {
+        Long userId = currentUserId(auth);
+        Member m = memberRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("member not found"));
 
-        // MemberRegionController.java (수정 부분만)
         if (req.region_id() == null) {
             m.clearRegion();
             return ApiResponse.onSuccess(MemberRegionResponse.of(null));
@@ -47,16 +50,18 @@ public class MemberRegionController {
                 .orElseThrow(() -> new IllegalArgumentException("region not found"));
         m.changeRegion(r);
         return ApiResponse.onSuccess(MemberRegionResponse.of(r));
-
     }
 
-    private Long currentMemberId(Authentication authentication) {
+    /** JWT subject를 userId(Long)으로만 사용 */
+    private Long currentUserId(Authentication authentication) {
         String sub = (authentication == null) ? null : authentication.getName();
-        if (sub == null || sub.isBlank()) throw new IllegalArgumentException("인증 필요");
-        boolean numeric = sub.chars().allMatch(Character::isDigit);
-        if (numeric) try { return Long.parseLong(sub); } catch (NumberFormatException ignored) {}
-        return memberRepository.findByUserId(sub)
-                .map(Member::getId)
-                .orElseThrow(() -> new IllegalArgumentException("member not found: " + sub));
+        if (sub == null || sub.isBlank()) {
+            throw new IllegalArgumentException("인증 필요");
+        }
+        try {
+            return Long.parseLong(sub);
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("잘못된 토큰(subject)입니다.");
+        }
     }
 }

@@ -21,9 +21,15 @@ public class AuthController {
 
     @PostMapping("/signup")
     public ResponseEntity<ApiResponse<Void>> signUp(@RequestBody SignUpRequest request) {
-        authCommandService.signUp(request);
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ApiResponse.onSuccess(GeneralSuccessCode.CREATED));
+        System.out.println("[DEBUG] >>> /auth/signup called with name=" + request.getName());
+        try {
+            authCommandService.signUp(request);
+            return ResponseEntity.status(HttpStatus.CREATED)
+                    .body(ApiResponse.onSuccess(GeneralSuccessCode.CREATED));
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw e;
+        }
     }
 
     @PostMapping("/login")
