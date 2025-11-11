@@ -56,11 +56,10 @@ pipeline {
                     echo "🚀 Deploying build files to Nginx container..."
 
                     # Nginx 컨테이너가 실제 서비스 담당
-                    docker cp /var/jenkins_home/workspace/frontend@2/frontend/JDE/dist/. ${NGINX_CONTAINER}:/usr/share/nginx/html/
+                    cd /var/jenkins_home/workspace/back/back
 
                     # nginx reload로 새 파일 반영
-                    docker exec ${NGINX_CONTAINER} nginx -s reload
-
+		    docker compose up -d --build nginx
                     echo "✅ Deployment completed successfully!"
                 '''
             }
