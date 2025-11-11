@@ -2,10 +2,10 @@ pipeline {
     agent any
 
     environment {
-        PROJECT_DIR = "/home/ubuntu/projects/S13P31A701"
+
         APP_NAME = "jde-frontend"
         NGINX_CONTAINER = "JDE-nginx"
-        WORK_DIR = "${PROJECT_DIR}/frontend/JDE"
+        WORK_DIR = "./frontend/JDE"
     }
 
     stages {
@@ -21,7 +21,7 @@ pipeline {
 
             git fetch origin FE
             git checkout FE
-            git pull origin FE
+	    git reset --hard origin/FE
           '''
         }
       }
@@ -33,7 +33,7 @@ pipeline {
               }
             steps {
                 sh '''
-                    cd ${WORK_DIR}
+		    cd ${WORK_DIR}
 
                     echo "🧹 Clean node_modules and lockfile..."
       		    rm -rf node_modules package-lock.json
@@ -54,7 +54,7 @@ pipeline {
                     echo "🚀 Deploying build files to Nginx container..."
 
                     # Nginx 컨테이너가 실제 서비스 담당
-                    docker cp ${WORK_DIR}/dist/. ${NGINX_CONTAINER}:/usr/share/nginx/html/
+                    docker cp $WORKSPACE/${WORK_DIR}/dist/. ${NGINX_CONTAINER}:/usr/share/nginx/html/
 
                     # nginx reload로 새 파일 반영
                     docker exec ${NGINX_CONTAINER} nginx -s reload
