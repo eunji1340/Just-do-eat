@@ -15,6 +15,8 @@ import com.jde.mainserver.main.web.dto.response.FeedResponse;
 import com.jde.mainserver.main.web.dto.response.SwipeResponse;
 import com.jde.mainserver.main.web.dto.response.LastSelectedRestaurantResponse;
 import com.jde.mainserver.main.web.dto.response.VisitFeedbackResponse;
+import com.jde.mainserver.main.web.dto.response.MainRegionRecommendResponse;
+import com.jde.mainserver.main.service.query.MainRegionRecommendQueryService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
