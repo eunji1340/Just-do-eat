@@ -45,6 +45,7 @@ export default function AppLayout({ children }: Props) {
     <div className="min-h-screen bg-gray-100 flex justify-center">
       {/* 메인 콘텐츠 컨테이너: 모바일 전체 너비, sm 이상에서 max-w-[640px] */}
       <main
+        id="app-content-root"
         className={`w-full min-w-[320px] sm:max-w-[640px] bg-white shadow-sm ${
           showNavBar ? "pb-[86px]" : ""
         }`}
