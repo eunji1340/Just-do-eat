@@ -11,6 +11,7 @@ import OnboardingPage from "../../pages/Onboarding";
 import OnboardingResult from "../../pages/Onboarding/result";
 import SignupPage from "../../pages/Signup";
 import LoginPage from "../../pages/Login";
+import GroupsListPage from "@/pages/groups/GroupsListPage";
 
 const router = createBrowserRouter([
   {
@@ -48,6 +49,14 @@ const router = createBrowserRouter([
   {
     path: "/login",
     element: <LoginPage />,
+  },
+  {
+    path: "/groups",
+    element: (
+      <AppLayout>
+        <GroupsListPage/>
+      </AppLayout>
+    ),
   },
 ]);
 
