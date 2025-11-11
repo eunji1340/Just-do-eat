@@ -34,6 +34,8 @@ public class MainController {
     private final MainQueryService mainQueryService;
     private final MainCommandService mainCommandService;
 
+	private final MainRegionRecommendQueryService mainRegionRecommendQueryService;
+
 	@Operation(summary = "개인 추천 피드 조회", description = "cursor 기반 무한 스크롤 피드 (사용자 위치는 DB에서 조회)")
 	@GetMapping("/feed")
 	public FeedResponse getFeed(
@@ -87,5 +89,17 @@ public class MainController {
 			request.getSatisfaction()
 		);
 	}
+
+	@Operation(summary = "홈 화면 개요 (상권 및 추천 여부)", description = "회원의 설정된 상권 정보를 기반으로 홈 화면 초기 개요를 제공합니다.")
+	@GetMapping("/overview")
+	public MainRegionRecommendResponse getHomeOverview(
+			@Parameter(description = "사용자 ID", example = "1", required = true)
+			@RequestHeader("UserId") Long userId
+	) {
+		// MainRegionRecommendQueryService의 overview 메서드 호출
+		return mainRegionRecommendQueryService.overview(userId);
+	}
+
+
 }
 
