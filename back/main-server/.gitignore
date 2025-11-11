@@ -1,0 +1,40 @@
+# --- OS / 에디터 ---
+.DS_Store
+Thumbs.db
+*.iml
+.idea/
+.vscode/
+
+# --- Java / Gradle / Spring ---
+.gradle/
+build/
+**/build/
+out/
+*.class
+*.jar
+*.war
+*.ear
+
+# --- Node / Vite ---
+node_modules/
+**/node_modules/
+dist/
+.vite/
+.eslintcache
+.turbo/
+coverage/
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.venv/
+venv/
+.mypy_cache/
+.pytest_cache/
+.ipynb_checkpoints/
+
+# --- Logs ---
+*.log
+logs/
