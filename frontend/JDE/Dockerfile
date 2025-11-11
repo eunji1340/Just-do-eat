@@ -23,7 +23,7 @@ COPY --from=builder /app/dist .
 
 # 🚨 Nginx 설정 파일을 컨테이너 내부로 복사합니다.
 # 이 설정 파일은 Dockerfile과 같은 레벨(frontend/JDE)에 있어야 합니다.
-COPY back/back/nginx/conf.d/default.conf /etc/nginx/conf.d/default.conf
+COPY default.conf /etc/nginx/conf.d/default.conf
 
 EXPOSE 80
 CMD ["nginx", "-g", "daemon off;"]
