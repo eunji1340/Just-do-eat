@@ -5,7 +5,7 @@ pipeline {
 
         APP_NAME = "jde-frontend"
         NGINX_CONTAINER = "JDE-nginx"
-        WORK_DIR = "./frontend/JDE"
+        WORK_DIR = "frontend/JDE"
     }
 
     stages {
