@@ -6,7 +6,7 @@ import {
   useMemo,
   useState,
 } from "react";
-import { useParams, useSearchParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { getPlanDetail } from "@/entities/plan/api/getPlanDetail";
 import type { PlanDetail, Restaurant } from "@/entities/plan/model/types";
 import { formatPlanDate } from "@/shared/lib/date";
@@ -16,6 +16,7 @@ import { RefreshButton } from "@/features/plan/RefreshButton";
 import { DeleteButton } from "@/features/plan/DeleteButton";
 import { MemberAvatars } from "@/widgets/plan/MemberAvatars";
 import { RestaurantCard } from "@/widgets/plan/RestaurantCard";
+import { TopNavBar } from "@/widgets/top-navbar";
 
 const mePresets = {
   owner: { id: "u-1", name: "나" },
@@ -57,6 +58,7 @@ const createEmptyForm = (): AddRestaurantPayload => ({
 export default function PlanDetailPage() {
   const { planId } = useParams<{ planId: string }>();
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const meOverride = searchParams.get("me");
 
   const activePlanId = planId ?? "";
@@ -181,49 +183,56 @@ export default function PlanDetailPage() {
   const isOwner = plan ? plan.ownerId === me.id : meOverride !== "guest";
 
   return (
-    <div className="relative flex min-h-screen flex-col bg-white">
-      <div className="flex-1 pb-[96px]">
-        {isLoading && <LoadingState />}
-        {!isLoading && isError && (
-          <ErrorState onRetry={() => fetchPlanDetail()} />
-        )}
-        {!isLoading && !isError && plan && (
-          <PlanContent
-            plan={plan}
-            isOwner={isOwner}
-            recommended={recommended}
-            onOpenAddModal={() => setAddModalOpen(true)}
-            shareUrl={shareUrl}
-            onRefresh={() => fetchPlanDetail({ silent: true })}
-            isRefreshing={isRefreshing}
-            onDelete={handleDeletePlan}
-            onVote={handleVoteClick}
-            onRoulette={handleRouletteClick}
-          />
-        )}
-        {!isLoading && !isError && !plan && (
-          <div className="flex flex-col items-center justify-center gap-2 px-4 py-20 text-sm text-neutral-500">
-            약속 정보를 찾을 수 없습니다.
+    <>
+      <TopNavBar
+        variant="default"
+        onSearchClick={() => navigate("/search")}
+      />
+
+      <div className="relative flex min-h-screen flex-col bg-white">
+        <div className="flex-1 pb-[96px]">
+          {isLoading && <LoadingState />}
+          {!isLoading && isError && (
+            <ErrorState onRetry={() => fetchPlanDetail()} />
+          )}
+          {!isLoading && !isError && plan && (
+            <PlanContent
+              plan={plan}
+              isOwner={isOwner}
+              recommended={recommended}
+              onOpenAddModal={() => setAddModalOpen(true)}
+              shareUrl={shareUrl}
+              onRefresh={() => fetchPlanDetail({ silent: true })}
+              isRefreshing={isRefreshing}
+              onDelete={handleDeletePlan}
+              onVote={handleVoteClick}
+              onRoulette={handleRouletteClick}
+            />
+          )}
+          {!isLoading && !isError && !plan && (
+            <div className="flex flex-col items-center justify-center gap-2 px-4 py-20 text-sm text-neutral-500">
+              약속 정보를 찾을 수 없습니다.
+            </div>
+          )}
+        </div>
+
+        {plan && isOwner && (
+          <div className="sticky bottom-0 left-0 z-30 bg-white/95 px-4 py-3 shadow-[0_-4px_20px_rgba(15,23,42,0.08)] backdrop-blur sm:hidden">
+            <OwnerActionButtons
+              layout="vertical"
+              onVote={handleVoteClick}
+              onRoulette={handleRouletteClick}
+            />
           </div>
         )}
+
+        <AddRestaurantModal
+          open={isAddModalOpen}
+          onClose={() => setAddModalOpen(false)}
+          onSubmit={handleAddRestaurant}
+        />
       </div>
-
-      {plan && isOwner && (
-        <div className="sticky bottom-0 left-0 z-30 bg-white/95 px-4 py-3 shadow-[0_-4px_20px_rgba(15,23,42,0.08)] backdrop-blur sm:hidden">
-          <OwnerActionButtons
-            layout="vertical"
-            onVote={handleVoteClick}
-            onRoulette={handleRouletteClick}
-          />
-        </div>
-      )}
-
-      <AddRestaurantModal
-        open={isAddModalOpen}
-        onClose={() => setAddModalOpen(false)}
-        onSubmit={handleAddRestaurant}
-      />
-    </div>
+    </>
   );
 }
 
