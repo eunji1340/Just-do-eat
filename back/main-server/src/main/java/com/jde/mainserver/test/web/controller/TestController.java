@@ -22,7 +22,7 @@ import java.util.Map;
 @Tag(name = "✅ 연결 테스트 API", description = "Redis 연결 상태를 확인합니다.")
 @RestController
 @RequestMapping("/api/test")
-public class TestController {
+public class sTestController {
 
     private final TestService testService;
 
