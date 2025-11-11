@@ -1,4 +1,3 @@
-import * as React from "react";
 import { Search, ChevronLeft, Home } from "lucide-react";
 import { cn } from "@/shared/lib/utils";
 import { Logo } from "@/shared/ui/Logo";
