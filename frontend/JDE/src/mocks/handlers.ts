@@ -24,6 +24,7 @@ import type {
   ItemWeights,
   TagPrefs,
 } from './model/bingo-types';
+import { resolvePlanDetailSample } from './model/plan-detail.sample';
 
 // ----------------------------------------------------
 // 유틸: MBTI 서버 계산 (클라와 동일 로직, 서버에 있다고 가정)
@@ -286,6 +287,28 @@ export const handlers = [
       shareUrl: `https://example.com/share/${body.typeId}`,
       message: '카카오톡으로 공유되었습니다.',
     });
+  }),
+
+  // === 약속 상세 ===
+  http.get('http://localhost:8080/plans/:planId', async ({ params, request }) => {
+    await delay(400);
+
+    const url = new URL(request.url);
+    if (url.searchParams.get('variant') === 'error') {
+      return HttpResponse.json(
+        { message: '약속 상세를 불러오지 못했습니다.' },
+        { status: 500 },
+      );
+    }
+
+    const planId = params.planId as string;
+    const planDetail = resolvePlanDetailSample(planId);
+
+    if (url.searchParams.get('variant') === 'empty') {
+      planDetail.recommended = [];
+    }
+
+    return HttpResponse.json(planDetail);
   }),
 
   // === 인증 관련 API ===
