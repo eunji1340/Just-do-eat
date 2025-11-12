@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import type { AxiosError, AxiosResponse } from 'axios';
 import customAxios from '@/shared/api/http';
 
 export type LoginResult = {
@@ -6,8 +7,19 @@ export type LoginResult = {
   refreshToken?: string;
 };
 
+type LoginApiResult = {
+  accessToken?: string;
+  refreshToken?: string;
+};
+
+type LoginApiResponse = {
+  status: string;
+  message?: string;
+  result?: LoginApiResult;
+};
+
 export function useLogin() {
-  const [formData, setFormData] = useState({ userId: '', password: '' });
+  const [formData, setFormData] = useState({ name: '', password: '' });
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -21,12 +33,12 @@ export function useLogin() {
     setError(null);
 
     try {
-      const response = await customAxios({
+      const response = await customAxios<AxiosResponse<LoginApiResponse>>({
         method: 'POST',
         url: '/auth/login',
         data: formData,
         meta: { authRequired: false }
-      }) as any;
+      });
 
       const data = response.data;
 
@@ -46,8 +58,10 @@ export function useLogin() {
       }
 
       return result;
-    } catch (e: any) {
-      const errorMessage = e.response?.data?.message || e.message || '로그인 중 오류가 발생했습니다.';
+    } catch (error) {
+      const axiosError = error as AxiosError<{ message?: string }>;
+      const errorMessage =
+        axiosError.response?.data?.message ?? axiosError.message ?? '로그인 중 오류가 발생했습니다.';
       setError(errorMessage);
       return null;
     } finally {

@@ -18,8 +18,8 @@ export type BingoLike = { item: string; liked: boolean };
 
 // 로그인한 사용자 정보 타입
 export type UserInfo = {
-  memberId: number;
-  userId: string;
+  userId: number;
+  name: string;
   imageUrl: string;
   ageGroup: string;
   gender: string;
