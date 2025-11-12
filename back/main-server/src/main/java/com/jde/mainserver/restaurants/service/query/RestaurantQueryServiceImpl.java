@@ -145,13 +145,20 @@ public class RestaurantQueryServiceImpl implements RestaurantQueryService {
 	@Override
 	@Transactional
 	public RestaurantDetailResponse getDetail(Long restaurantId, Long userId) {
-		mainCommandService.handleView(restaurantId, userId);
+		// ✅ userId가 있을 때만 개인화 뷰/선호도 갱신
+		if (userId != null) {
+			mainCommandService.handleView(restaurantId, userId);
+		} else {
+			// (선택) 비회원 조회 시 전역 view_count 증가만 수행하고 싶다면 여기에 추가
+			// restaurantRepository.increaseGlobalViewCount(restaurantId);
+		}
 
 		Restaurant restaurant = restaurantRepository.findByIdWithHours(restaurantId)
 				.orElseThrow(() -> new RestaurantException(RestaurantErrorCode.NOT_FOUND_RESTAURANT));
 
 		return RestaurantConverter.toDetail(restaurant);
 	}
+
 
 	@Override
 	@Transactional

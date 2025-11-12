@@ -1,71 +1,77 @@
-/**
- * global/config/SecurityConfig.java
- * 보안 설정 (JWT 기반, Stateless)
- * Author: Kim
- * Date: 2025-11-12 (updated)
- */
 package com.jde.mainserver.global.config;
 
 import com.jde.mainserver.global.security.jwt.JwtFilter;
 import com.jde.mainserver.global.security.jwt.JwtUtil;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
+@EnableWebSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-	private final JwtUtil jwtUtil;
-	private final CorsConfig corsConfig;
+    private static final Logger log = LoggerFactory.getLogger(SecurityConfig.class);
+    private final JwtUtil jwtUtil;
+    private final CorsConfig corsConfig;
 
-	// ✅ 인증 없이 접근 가능한 공개 URL 목록
-	private static final String[] ALLOW_URLS = {
-			"/",
-			"/swagger-ui/**", "/swagger-resources/**", "/v3/api-docs/**", "/swagger-ui.html",
-			"/actuator/**",
-			"/auth/**",
-			"/users/exists",
-			"/regions/**",
-			"/main/**",
-			"/restaurants/**", // ✅ 식당 검색/상세는 JWT 없이 허용
-			"/test/**"
-	};
+    /** 인증 없이 접근 가능한 공개 URL */
+    private static final String[] ALLOW_URLS = {
+            "/", "/error",
+            "/swagger-ui/**", "/swagger-resources/**", "/v3/api-docs/**", "/swagger-ui.html",
+            "/actuator/**",
+            "/auth/**",
+            "/users/exists",
+            "/regions/**",
+            "/main/**",
+            "/restaurants/**",
+            "/test/**"
+            // ⚠️ /plans/** 는 보호됨(토큰 필요)
+    };
 
-	/** ✅ JwtFilter Bean 등록 */
-	@Bean
-	public JwtFilter jwtFilter() {
-		return new JwtFilter(jwtUtil);
-	}
+    @Bean
+    public JwtFilter jwtFilter() {
+        return new JwtFilter(jwtUtil);
+    }
 
-	/** ✅ 보안 필터 체인 구성 */
-	@Bean
-	public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-		http
-				// 세션 비활성화 (Stateless)
-				.sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        log.info("SecurityConfig :: building filter chain");
 
-				// 기본 인증 방식 비활성화
-				.csrf(AbstractHttpConfigurer::disable)
-				.httpBasic(AbstractHttpConfigurer::disable)
-				.formLogin(AbstractHttpConfigurer::disable)
+        http
+                .csrf(AbstractHttpConfigurer::disable)
+                .httpBasic(AbstractHttpConfigurer::disable)
+                .formLogin(AbstractHttpConfigurer::disable)
 
-				.addFilter(corsConfig.corsFilter())
+                // CORS + Stateless
+                .addFilter(corsConfig.corsFilter())
+                .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
-				// 요청별 접근 권한 설정
-				.authorizeHttpRequests(auth -> auth
-						.requestMatchers(ALLOW_URLS).permitAll()
-						.anyRequest().authenticated()
-				);
+                // 권한
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers(PathRequest.toStaticResources().atCommonLocations()).permitAll()
+                        .requestMatchers(ALLOW_URLS).permitAll()
+                        .anyRequest().authenticated()
+                )
 
-		// ✅ JwtFilter를 UsernamePasswordAuthenticationFilter "앞"에 등록
-		http.addFilterBefore(jwtFilter(), UsernamePasswordAuthenticationFilter.class);
+                // 예외
+                .exceptionHandling(e -> e
+                        .authenticationEntryPoint((req, res, ex) -> res.sendError(401))
+                        .accessDeniedHandler((req, res, ex) -> res.sendError(403))
+                )
 
-		return http.build();
-	}
+                // JWT 필터
+                .addFilterBefore(jwtFilter(), UsernamePasswordAuthenticationFilter.class);
+
+        return http.build();
+    }
 }

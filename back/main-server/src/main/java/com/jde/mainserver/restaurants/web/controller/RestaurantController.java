@@ -85,8 +85,8 @@ public class RestaurantController {
 	public RestaurantDetailResponse detail(
 			@Parameter(description = "식당 ID", example = "1001", required = true)
 			@PathVariable Long restaurantId,
-			@Parameter(description = "유저 ID", example = "1", required = true)
-			@RequestHeader("UserId") Long userId
+			@Parameter(description = "유저 ID (비회원은 생략 가능)", example = "1", required = false)
+			@RequestHeader(value = "UserId", required = false) Long userId
 	) {
 		return restaurantQueryService.getDetail(restaurantId, userId);
 	}
