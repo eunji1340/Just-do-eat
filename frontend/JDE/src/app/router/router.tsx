@@ -13,6 +13,7 @@ import SignupPage from "../../pages/Signup";
 import LoginPage from "../../pages/Login";
 import GroupsListPage from "@/pages/groups/GroupsListPage";
 import RoulettePage from "@/pages/roulette/RoulettePage";
+import PlanDetailPage from "@/pages/plan/PlanDetailPage";
 
 const router = createBrowserRouter([
   {
@@ -64,6 +65,14 @@ const router = createBrowserRouter([
     element: (
       <AppLayout>
         <RoulettePage />
+      </AppLayout>
+    ),
+  },
+  {
+    path: "/plans/:planId",
+    element: (
+      <AppLayout>
+        <PlanDetailPage />
       </AppLayout>
     ),
   },

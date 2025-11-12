@@ -1,9 +1,28 @@
 import { useNavigate } from 'react-router-dom';
+import type { AxiosError, AxiosResponse } from 'axios';
 import AuthLayout from '@/widgets/auth/AuthLayout';
 import LoginForm from '@/features/auth/ui/LoginForm';
 import { useLogin } from '@/features/auth/model/useLogin';
 import { useUserStore } from '@/entities/user/model/user-store';
 import customAxios from '@/shared/api/http';
+
+type UserMeResponse = {
+  status: string;
+  code: string;
+  message: string;
+  data?: {
+    userId: number;
+    name: string;
+    imageUrl: string;
+    role: string;
+    ageGroup: string;
+    gender: string;
+    createdAt: string;
+    updatedAt: string;
+    regionId: number | null;
+    regionName: string | null;
+  };
+};
 
 export default function LoginPage() {
   const nav = useNavigate();
@@ -21,20 +40,31 @@ export default function LoginPage() {
     if (result && result.accessToken) {
       // 로그인 성공 후 사용자 정보 불러오기
       try {
-        const response = await customAxios({
+        const response = await customAxios<AxiosResponse<UserMeResponse>>({
           method: 'GET',
           url: '/users/me',
-        }) as any;
+        });
         
-        if (response.data?.result) {
-          setUser(response.data.result);
-          nav('/');
-        } else {
+        const userData = response.data?.data;
+
+        if (!userData) {
           console.error('사용자 정보를 불러올 수 없습니다.');
           nav('/');
+          return;
         }
+
+        setUser({
+          userId: userData.userId,
+          name: userData.name,
+          imageUrl: userData.imageUrl,
+          ageGroup: userData.ageGroup,
+          gender: userData.gender,
+          role: userData.role,
+        });
+        nav('/');
       } catch (error) {
-        console.error('사용자 정보 불러오기 실패:', error);
+        const axiosError = error as AxiosError<{ message?: string }>;
+        console.error('사용자 정보 불러오기 실패:', axiosError);
         // 실패해도 메인 페이지로 이동
         nav('/');
       }
