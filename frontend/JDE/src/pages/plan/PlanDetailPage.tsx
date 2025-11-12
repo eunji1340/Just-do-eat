@@ -187,7 +187,7 @@ export default function PlanDetailPage() {
   };
 
   const handleRouletteClick = () => {
-    window.alert("룰렛 기능은 준비 중입니다.");
+    navigate("/roulette");
   };
 
   if (!activePlanId) {
