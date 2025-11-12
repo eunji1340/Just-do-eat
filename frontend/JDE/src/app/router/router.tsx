@@ -13,6 +13,8 @@ import SignupPage from "../../pages/Signup";
 import LoginPage from "../../pages/Login";
 import GroupsListPage from "@/pages/groups/GroupsListPage";
 import RoulettePage from "@/pages/roulette/RoulettePage";
+import SearchStartPage from "@/pages/search/SearchStartPage";
+import SearchResultPage from "@/pages/search/SearchResultPage";
 
 const router = createBrowserRouter([
   {
@@ -64,6 +66,18 @@ const router = createBrowserRouter([
     element: (
       <AppLayout>
         <RoulettePage />
+      </AppLayout>
+    ),
+  },
+  {
+    path: "/search/start",
+    element: <SearchStartPage />,
+  },
+  {
+    path: "/search",
+    element: (
+      <AppLayout>
+        <SearchResultPage />
       </AppLayout>
     ),
   },

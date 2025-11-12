@@ -21,7 +21,7 @@ export default function AppLayout({ children }: Props) {
     const { pathname } = location;
 
     // 정확히 일치하는 경로들
-    const exactPaths = ["/", "/favorites", "/my" ,"/groups"];
+    const exactPaths = ["/", "/favorites", "/my", "/groups", "/search"];
     if (exactPaths.includes(pathname)) {
       return true;
     }
@@ -42,11 +42,11 @@ export default function AppLayout({ children }: Props) {
   const showNavBar = shouldShowBottomNavBar();
 
   return (
-    <div className="min-h-screen flex justify-center">
+    <div className="min-h-screen flex justify-center bg-body">
       {/* 메인 콘텐츠 컨테이너: 모바일 전체 너비, sm 이상에서 max-w-[640px] */}
       <main
         id="app-content-root"
-        className={`w-full min-w-[320px] sm:max-w-[640px] bg-white shadow-sm ${
+        className={`bg-body w-full min-w-[320px] sm:max-w-[640px] bg-white shadow-sm ${
           showNavBar ? "pb-[86px]" : ""
         }`}
       >
