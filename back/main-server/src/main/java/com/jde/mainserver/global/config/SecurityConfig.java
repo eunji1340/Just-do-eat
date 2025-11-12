@@ -33,6 +33,7 @@ public class SecurityConfig {
 			"/regions/**",
 			"/main/**",
 			"/restaurants/**" // ✅ 식당 검색/상세는 JWT 없이 허용
+			"/test/**"
 	};
 
 	/** ✅ JwtFilter Bean 등록 */
