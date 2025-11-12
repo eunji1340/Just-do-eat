@@ -1,4 +1,4 @@
-package com.jde.mainserver.region.web.dto;
+package com.jde.mainserver.region.web.dto.response;
 
 import com.jde.mainserver.region.entity.Region;
 import org.locationtech.jts.geom.Coordinate;

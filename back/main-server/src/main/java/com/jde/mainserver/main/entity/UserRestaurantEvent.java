@@ -8,6 +8,7 @@
 package com.jde.mainserver.main.entity;
 
 import com.jde.mainserver.global.common.BaseEntity;
+import com.jde.mainserver.main.entity.enums.SwipeAction;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

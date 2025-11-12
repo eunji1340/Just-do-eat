@@ -10,7 +10,6 @@ spring:
       ddl-auto: update # (또는 validate, create-drop)
     properties:
       hibernate:
-        dialect: org.hibernate.spatial.dialect.postgis.PostgreSQLPGObjectDialect
         format_sql: true
     open-in-view: false
     show-sql: true
@@ -46,8 +45,8 @@ score:
 # secret은 Base64로 인코딩된 256비트(32바이트) 키여야 합니다
 jwt:
   secret: ${JWT_SECRET:dGhpc2lzYXNlY3JldGtleWZvcmp3dHRva2Vuc2lnbmluZ2FuZHZlcmlmaWNhdGlvbg==}
-  access-token-ttl-ms: ${JWT_ACCESS_TOKEN_TTL_MS:3600000}  # 1시간 (기본값)
-  refresh-token-ttl-ms: ${JWT_REFRESH_TOKEN_TTL_MS:604800000}  # 7일 (기본값)
+  access-token-ttl-ms: ${JWT_ACCESS_TOKEN_TTL_MS:3600000} # 1시간 (기본값)
+  refresh-token-ttl-ms: ${JWT_REFRESH_TOKEN_TTL_MS:604800000} # 7일 (기본값)
 
 springdoc:
   swagger-ui:

@@ -7,7 +7,7 @@
 
 package com.jde.mainserver.main.web.dto.request;
 
-import com.jde.mainserver.main.entity.SwipeAction;
+import com.jde.mainserver.main.entity.enums.SwipeAction;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
@@ -30,7 +30,7 @@ import lombok.Setter;
 @AllArgsConstructor
 public class SwipeRequest {
 
-    @Schema(description = "식당 ID", example = "1001")
+    @Schema(description = "식당 ID", example = "379")
     @NotNull
     private Long restaurantId;
 
