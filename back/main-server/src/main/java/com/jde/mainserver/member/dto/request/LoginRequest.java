@@ -11,9 +11,6 @@ import lombok.Getter;
 
 @Getter
 public class LoginRequest {
-    @NotBlank
-    private String userId;
-
-    @NotBlank
-    private String password;
+    @NotBlank private String name;
+    @NotBlank private String password;
 }

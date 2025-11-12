@@ -19,7 +19,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class SignUpRequest {
     @NotBlank
-    private String userId;
+    private String name;
 
     @NotBlank
     private String password;

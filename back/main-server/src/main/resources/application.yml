@@ -8,6 +8,7 @@ spring:
   jpa:
     hibernate:
       ddl-auto: update # (또는 validate, create-drop)
+      dialect: org.hibernate.spatial.dialect.postgis.PostgisDialect
     properties:
       hibernate:
         format_sql: true

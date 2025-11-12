@@ -1,0 +1,15 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/justdoeat
+  data:
+    redis:
+      host: localhost
+      password: # 비워두거나 실제 비밀번호
+
+score:
+  api:
+    base: http://localhost:8000
+
+server:
+  servlet:
+    context-path: /api
