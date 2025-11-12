@@ -7,7 +7,7 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: create # (또는 validate, create-drop)
+      ddl-auto: update # (또는 validate, create-drop)
     properties:
       hibernate:
         format_sql: true
