@@ -4,7 +4,6 @@
  * Author: Kim
  * Date: 2025-11-12 (updated)
  */
-
 package com.jde.mainserver.global.config;
 
 import com.jde.mainserver.global.security.jwt.JwtFilter;
@@ -13,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
@@ -46,13 +46,16 @@ public class SecurityConfig {
 	public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 		http
 				// 세션 비활성화 (Stateless)
-				.csrf(csrf -> csrf.disable())
 				.sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+
+				// 기본 인증 방식 비활성화
+				.csrf(AbstractHttpConfigurer::disable)
+				.httpBasic(AbstractHttpConfigurer::disable)
+				.formLogin(AbstractHttpConfigurer::disable)
+
 				// 요청별 접근 권한 설정
 				.authorizeHttpRequests(auth -> auth
-						// 공개 경로
 						.requestMatchers(ALLOW_URLS).permitAll()
-						// 나머지는 인증 필요
 						.anyRequest().authenticated()
 				);
 
