@@ -8,8 +8,9 @@
 package com.jde.mainserver.restaurants.service.command;
 
 import com.jde.mainserver.main.service.command.MainCommandService;
-import com.jde.mainserver.restaurants.web.dto.response.BookmarkResponse;
+
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.stereotype.Service;
 
 @Service
@@ -19,13 +20,13 @@ public class RestaurantCommandServiceImpl implements RestaurantCommandService {
 	private final MainCommandService mainCommandService;
 
 	@Override
-	public BookmarkResponse addBookmark(Long restaurantId, Long userId) {
-		return mainCommandService.addBookmark(restaurantId, userId);
+	public void addBookmark(Long restaurantId, Long userId) {
+		mainCommandService.addBookmark(restaurantId, userId);
 	}
 
 	@Override
-	public BookmarkResponse removeBookmark(Long restaurantId, Long userId) {
-		return mainCommandService.removeBookmark(restaurantId, userId);
+	public void removeBookmark(Long restaurantId, Long userId) {
+		mainCommandService.removeBookmark(restaurantId, userId);
 	}
 }
 

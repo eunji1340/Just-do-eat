@@ -24,12 +24,14 @@ public class MainConverter {
 	 * @param restaurant 식당 엔티티
 	 * @param distanceM 거리(미터)
 	 * @param isOpen 영업 중 여부
+	 * @param debug 점수 계산 상세 정보 (선택)
 	 * @return FeedResponse.RestaurantItem
 	 */
 	public static FeedResponse.RestaurantItem toFeedItem(
 		Restaurant restaurant,
 		Integer distanceM,
-		Boolean isOpen
+		Boolean isOpen,
+		Map<String, Object> debug
 	) {
 		if (restaurant == null) {
 			return null;
@@ -65,7 +67,8 @@ public class MainConverter {
 			restaurant.getIsReservation(),
 			hourItems,
 			distanceM,
-			isOpen
+			isOpen,
+			debug
 		);
 	}
 
@@ -98,10 +101,11 @@ public class MainConverter {
 	 * }
 	 *
 	 * @param req 개인화 점수 계산 요청 DTO
+	 * @param savedRestaurantIds 북마크된 식당 ID 리스트
 	 * @return FastAPI 요청 스키마 (Map)
 	 * @throws IllegalArgumentException candidates가 비어있는 경우
 	 */
-	public static Map<String, Object> convertToFastApiSchema(PersonalScoreRequest req) {
+	public static Map<String, Object> convertToFastApiSchema(PersonalScoreRequest req, List<Long> savedRestaurantIds) {
 		if (req.candidates() == null || req.candidates().isEmpty()) {
 			throw new IllegalArgumentException("candidates는 최소 1개 이상 필요합니다");
 		}
@@ -125,7 +129,11 @@ public class MainConverter {
 			});
 		}
 		user.put("tag_pref", tagPref);
-		user.put("saved", List.of());  // TODO: User_Restaurant_State에서 조회
+		// 북마크된 식당 ID 리스트 (Integer 리스트로 변환)
+		List<Integer> savedIds = (savedRestaurantIds != null) 
+			? savedRestaurantIds.stream().map(Long::intValue).toList()
+			: List.of();
+		user.put("saved", savedIds);
 		user.put("rest_bias", Map.of());  // TODO: 확장
 
 		// candidates 변환
@@ -163,7 +171,7 @@ public class MainConverter {
 
 		fastApiReq.put("user", user);
 		fastApiReq.put("candidates", candidates);
-		fastApiReq.put("debug", false); // 현재는 debug 미지원
+		fastApiReq.put("debug", true); // debug 정보 포함
 
 		return fastApiReq;
 	}

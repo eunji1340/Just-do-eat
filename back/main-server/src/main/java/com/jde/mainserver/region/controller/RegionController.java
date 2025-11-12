@@ -1,8 +1,8 @@
-package com.jde.mainserver.region.web;
+package com.jde.mainserver.region.controller;
 
 import com.jde.mainserver.global.api.ApiResponse;
 import com.jde.mainserver.region.repository.RegionRepository;
-import com.jde.mainserver.region.web.dto.RegionResponse;
+import com.jde.mainserver.region.web.dto.response.RegionResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 

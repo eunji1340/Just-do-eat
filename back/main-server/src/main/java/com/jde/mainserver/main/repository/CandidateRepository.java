@@ -15,7 +15,6 @@ import com.jde.mainserver.restaurants.repository.RestaurantHourRepository;
 import com.jde.mainserver.restaurants.repository.RestaurantRepository;
 import com.jde.mainserver.restaurants.repository.RestaurantTagRepository;
 import com.jde.mainserver.main.entity.UserRestaurantState;
-import com.jde.mainserver.main.entity.SwipeAction;
 import com.jde.mainserver.restaurants.entity.enums.OpenStatus;
 
 import org.locationtech.jts.geom.Point;
@@ -68,11 +67,11 @@ public class CandidateRepository {
 	 *
 	 * 위치 정보가 context에 없으면 기본 위치(서울 강남구 테헤란로 212)를 사용합니다.
 	 *
-	 * @param userId 사용자 ID
+	 * @param userId 사용자 ID (null이면 비회원)
 	 * @param context 컨텍스트 정보 (lat, lng, radiusM, maxCandidates) - 없으면 기본값 사용
 	 * @return 후보 식당 리스트
 	 */
-	public List<PersonalScoreRequest.Candidate> getCandidates(long userId, Map<String, Object> context) {
+	public List<PersonalScoreRequest.Candidate> getCandidates(Long userId, Map<String, Object> context) {
 		// 1. 파라미터 추출 (없으면 기본값 사용)
 		final int maxCandidates = getInt(context, "maxCandidates", DEFAULT_MAX_CANDIDATES);
 		final Double userLat = getDouble(context, "lat", DEFAULT_LAT);
@@ -85,10 +84,15 @@ public class CandidateRepository {
 			return Collections.emptyList();
 		}
 
-		// 3. 사용자 상태 로딩 및 필터링
+		// 3. 사용자 상태 로딩 및 필터링 (userId가 null이면 생략)
 		List<Long> restaurantIds = restaurants.stream().map(Restaurant::getId).toList();
-		Map<Long, UserRestaurantState> stateMap = loadUserStates(userId, restaurantIds);
-		filterByUserPreference(restaurants, stateMap);
+		Map<Long, UserRestaurantState> stateMap = userId != null 
+			? loadUserStates(userId, restaurantIds)
+			: Collections.emptyMap();
+		
+		if (userId != null) {
+			filterByUserPreference(restaurants, stateMap);
+		}
 
 		// 필터링 후 재계산
 		restaurantIds = restaurants.stream().map(Restaurant::getId).toList();
