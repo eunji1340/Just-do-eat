@@ -31,6 +31,8 @@ import lombok.NoArgsConstructor; // 파라미터 없는 생성자 자동 생성
 import lombok.AllArgsConstructor; // 모든 필드를 받는 생성자 자동 생성
 import lombok.AccessLevel; // 생성자 접근 수준 지정할 때 사용
 import lombok.Builder; // 빌더 패턴 자동 생성
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 import org.locationtech.jts.geom.Point;
 
 import java.time.LocalDateTime;
@@ -53,7 +55,8 @@ public class Plan extends BaseEntity {
     @Column(name = "plan_name", length = 10, nullable = false)
     private String planName;
 
-    @Column(name = "plan_geom")
+    @JdbcTypeCode(SqlTypes.GEOMETRY)
+    @Column(name = "plan_geom", columnDefinition="geometry(Point,4326)")
     private Point planGeom;
 
     @NotBlank
