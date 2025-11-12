@@ -19,7 +19,10 @@ import lombok.Getter;
 @AllArgsConstructor
 public enum RestaurantErrorCode implements BaseErrorCode {
 	INVALID_REQUEST(HttpStatus.BAD_REQUEST, "REST400", "잘못된 요청입니다."),
+	UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "REST401", "인증이 필요합니다."),
 	NOT_FOUND_RESTAURANT(HttpStatus.NOT_FOUND, "REST404", "존재하지 않는 식당입니다."),
+	NOT_FOUND_REGION(HttpStatus.NOT_FOUND, "REST404", "상권을 찾을 수 없습니다."),
+	REGION_NOT_SET(HttpStatus.BAD_REQUEST, "REST400", "사용자의 상권 정보가 없습니다. 상권을 설정해주세요."),
 	INTERNAL_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "REST500", "서버 내부 오류가 발생했습니다.");
 
 	private final HttpStatus status;

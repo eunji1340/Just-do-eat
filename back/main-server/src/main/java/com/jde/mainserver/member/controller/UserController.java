@@ -1,16 +1,21 @@
 package com.jde.mainserver.member.controller;
 
+import com.jde.mainserver.global.annotation.AuthUser;
 import com.jde.mainserver.global.api.ApiResponse;
 import com.jde.mainserver.global.exception.code.GeneralSuccessCode;
 import com.jde.mainserver.member.dto.request.UpdateImageRequest;
 import com.jde.mainserver.member.dto.response.MemberInfoResponse;
 import com.jde.mainserver.member.service.command.AuthCommandService;
 import com.jde.mainserver.member.service.query.MemberQueryService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.Authentication;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
+@Tag(name = "사용자", description = "사용자 관련 API")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/users")
@@ -19,49 +24,50 @@ public class UserController {
     private final MemberQueryService memberQueryService;
     private final AuthCommandService authCommandService;
 
-    /** UX용 중복체크 (로그인용 아이디: name) */
+    @Operation(summary = "아이디 중복 확인", description = "로그인용 아이디(name)의 중복 여부를 확인합니다.")
     @GetMapping("/exists")
-    public ApiResponse<Boolean> exists(@RequestParam String name) {
+    public ApiResponse<Boolean> exists(
+            @Parameter(description = "확인할 아이디", example = "user123")
+            @RequestParam String name
+    ) {
         boolean exists = memberQueryService.existsName(name);
         return ApiResponse.onSuccess(GeneralSuccessCode.OK, exists);
     }
 
-    /** 내 정보 조회 (타임스탬프/상권 포함) */
+    @Operation(
+        summary = "내 정보 조회",
+        description = "현재 로그인한 사용자의 정보를 조회합니다. 타임스탬프 및 상권 정보를 포함합니다.",
+        security = @SecurityRequirement(name = "Json Web Token(JWT)")
+    )
     @GetMapping("/me")
     @Transactional(readOnly = true)
-    public ApiResponse<MemberInfoResponse> me(Authentication authentication) {
-        Long memberId = currentMemberId(authentication);
-        MemberInfoResponse info = memberQueryService.getMe(memberId);
+    public ApiResponse<MemberInfoResponse> me(@AuthUser Long userId) {
+        MemberInfoResponse info = memberQueryService.getMe(userId);
         return ApiResponse.onSuccess(GeneralSuccessCode.OK, info);
     }
 
-    /** 프로필 이미지 URL 수정 */
+    @Operation(
+        summary = "프로필 이미지 수정",
+        description = "현재 로그인한 사용자의 프로필 이미지 URL을 수정합니다.",
+        security = @SecurityRequirement(name = "Json Web Token(JWT)")
+    )
     @PatchMapping("/me/image")
-    public ApiResponse<Void> updateImage(Authentication authentication,
-                                         @RequestBody UpdateImageRequest req) {
-        Long memberId = currentMemberId(authentication);
-        authCommandService.updateProfileImage(memberId, req.getImageUrl());
+    public ApiResponse<Void> updateImage(
+            @AuthUser Long userId,
+            @RequestBody UpdateImageRequest req
+    ) {
+        authCommandService.updateProfileImage(userId, req.getImageUrl());
         return ApiResponse.onSuccess(GeneralSuccessCode.OK);
     }
 
-    /** 회원 탈퇴 */
+    @Operation(
+        summary = "회원 탈퇴",
+        description = "현재 로그인한 사용자의 계정을 삭제합니다.",
+        security = @SecurityRequirement(name = "Json Web Token(JWT)")
+    )
     @DeleteMapping
-    public ApiResponse<Void> deleteMe(Authentication authentication) {
-        Long memberId = currentMemberId(authentication);
-        authCommandService.deleteMe(memberId);
+    public ApiResponse<Void> deleteMe(@AuthUser Long userId) {
+        authCommandService.deleteMe(userId);
         return ApiResponse.onSuccess(GeneralSuccessCode.OK);
-    }
-
-    /** 토큰 subject = memberId(Long) 전제 */
-    private Long currentMemberId(Authentication authentication) {
-        String subject = (authentication == null) ? null : authentication.getName();
-        if (subject == null || subject.isBlank()) {
-            throw new IllegalArgumentException("인증이 필요합니다.");
-        }
-        try {
-            return Long.parseLong(subject);
-        } catch (NumberFormatException e) {
-            throw new IllegalArgumentException("잘못된 토큰(subject)입니다.");
-        }
     }
 }

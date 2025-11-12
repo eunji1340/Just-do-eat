@@ -9,7 +9,6 @@ package com.jde.mainserver.main.service.command;
 
 import com.jde.mainserver.main.web.dto.request.SwipeRequest;
 import com.jde.mainserver.main.web.dto.response.SwipeResponse;
-import com.jde.mainserver.restaurants.web.dto.response.BookmarkResponse;
 
 public interface MainCommandService {
 	/**
@@ -34,7 +33,7 @@ public interface MainCommandService {
 	 * @return 처리 결과 및 최신 상태 스냅샷을 담은 응답 DTO
 	 * @throws com.jde.mainserver.main.exception.MainException 식당을 찾을 수 없는 경우
 	 */
-	BookmarkResponse addBookmark(Long restaurantId, Long userId);
+	void addBookmark(Long restaurantId, Long userId);
 
 	/**
 	 * 즐겨찾기를 해제합니다.
@@ -46,7 +45,7 @@ public interface MainCommandService {
 	 * @return 처리 결과 및 최신 상태 스냅샷을 담은 응답 DTO
 	 * @throws com.jde.mainserver.main.exception.MainException 식당을 찾을 수 없는 경우
 	 */
-	BookmarkResponse removeBookmark(Long restaurantId, Long userId);
+	void removeBookmark(Long restaurantId, Long userId);
 
 	/**
 	 * 식당 상세 조회를 처리합니다.
@@ -57,7 +56,7 @@ public interface MainCommandService {
 	 * - 최대 가산 한도: +0.20
 	 *
 	 * @param restaurantId 식당 ID
-	 * @param userId 사용자 ID
+	 * @param userId 사용자 ID (null이면 처리하지 않음)
 	 */
 	void handleView(Long restaurantId, Long userId);
 
@@ -70,7 +69,7 @@ public interface MainCommandService {
 	 * - 최대 가산 한도: +0.8
 	 *
 	 * @param restaurantId 식당 ID
-	 * @param userId 사용자 ID
+	 * @param userId 사용자 ID (null이면 처리하지 않음)
 	 */
 	void handleShare(Long restaurantId, Long userId);
 
