@@ -6,9 +6,9 @@ spring:
     password: ${SPRING_DATASOURCE_PASSWORD}
 
   jpa:
+    database-platform: org.hibernate.spatial.dialect.postgis.PostgisDialect
     hibernate:
       ddl-auto: update # (또는 validate, create-drop)
-      dialect: org.hibernate.spatial.dialect.postgis.PostgisDialect
     properties:
       hibernate:
         format_sql: true
