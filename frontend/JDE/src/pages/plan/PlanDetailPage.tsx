@@ -241,8 +241,6 @@ export default function PlanDetailPage() {
               recommended={recommended}
               onOpenAddModal={() => setAddModalOpen(true)}
               shareUrl={shareUrl}
-              onVote={handleVoteClick}
-              onRoulette={handleRouletteClick}
               isStatusExpanded={isStatusExpanded}
               onToggleStatus={() => setStatusExpanded((prev) => !prev)}
             />
@@ -285,8 +283,6 @@ type PlanContentProps = {
   recommended: Restaurant[];
   onOpenAddModal: () => void;
   shareUrl: string;
-  onVote: () => void;
-  onRoulette: () => void;
   isStatusExpanded: boolean;
   onToggleStatus: () => void;
 };
@@ -297,8 +293,6 @@ function PlanContent({
   recommended,
   onOpenAddModal,
   shareUrl,
-  onVote,
-  onRoulette,
   isStatusExpanded,
   onToggleStatus,
 }: PlanContentProps) {
@@ -395,10 +389,6 @@ function PlanContent({
               </ul>
             </div>
           )}
-          {/* 오너만 보이는 버튼 - 결정된 식당이 없을 때만 보이도록 수정 */}
-          {/* {isOwner && !plan.decidedRestaurant && (
-            <OwnerInlineActions onVote={onVote} onRoulette={onRoulette} />
-          )} */}
         </div>
       </section>
 
@@ -564,36 +554,6 @@ function OwnerActionButtons({
           </Button>
         </>
       )}
-    </div>
-  );
-}
-
-type OwnerInlineActionsProps = {
-  onVote: () => void;
-  onRoulette: () => void;
-};
-
-function OwnerInlineActions({ onVote, onRoulette }: OwnerInlineActionsProps) {
-  return (
-    <div className="mt-4 flex gap-3">
-      <Button
-        variant="outline"
-        size="md"
-        className="h-12 flex-1 text-sm font-semibold text-primary"
-        onClick={onVote}
-        aria-label="투표 만들기"
-      >
-        + 투표
-      </Button>
-      <Button
-        variant="outline"
-        size="md"
-        className="h-12 flex-1 text-sm font-semibold text-primary"
-        onClick={onRoulette}
-        aria-label="룰렛 만들기"
-      >
-        + 룰렛
-      </Button>
     </div>
   );
 }
