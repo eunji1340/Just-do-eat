@@ -8,8 +8,16 @@ spring:
 
 score:
   api:
-    base: http://localhost:8000
+    # Docker Compose 환경: 서비스 이름(ai) 사용
+    # 로컬에서 직접 실행할 경우 http://localhost:8000 사용
+    base: http://ai:8000
 
 server:
   servlet:
     context-path: /api
+
+springdoc:
+  swagger-ui:
+    # 로컬 개발 환경: 같은 서버의 API 정의 사용 (CORS 문제 방지)
+    # context-path(/api)가 자동으로 붙으므로 /api를 포함하지 않음
+    url: /v3/api-docs

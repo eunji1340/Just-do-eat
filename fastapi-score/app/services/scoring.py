@@ -20,9 +20,11 @@ def _clip(x: float, lo: float, hi: float) -> float:
 
 def _distance_decay(distance_m: float, lambda_per_km: float = 0.6) -> float:
     """
-    거리 감쇠 계수(0~1). 1km 당 lambda를 적용한 지수 감쇠.
+    거리 감쇠 계수(0~1). 700m 이하는 감쇠 없음, 700m 초과 시 1km 당 lambda를 적용한 지수 감쇠.
     """
-    km = max(0.0, distance_m) / 1000.0
+    if distance_m <= 700.0:
+        return 1.0
+    km = (distance_m - 700.0) / 1000.0
     return math.exp(-lambda_per_km * km)
 
 def _sigmoid(x: float) -> float:
@@ -82,7 +84,7 @@ def score_personal(
         # 2) 북마크 가산 (비감쇠)
         w_saved = 0.5 if rid in saved_set else 0.0
         
-        # 3) 개인 선호 가중치 (pref_score) → 시그모이드 가중
+        # 3) 개인 선호 점수 (pref_score) 추출
         #    - 우선순위: 후보 제공 pref_score > 과거 호환용 rest_bias
         pref = None
         try:
@@ -91,22 +93,41 @@ def score_personal(
             pref = None
         if pref is None:
             pref = rest_bias.get(rid, 0.0)
-        alpha = 1.5
-        w_personal = _sigmoid(alpha * float(pref)) if pref is not None else 1.0
         
         # 4) 거리 감쇠
-        decay = _distance_decay(c.distance_m)
+        decay = _distance_decay(c.distance_m) if c.distance_m is not None else 1.0
         
-        # base(CBF) * 개인가중 * 거리감쇠
+        # base(CBF) 계산: 태그 유사도 + 북마크
         base = w_tag + w_saved
-        score_val = base * w_personal * decay
+        
+        # pref_score 기반 점수 가산 (base가 0이어도 pref_score가 반영되도록)
+        # pref_score 범위: -10.0 ~ +10.0 → 점수 범위: -0.3 ~ +0.3으로 스케일링
+        w_pref = 0.0
+        if pref is not None and pref != 0.0:
+            # pref_score를 직접 반영 (스케일링: 10.0 → 0.3)
+            w_pref = float(pref) * 0.03
+        
+        # base 계산: 태그/북마크 점수 + pref_score
+        base = base + w_pref
+        
+        # base가 0 이하일 때 최소값 보장 (pref_score가 없거나 음수여도 기본 점수 유지)
+        if base <= 0.0:
+            # pref_score가 양수면 그 값을 사용, 아니면 기본값 0.1
+            if w_pref > 0:
+                base = w_pref
+            else:
+                base = 0.1
+        
+        # 최종 점수: base * 거리감쇠
+        score_val = base * decay
         
         dbg = None
         if debug:
             dbg = {
                 "w_tag": round(w_tag, 4),
                 "w_saved": round(w_saved, 4),
-                "w_personal": round(w_personal, 4),
+                "w_pref": round(w_pref, 4),
+                "base": round(base, 4),
                 "distance_decay": round(decay, 4),
                 "final": round(score_val, 4),
             }
