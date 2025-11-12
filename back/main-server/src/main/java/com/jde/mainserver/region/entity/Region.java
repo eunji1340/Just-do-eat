@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 import org.locationtech.jts.geom.Point;
 
 @Getter
@@ -24,6 +26,8 @@ public class Region {
     private String address;
 
     // PostGIS 컬럼 매핑 (hibernate-spatial 필요)
+
+    @JdbcTypeCode(SqlTypes.GEOMETRY)
     @Column(columnDefinition = "geometry(Point, 4326)", nullable = false)
     private Point geom;
 
