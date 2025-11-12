@@ -49,9 +49,6 @@ dependencies {
     // PostgreSQL
     runtimeOnly 'org.postgresql:postgresql'
 
-    // Hibernate Spatial (PostGIS 연동, geometry 타입)
-    implementation 'org.hibernate.orm:hibernate-spatial'
-
     // JSONB 매핑 (JsonBinaryType)
     implementation 'com.vladmihalcea:hibernate-types-60:2.21.1'
 
@@ -97,7 +94,9 @@ dependencies {
 
     //지오메트리 매핑용
     implementation 'org.locationtech.jts:jts-core:1.19.0'
-    implementation 'org.hibernate.orm:hibernate-spatial:6.5.2.Final'
+
+    // Hibernate Spatial (PostGIS 연동, geometry 타입)
+    implementation 'org.hibernate.orm:hibernate-spatial:6.6.3.Final'
 
     // 왜 있는지 모름
     // developmentOnly 'org.springframework.boot:spring-boot-devtools'
