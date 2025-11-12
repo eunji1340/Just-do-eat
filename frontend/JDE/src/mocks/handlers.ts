@@ -24,6 +24,7 @@ import type {
   ItemWeights,
   TagPrefs,
 } from './model/bingo-types';
+import { resolvePlanDetailSample } from './model/plan-detail.sample';
 
 // ----------------------------------------------------
 // 유틸: MBTI 서버 계산 (클라와 동일 로직, 서버에 있다고 가정)
@@ -109,9 +110,9 @@ const handleUserIdExists = async ({ request }: { request: Request }) => {
   await delay(300);
   
   const url = new URL(request.url);
-  const userId = url.searchParams.get('userId');
-  
-  if (!userId) {
+  const name = url.searchParams.get('name');
+
+  if (!name) {
     return HttpResponse.json(
       {
         status: 'BAD_REQUEST',
@@ -126,7 +127,7 @@ const handleUserIdExists = async ({ request }: { request: Request }) => {
   // 간단한 중복 체크 (모킹)
   // 'existing_user', 'test', 'admin', 'demo_user_01' 등은 중복으로 처리
   const existingUsers = ['existing_user', 'test', 'admin', 'demo_user_01'];
-  const exists = existingUsers.includes(userId);
+  const exists = existingUsers.includes(name);
 
   // boolean 값을 직접 반환 (true = 중복됨, false = 사용 가능)
   return HttpResponse.json({
@@ -140,7 +141,7 @@ const handleUserIdExists = async ({ request }: { request: Request }) => {
 // 회원가입 핸들러 함수 (공통)
 const handleSignup = async ({ request }: { request: Request }) => {
   const body = (await request.json()) as {
-    userId?: string;
+    name?: string;
     password?: string;
     imageUrl?: string | null;
     ageGroup?: string;
@@ -151,7 +152,7 @@ const handleSignup = async ({ request }: { request: Request }) => {
   await delay(500);
 
   // 유효성 검사
-  if (!body.userId || !body.password) {
+  if (!body.name || !body.password) {
     return HttpResponse.json(
       {
         status: 'BAD_REQUEST',
@@ -164,7 +165,7 @@ const handleSignup = async ({ request }: { request: Request }) => {
   }
 
   // userId 중복 체크
-  if (body.userId === 'existing_user' || body.userId === 'test' || body.userId === 'admin') {
+  if (body.name === 'existing_user' || body.name === 'test' || body.name === 'admin') {
     return HttpResponse.json(
       {
         status: 'CONFLICT',
@@ -288,6 +289,28 @@ export const handlers = [
     });
   }),
 
+  // === 약속 상세 ===
+  http.get('http://localhost:8080/plans/:planId', async ({ params, request }) => {
+    await delay(400);
+
+    const url = new URL(request.url);
+    if (url.searchParams.get('variant') === 'error') {
+      return HttpResponse.json(
+        { message: '약속 상세를 불러오지 못했습니다.' },
+        { status: 500 },
+      );
+    }
+
+    const planId = params.planId as string;
+    const planDetail = resolvePlanDetailSample(planId);
+
+    if (url.searchParams.get('variant') === 'empty') {
+      planDetail.recommended = [];
+    }
+
+    return HttpResponse.json(planDetail);
+  }),
+
   // === 인증 관련 API ===
   
   // 7) 아이디 중복 확인: GET http://localhost:8080/users/exists
@@ -299,19 +322,19 @@ export const handlers = [
   // 9) 로그인: POST http://localhost:8080/auth/login
   http.post('http://localhost:8080/auth/login', async ({ request }) => {
     const body = (await request.json()) as {
-      userId?: string;
+      name?: string;
       password?: string;
     };
 
     await delay(300);
 
     // 유효성 검사
-    if (!body.userId || !body.password) {
+    if (!body.name || !body.password) {
       return HttpResponse.json(
         {
           status: 'BAD_REQUEST',
           code: 'VALIDATION_ERROR',
-          message: '아이디와 비밀번호를 입력해주세요.',
+        message: '아이디와 비밀번호를 입력해주세요.',
           result: null,
         },
         { status: 400 }
@@ -319,7 +342,7 @@ export const handlers = [
     }
 
     // 간단한 인증 로직 (모킹)
-    if (body.userId === 'demo_user_01' && body.password === 'DemoPassw0rd!') {
+    if (body.name === 'demo_user_01' && body.password === 'DemoPassw0rd!') {
       return HttpResponse.json({
         status: 'OK',
         code: 'OK',
@@ -366,13 +389,17 @@ export const handlers = [
       status: 'OK',
       code: '200',
       message: '요청 성공',
-      result: {
-        memberId: 1,
-        userId: 'demo_user_01',
+      data: {
+        userId: 1,
+        name: 'demo_user_01',
         imageUrl: 'https://api.dicebear.com/7.x/avataaars/svg?seed=demo_user_01',
         ageGroup: 'TWENTIES',
         gender: 'MALE',
         role: 'USER',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        regionId: null,
+        regionName: null,
       },
     });
   }),

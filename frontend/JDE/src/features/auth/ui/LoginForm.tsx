@@ -2,7 +2,7 @@ import type { FormEvent } from 'react';
 import { Button } from '@/shared/ui/button';
 
 interface LoginFormProps {
-  formData: { userId: string; password: string };
+  formData: { name: string; password: string };
   handleChange: (field: string, value: string) => void;
   submitting: boolean;
   error: string | null;
@@ -26,8 +26,8 @@ export default function LoginForm({
         <input
           id="userId"
           type="text"
-          value={formData.userId}
-          onChange={(e) => handleChange('userId', e.target.value)}
+          value={formData.name}
+          onChange={(e) => handleChange('name', e.target.value)}
           required
           placeholder="아이디를 입력하세요"
           className="p-3 rounded-lg border border-[var(--color-border)] bg-[var(--color-bg)] text-[var(--color-fg)] text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]"

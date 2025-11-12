@@ -1,13 +1,21 @@
 import { useState, useEffect } from 'react';
+import type { AxiosError, AxiosResponse } from 'axios';
 import customAxios from '@/shared/api/http';
 
-export function useUserIdCheck(userId: string) {
+type ExistsResponse = {
+  status: string;
+  code?: string;
+  message?: string;
+  data?: boolean;
+};
+
+export function useUserIdCheck(name: string) {
   const [checking, setChecking] = useState(false);
   const [available, setAvailable] = useState<boolean | null>(null);
   const [message, setMessage] = useState('');
 
   useEffect(() => {
-    if (!userId || userId.length < 4) {
+    if (!name || name.length < 4) {
       setChecking(false);
       setAvailable(null);
       setMessage('');
@@ -15,30 +23,31 @@ export function useUserIdCheck(userId: string) {
     }
 
     const timer = setTimeout(() => {
-      checkUserId(userId);
+      checkUserId(name);
     }, 500);
 
     return () => clearTimeout(timer);
-  }, [userId]);
+  }, [name]);
 
-  const checkUserId = async (userId: string) => {
+  const checkUserId = async (value: string) => {
     setChecking(true);
     setMessage('확인 중...');
 
     try {
-      const response = await customAxios({
+      const response = await customAxios<AxiosResponse<ExistsResponse>>({
         method: 'GET',
-        url: `/users/exists?userId=${encodeURIComponent(userId)}`,
+        url: `/users/exists?name=${encodeURIComponent(value)}`,
         meta: { authRequired: false }
-      }) as any;
+      });
 
-      const exists = response?.data?.data ?? false;
+      const exists = response.data?.data ?? false;
       
       setAvailable(!exists);
       setMessage(exists ? '이미 사용 중인 아이디입니다.' : '사용 가능한 아이디입니다.');
-    } catch (error: any) {
-      const errorData = error.response?.data;
-      if (errorData?.code === 'NOT_FOUND' || error.response?.status === 404) {
+    } catch (error) {
+      const axiosError = error as AxiosError<ExistsResponse>;
+      const errorData = axiosError.response?.data;
+      if (errorData?.code === 'NOT_FOUND' || axiosError.response?.status === 404) {
         setAvailable(true);
         setMessage('사용 가능한 아이디입니다.');
       } else {
