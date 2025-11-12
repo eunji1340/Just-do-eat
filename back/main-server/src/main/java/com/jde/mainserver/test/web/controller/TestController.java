@@ -21,7 +21,7 @@ import java.util.Map;
 
 @Tag(name = "✅ 연결 테스트 API", description = "Redis 연결 상태를 확인합니다.")
 @RestController
-@RequestMapping("/api/test")
+@RequestMapping("/test")
 public class TestController {
 
     private final TestService testService;

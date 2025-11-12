@@ -7,13 +7,14 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: update # (또는 validate, create-drop)
+      ddl-auto: none # (또는 validate, create-drop)
     properties:
       hibernate:
+        dialect: org.hibernate.spatial.dialect.postgis.PostgreSQLPGObjectDialect
         format_sql: true
-        dialect: org.hibernate.dialect.PostgreSQLDialect
     open-in-view: false
     show-sql: true
+
 
   flyway:
     enabled: true
@@ -47,3 +48,7 @@ jwt:
   secret: ${JWT_SECRET:dGhpc2lzYXNlY3JldGtleWZvcmp3dHRva2Vuc2lnbmluZ2FuZHZlcmlmaWNhdGlvbg==}
   access-token-ttl-ms: ${JWT_ACCESS_TOKEN_TTL_MS:3600000}  # 1시간 (기본값)
   refresh-token-ttl-ms: ${JWT_REFRESH_TOKEN_TTL_MS:604800000}  # 7일 (기본값)
+
+springdoc:
+  swagger-ui:
+    url: http://k13a701.p.ssafy.io/api/v3/api-docs

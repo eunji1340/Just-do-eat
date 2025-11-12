@@ -16,9 +16,13 @@ public class MemberQueryService {
 
     private final MemberRepository memberRepository;
 
+    /**
+     * 로그인용 아이디(name) 중복 확인
+     * 기존: existsUserId(String userId) → 변경: existsName(String name)
+     */
     @Transactional(readOnly = true)
-    public boolean existsUserId(String userId) {
-        return memberRepository.existsByUserId(userId);
+    public boolean existsName(String name) {
+        return memberRepository.existsByName(name);
     }
 
     @Transactional(readOnly = true)
