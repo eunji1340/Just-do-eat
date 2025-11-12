@@ -46,11 +46,6 @@ dependencies {
     // Prometheus
     // implementation 'io.micrometer:micrometer-registry-prometheus'
 
-    // PostgreSQL
-    runtimeOnly 'org.postgresql:postgresql'
-
-    // JSONB 매핑 (JsonBinaryType)
-    implementation 'com.vladmihalcea:hibernate-types-60:2.21.1'
 
     // Lombok
     compileOnly 'org.projectlombok:lombok'
@@ -95,8 +90,13 @@ dependencies {
     //지오메트리 매핑용
     implementation 'org.locationtech.jts:jts-core:1.19.0'
 
+    // PostgreSQL
+    runtimeOnly 'org.postgresql:postgresql'
+    implementation 'com.vladmihalcea:hibernate-types-60:2.21.1'
     // Hibernate Spatial (PostGIS 연동, geometry 타입)
-    implementation 'org.hibernate.orm:hibernate-spatial:6.6.33.Final'
+    implementation platform("org.hibernate.orm:hibernate-platform:6.6.33.Final")
+    implementation 'org.hibernate.orm:hibernate-core'
+    implementation 'org.hibernate.orm:hibernate-spatial'
 
     // 왜 있는지 모름
     // developmentOnly 'org.springframework.boot:spring-boot-devtools'
