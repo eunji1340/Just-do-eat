@@ -1,19 +1,16 @@
 import {
-  ChangeEvent,
-  FormEvent,
   useCallback,
   useEffect,
   useMemo,
   useState,
 } from "react";
+import type { ChangeEvent, FormEvent } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { getPlanDetail } from "@/entities/plan/api/getPlanDetail";
 import type { PlanDetail, Restaurant } from "@/entities/plan/model/types";
 import { formatPlanDate } from "@/shared/lib/date";
 import { Button } from "@/shared/ui/shadcn/button";
 import { ShareButton } from "@/features/plan/ShareButton";
-import { RefreshButton } from "@/features/plan/RefreshButton";
-import { DeleteButton } from "@/features/plan/DeleteButton";
 import { MemberAvatars } from "@/widgets/plan/MemberAvatars";
 import { RestaurantCard } from "@/widgets/plan/RestaurantCard";
 import { TopNavBar } from "@/widgets/top-navbar";
@@ -75,12 +72,15 @@ export default function PlanDetailPage() {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [shareUrl, setShareUrl] = useState("");
   const [isAddModalOpen, setAddModalOpen] = useState(false);
+  const [hasAccess, setHasAccess] = useState(true);
+  const [isStatusExpanded, setStatusExpanded] = useState(false);
 
   const fetchPlanDetail = useCallback(
     async (options?: { silent?: boolean }) => {
       if (!activePlanId) {
         setPlan(null);
         setRecommended([]);
+        setHasAccess(false);
         return;
       }
 
@@ -94,6 +94,23 @@ export default function PlanDetailPage() {
 
       try {
         const detail = await getPlanDetail(activePlanId);
+        const isParticipant = detail.members.some(
+          (member) => member.id === me.id
+        );
+        setHasAccess(isParticipant);
+
+        if (!isParticipant) {
+          setPlan(null);
+          setRecommended([]);
+          if (!silent) {
+            if (typeof window !== "undefined") {
+              window.alert("참여자만 약속 상세를 볼 수 있습니다.");
+            }
+            navigate(-1);
+          }
+          return;
+        }
+
         setPlan(detail);
         setRecommended(detail.recommended);
         setIsError(false);
@@ -117,7 +134,7 @@ export default function PlanDetailPage() {
         }
       }
     },
-    [activePlanId]
+    [activePlanId, me.id, navigate]
   );
 
   useEffect(() => {
@@ -126,6 +143,7 @@ export default function PlanDetailPage() {
       setRecommended([]);
       setIsLoading(false);
       setIsError(false);
+      setHasAccess(false);
       return;
     }
 
@@ -192,42 +210,67 @@ export default function PlanDetailPage() {
       <div className="relative flex min-h-screen flex-col bg-white">
         <div className="flex-1 pb-[96px]">
           {isLoading && <LoadingState />}
-          {!isLoading && isError && (
+
+          {!isLoading && !hasAccess && (
+            <div className="flex flex-col items-center justify-center gap-3 px-4 py-24 text-center">
+              <h2 className="text-base font-semibold text-neutral-900">
+                이 약속에 참여하지 않았어요
+              </h2>
+              <p className="text-sm text-neutral-500">
+                초대받은 사용자만 약속 상세를 볼 수 있습니다.
+              </p>
+              <Button
+                variant="outline"
+                size="md"
+                className="h-11 px-6"
+                onClick={() => navigate(-1)}
+              >
+                이전 화면으로
+              </Button>
+            </div>
+          )}
+
+          {!isLoading && hasAccess && isError && (
             <ErrorState onRetry={() => fetchPlanDetail()} />
           )}
-          {!isLoading && !isError && plan && (
+
+          {!isLoading && hasAccess && !isError && plan && (
             <PlanContent
               plan={plan}
               isOwner={isOwner}
               recommended={recommended}
               onOpenAddModal={() => setAddModalOpen(true)}
               shareUrl={shareUrl}
-              onRefresh={() => fetchPlanDetail({ silent: true })}
-              isRefreshing={isRefreshing}
-              onDelete={handleDeletePlan}
               onVote={handleVoteClick}
               onRoulette={handleRouletteClick}
+              isStatusExpanded={isStatusExpanded}
+              onToggleStatus={() => setStatusExpanded((prev) => !prev)}
             />
           )}
-          {!isLoading && !isError && !plan && (
+
+          {!isLoading && hasAccess && !isError && !plan && (
             <div className="flex flex-col items-center justify-center gap-2 px-4 py-20 text-sm text-neutral-500">
               약속 정보를 찾을 수 없습니다.
             </div>
           )}
         </div>
 
-        {plan && isOwner && (
-          <div className="sticky bottom-0 left-0 z-30 bg-white/95 px-4 py-3 shadow-[0_-4px_20px_rgba(15,23,42,0.08)] backdrop-blur sm:hidden">
+        {plan && hasAccess && isOwner && (
+          <div className="sticky bottom-0 left-0 z-30 bg-white/95 px-4 py-3 shadow-[0_-4px_20px_rgba(15,23,42,0.08)] backdrop-blur">
             <OwnerActionButtons
               layout="vertical"
               onVote={handleVoteClick}
               onRoulette={handleRouletteClick}
+              onRefresh={() => fetchPlanDetail({ silent: true })}
+              onDelete={handleDeletePlan}
+              isRefreshing={isRefreshing}
+              hasDecidedRestaurant={Boolean(plan.decidedRestaurant)}
             />
           </div>
         )}
 
         <AddRestaurantModal
-          open={isAddModalOpen}
+          open={isAddModalOpen && hasAccess}
           onClose={() => setAddModalOpen(false)}
           onSubmit={handleAddRestaurant}
         />
@@ -242,11 +285,10 @@ type PlanContentProps = {
   recommended: Restaurant[];
   onOpenAddModal: () => void;
   shareUrl: string;
-  onRefresh: () => Promise<unknown>;
-  isRefreshing: boolean;
-  onDelete: () => void;
   onVote: () => void;
   onRoulette: () => void;
+  isStatusExpanded: boolean;
+  onToggleStatus: () => void;
 };
 
 function PlanContent({
@@ -255,11 +297,10 @@ function PlanContent({
   recommended,
   onOpenAddModal,
   shareUrl,
-  onRefresh,
-  isRefreshing,
-  onDelete,
   onVote,
   onRoulette,
+  isStatusExpanded,
+  onToggleStatus,
 }: PlanContentProps) {
   const deciderName = plan.deciderId
     ? plan.members.find((member) => member.id === plan.deciderId)?.name
@@ -287,8 +328,6 @@ function PlanContent({
                   url={shareUrl}
                   title={`${plan.groupName}의 ${plan.planName}`}
                 />
-                <RefreshButton onRefresh={onRefresh} isLoading={isRefreshing} />
-                <DeleteButton planName={plan.planName} onConfirm={onDelete} />
               </div>
             )}
           </div>
@@ -297,27 +336,47 @@ function PlanContent({
             <MemberAvatars members={plan.members} ownerId={plan.ownerId} />
           </div>
 
-          <div className="rounded-2xl bg-orange-50 px-5 py-5 text-sm text-orange-900">
-            <PlanInfoRow label="약속 상태" value={statusLabelMap[plan.status]} />
-            <PlanInfoRow
-              label="참여 인원"
-              value={`${plan.participantsCount}명`}
-            />
-            <PlanInfoRow
-              label="진행 도구"
-              value={
-                plan.decisionTool
-                  ? `${decisionToolLabel[plan.decisionTool]} 진행 중`
-                  : "아직 선택되지 않았어요"
-              }
-            />
-            {plan.meetingPlace && (
-              <PlanInfoRow label="약속 장소" value={plan.meetingPlace} />
-            )}
-            {deciderName && (
-              <PlanInfoRow label="약속장" value={`${deciderName}님`} />
-            )}
-          </div>
+          {plan.decidedRestaurant && (
+            <div className="flex flex-col gap-3">
+              <h2 className="text-base font-semibold text-neutral-700">
+                결정된 식당
+              </h2>
+              <RestaurantCard restaurant={plan.decidedRestaurant} highlight />
+            </div>
+          )}
+
+          <button
+            type="button"
+            onClick={onToggleStatus}
+            className="ml-auto inline-flex items-center gap-1 text-sm font-medium text-primary"
+            aria-expanded={isStatusExpanded}
+          >
+            {isStatusExpanded ? "약속 정보 접기" : "약속 정보 더보기"}
+          </button>
+
+          {isStatusExpanded && (
+            <div className="rounded-2xl bg-orange-50 px-5 py-5 text-sm text-orange-900">
+              <PlanInfoRow label="약속 상태" value={statusLabelMap[plan.status]} />
+              <PlanInfoRow
+                label="참여 인원"
+                value={`${plan.participantsCount}명`}
+              />
+              <PlanInfoRow
+                label="진행 도구"
+                value={
+                  plan.decisionTool
+                    ? `${decisionToolLabel[plan.decisionTool]} 진행 중`
+                    : "아직 선택되지 않았어요"
+                }
+              />
+              {plan.meetingPlace && (
+                <PlanInfoRow label="약속 장소" value={plan.meetingPlace} />
+              )}
+              {deciderName && (
+                <PlanInfoRow label="약속장" value={`${deciderName}님`} />
+              )}
+            </div>
+          )}
 
           {hasConditions && (
             <div className="rounded-2xl border border-neutral-100 bg-neutral-50 px-5 py-4">
@@ -336,24 +395,15 @@ function PlanContent({
               </ul>
             </div>
           )}
-
-          {plan.decidedRestaurant && (
-            <div className="flex flex-col gap-3">
-              <h2 className="text-base font-semibold text-neutral-700">
-                결정된 식당
-              </h2>
-              <RestaurantCard restaurant={plan.decidedRestaurant} highlight />
-            </div>
-          )}
-
-          {isOwner && (
-            <OwnerActionButtons onVote={onVote} onRoulette={onRoulette} />
-          )}
+          {/* 오너만 보이는 버튼 - 결정된 식당이 없을 때만 보이도록 수정 */}
+          {/* {isOwner && !plan.decidedRestaurant && (
+            <OwnerInlineActions onVote={onVote} onRoulette={onRoulette} />
+          )} */}
         </div>
       </section>
 
       <section className="flex flex-col gap-4 px-4 pb-10">
-        <div className="flex items-center justify_between">
+        <div className="flex items-center justify-between">
           <h2 className="text-lg font-semibold text-neutral-900">추천 식당</h2>
           <span className="text-sm text-neutral-400">
             {recommended.length}곳
@@ -399,20 +449,133 @@ type OwnerActionButtonsProps = {
   onVote: () => void;
   onRoulette: () => void;
   layout?: "horizontal" | "vertical";
+  onRefresh: () => Promise<unknown>;
+  onDelete: () => void;
+  isRefreshing: boolean;
+  hasDecidedRestaurant: boolean;
 };
 
 function OwnerActionButtons({
   onVote,
   onRoulette,
+  onRefresh,
+  onDelete,
+  isRefreshing,
+  hasDecidedRestaurant,
   layout = "horizontal",
 }: OwnerActionButtonsProps) {
   const isVertical = layout === "vertical";
+
+  if (isVertical) {
+    return (
+      <div className="mt-2 flex flex-col gap-2">
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            size="md"
+            className="h-12 flex-1 text-sm font-semibold text-destructive"
+            onClick={onDelete}
+            aria-label="약속 삭제"
+          >
+            약속 삭제
+          </Button>
+          <Button
+            variant="outline"
+            size="md"
+            className="h-12 flex-1 text-sm font-semibold"
+            onClick={() => {
+              void onRefresh();
+            }}
+            aria-label="약속 새로고침"
+            disabled={isRefreshing}
+          >
+            새로고침
+          </Button>
+        </div>
+
+        {!hasDecidedRestaurant && (
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              size="md"
+              className="h-12 flex-1 text-sm font-semibold text-primary"
+              onClick={onVote}
+              aria-label="투표 만들기"
+            >
+              + 투표
+            </Button>
+            <Button
+              variant="outline"
+              size="md"
+              className="h-12 flex-1 text-sm font-semibold text-primary"
+              onClick={onRoulette}
+              aria-label="룰렛 만들기"
+            >
+              + 룰렛
+            </Button>
+          </div>
+        )}
+      </div>
+    );
+  }
+
   return (
-    <div
-      className={`mt-4 flex ${
-        isVertical ? "flex-col gap-2 sm:flex-row sm:gap-3" : "gap-3"
-      }`}
-    >
+    <div className="mt-4 flex flex-wrap gap-3">
+      <Button
+        variant="outline"
+        size="md"
+        className="h-12 flex-1 text-sm font-semibold text-destructive"
+        onClick={onDelete}
+        aria-label="약속 삭제"
+      >
+        약속 삭제
+      </Button>
+      <Button
+        variant="outline"
+        size="md"
+        className="h-12 flex-1 text-sm font-semibold"
+        onClick={() => {
+          void onRefresh();
+        }}
+        aria-label="약속 새로고침"
+        disabled={isRefreshing}
+      >
+        새로고침
+      </Button>
+      {!hasDecidedRestaurant && (
+        <>
+          <Button
+            variant="outline"
+            size="md"
+            className="h-12 flex-1 text-sm font-semibold text-primary"
+            onClick={onVote}
+            aria-label="투표 만들기"
+          >
+            + 투표
+          </Button>
+          <Button
+            variant="outline"
+            size="md"
+            className="h-12 flex-1 text-sm font-semibold text-primary"
+            onClick={onRoulette}
+            aria-label="룰렛 만들기"
+          >
+            + 룰렛
+          </Button>
+        </>
+      )}
+    </div>
+  );
+}
+
+type OwnerInlineActionsProps = {
+  onVote: () => void;
+  onRoulette: () => void;
+};
+
+function OwnerInlineActions({ onVote, onRoulette }: OwnerInlineActionsProps) {
+  return (
+    <div className="mt-4 flex gap-3">
       <Button
         variant="outline"
         size="md"
