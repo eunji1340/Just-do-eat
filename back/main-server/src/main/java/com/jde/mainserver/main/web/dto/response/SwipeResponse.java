@@ -7,7 +7,7 @@
 
 package com.jde.mainserver.main.web.dto.response;
 
-import com.jde.mainserver.main.entity.SwipeAction;
+import com.jde.mainserver.main.entity.enums.SwipeAction;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
