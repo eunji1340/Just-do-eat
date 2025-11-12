@@ -1,8 +1,13 @@
 package com.jde.mainserver.global.exception.code;
 
 import com.jde.mainserver.global.api.ApiResponse;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 
+// 기존 주석 유지
+@Getter
+@RequiredArgsConstructor
 public enum MemberErrorCode implements BaseErrorCode {
 
     MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND, "404", "회원 정보를 찾을 수 없습니다."),
@@ -12,16 +17,6 @@ public enum MemberErrorCode implements BaseErrorCode {
     private final HttpStatus status;
     private final String code;
     private final String message;
-
-    MemberErrorCode(HttpStatus status, String code, String message) {
-        this.status = status;
-        this.code = code;
-        this.message = message;
-    }
-
-    @Override public HttpStatus getStatus()   { return status; }
-    @Override public String getCode()         { return code; }
-    @Override public String getMessage()      { return message; }
 
     // BaseErrorCode가 요구하는 메서드 구현
     @Override

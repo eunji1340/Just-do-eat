@@ -18,7 +18,6 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 
 @Data
-@AllArgsConstructor
 //@JsonPropertyOrder({"status", "com/jjogae/mainserver/payment/exception/code", "message", "data"})
 @JsonPropertyOrder({"status", "code", "message", "data"})
 public class ApiResponse<T> {
@@ -49,4 +48,12 @@ public class ApiResponse<T> {
     public static <T> ApiResponse<T> onFailure(HttpStatus status, String code, String message, T result) {
         return new ApiResponse<T>(status, code, message, result);
     }
+
+    public ApiResponse(HttpStatus status, String code, String message, T data) {
+        this.status = status;
+        this.code = code;
+        this.message = message;
+        this.data = data;
+    }
+
 }

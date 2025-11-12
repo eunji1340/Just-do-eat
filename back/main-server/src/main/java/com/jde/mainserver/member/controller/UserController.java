@@ -8,6 +8,7 @@ import com.jde.mainserver.member.service.command.AuthCommandService;
 import com.jde.mainserver.member.service.query.MemberQueryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -18,15 +19,16 @@ public class UserController {
     private final MemberQueryService memberQueryService;
     private final AuthCommandService authCommandService;
 
-    /** UX용 중복체크 */
+    /** UX용 중복체크 (로그인용 아이디: name) */
     @GetMapping("/exists")
-    public ApiResponse<Boolean> exists(@RequestParam String userId) {
-        boolean exists = memberQueryService.existsUserId(userId);
+    public ApiResponse<Boolean> exists(@RequestParam String name) {
+        boolean exists = memberQueryService.existsName(name);
         return ApiResponse.onSuccess(GeneralSuccessCode.OK, exists);
     }
 
-    /** 내 정보 조회 */
+    /** 내 정보 조회 (타임스탬프/상권 포함) */
     @GetMapping("/me")
+    @Transactional(readOnly = true)
     public ApiResponse<MemberInfoResponse> me(Authentication authentication) {
         Long memberId = currentMemberId(authentication);
         MemberInfoResponse info = memberQueryService.getMe(memberId);
@@ -50,10 +52,16 @@ public class UserController {
         return ApiResponse.onSuccess(GeneralSuccessCode.OK);
     }
 
+    /** 토큰 subject = memberId(Long) 전제 */
     private Long currentMemberId(Authentication authentication) {
-        String subject = authentication == null ? null : authentication.getName();
-        if (subject == null) throw new IllegalArgumentException("인증이 필요합니다.");
-        try { return Long.parseLong(subject); }
-        catch (NumberFormatException e) { throw new IllegalArgumentException("잘못된 토큰(subject)입니다."); }
+        String subject = (authentication == null) ? null : authentication.getName();
+        if (subject == null || subject.isBlank()) {
+            throw new IllegalArgumentException("인증이 필요합니다.");
+        }
+        try {
+            return Long.parseLong(subject);
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("잘못된 토큰(subject)입니다.");
+        }
     }
 }
