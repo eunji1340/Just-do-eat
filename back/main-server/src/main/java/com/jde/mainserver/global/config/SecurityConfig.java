@@ -1,16 +1,14 @@
-/**
- * global/config/SecurityConfig.java
- * 보안 설정 (JWT 기반, Stateless)
- * Author: Kim
- * Date: 2025-11-12 (updated)
- */
 package com.jde.mainserver.global.config;
 
 import com.jde.mainserver.global.security.jwt.JwtFilter;
 import com.jde.mainserver.global.security.jwt.JwtUtil;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -18,49 +16,52 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
+@EnableWebSecurity // ✅ 확실히 활성화
 @RequiredArgsConstructor
 public class SecurityConfig {
 
+	private static final Logger log = LoggerFactory.getLogger(SecurityConfig.class);
 	private final JwtUtil jwtUtil;
 
-	// ✅ 인증 없이 접근 가능한 공개 URL 목록
 	private static final String[] ALLOW_URLS = {
-			"/",
+			"/", "/error",
 			"/swagger-ui/**", "/swagger-resources/**", "/v3/api-docs/**", "/swagger-ui.html",
 			"/actuator/**",
 			"/auth/**",
 			"/users/exists",
 			"/regions/**",
 			"/main/**",
-			"/restaurants/**" // ✅ 식당 검색/상세는 JWT 없이 허용
+			"/restaurants/**",
+			// ⛳️ 임시: 플랜 투표 기능 열어서 동작 먼저 확인
+			"/plans/**"
 	};
 
-	/** ✅ JwtFilter Bean 등록 */
 	@Bean
-	public JwtFilter jwtFilter() {
-		return new JwtFilter(jwtUtil);
-	}
+	public JwtFilter jwtFilter() { return new JwtFilter(jwtUtil); }
 
-	/** ✅ 보안 필터 체인 구성 */
 	@Bean
 	public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-		http
-				// 세션 비활성화 (Stateless)
-				.sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+		log.info("SecurityConfig :: building filter chain"); // ✅ 부팅 시 찍히는지 확인
 
-				// 기본 인증 방식 비활성화
+		http
 				.csrf(AbstractHttpConfigurer::disable)
 				.httpBasic(AbstractHttpConfigurer::disable)
 				.formLogin(AbstractHttpConfigurer::disable)
-
-				// 요청별 접근 권한 설정
+				.sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 				.authorizeHttpRequests(auth -> auth
+						// 정적 리소스 허용 (optional)
+						.requestMatchers(PathRequest.toStaticResources().atCommonLocations()).permitAll()
+						// 공개 URL
 						.requestMatchers(ALLOW_URLS).permitAll()
+						// 나머지는 인증 필요
 						.anyRequest().authenticated()
-				);
-
-		// ✅ JwtFilter를 UsernamePasswordAuthenticationFilter "앞"에 등록
-		http.addFilterBefore(jwtFilter(), UsernamePasswordAuthenticationFilter.class);
+				)
+				.exceptionHandling(e -> e
+						.authenticationEntryPoint((req, res, ex) -> res.sendError(401))
+						.accessDeniedHandler((req, res, ex) -> res.sendError(403))
+				)
+				// ✅ JWT 필터 연결 (반드시 UsernamePasswordAuthenticationFilter보다 앞)
+				.addFilterBefore(jwtFilter(), UsernamePasswordAuthenticationFilter.class);
 
 		return http.build();
 	}
