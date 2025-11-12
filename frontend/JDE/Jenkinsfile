@@ -2,10 +2,10 @@ pipeline {
     agent any
 
     environment {
-        PROJECT_DIR = "/home/ubuntu/projects/S13P31A701"
+
         APP_NAME = "jde-frontend"
         NGINX_CONTAINER = "JDE-nginx"
-        WORK_DIR = "${PROJECT_DIR}/frontend/JDE"
+        WORK_DIR = "./frontend/JDE"
     }
 
     stages {
@@ -13,7 +13,7 @@ pipeline {
             steps {
         withCredentials([usernamePassword(credentialsId: 'nomio4001', usernameVariable: 'GIT_USER', passwordVariable: 'GIT_PASS')]) {
           sh '''
-            cd ${PROJECT_DIR}
+
             git config --global user.name "$GIT_USER"
             git config --global user.email "$GIT_USER@naver.com"
             git remote set-url origin https://$GIT_USER:$GIT_PASS@lab.ssafy.com/s13-final/S13P31A701.git
@@ -21,22 +21,29 @@ pipeline {
 
             git fetch origin FE
             git checkout FE
-            git pull origin FE
+	    git reset --hard origin/FE
           '''
         }
       }
     }  
 
         stage('Build Frontend') {
+            agent {
+              docker { image 'node:20' }
+              }
             steps {
                 sh '''
-                    cd ${WORK_DIR}
+		    cd ${WORK_DIR}
 
-                    echo "📦 Installing dependencies..."
-                    npm install
+                    echo "🧹 Clean node_modules and lockfile..."
+      		    rm -rf node_modules package-lock.json
+      		    npm cache clean --force
 
-                    echo "🏗️ Building frontend..."
-                    npm run build
+      		    echo "📦 Installing dependencies (fresh)..."
+      		    npm install
+
+     		    echo "🏗️ Building frontend..."
+      		    npm run build
                 '''
             }
         }
@@ -47,7 +54,7 @@ pipeline {
                     echo "🚀 Deploying build files to Nginx container..."
 
                     # Nginx 컨테이너가 실제 서비스 담당
-                    docker cp ${WORK_DIR}/dist/. ${NGINX_CONTAINER}:/usr/share/nginx/html/
+                    docker cp $WORKSPACE/${WORK_DIR}/dist/. ${NGINX_CONTAINER}:/usr/share/nginx/html/
 
                     # nginx reload로 새 파일 반영
                     docker exec ${NGINX_CONTAINER} nginx -s reload

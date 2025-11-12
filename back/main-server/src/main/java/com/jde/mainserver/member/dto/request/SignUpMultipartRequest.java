@@ -17,11 +17,9 @@ import org.springframework.web.multipart.MultipartFile;
 @Getter
 public class SignUpMultipartRequest {
 
-    @NotBlank
-    private String userId;
+    @NotBlank private String name;
 
-    @NotBlank
-    private String password;
+    @NotBlank private String password;
 
     /** (선택) 파일 업로드 */
     private MultipartFile image;
