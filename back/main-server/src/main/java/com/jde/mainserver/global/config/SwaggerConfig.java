@@ -24,16 +24,13 @@ public class SwaggerConfig {
                 .in(SecurityScheme.In.HEADER)
                 .name("Authorization");
 
-        SecurityRequirement securityRequirement = new SecurityRequirement()
-                .addList("Json Web Token(JWT)");
-
         return new OpenAPI()
                 .servers(List.of(
                         new Server().url("/api").description("Nginx base path")
                 ))
                 .components(new Components()
                         .addSecuritySchemes("Json Web Token(JWT)", securityScheme))
-                .security(Collections.singletonList(securityRequirement))
+                // 전역 보안 요구사항 제거 - 각 API에서 필요시 @SecurityRequirement 사용
                 .info(new Info()
                         .title("JUST DO EAT API")
                         .description("JUST DO EAT API 명세서"));

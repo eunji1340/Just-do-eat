@@ -12,6 +12,7 @@ import java.math.BigDecimal;
 import java.time.Instant;
 
 import com.jde.mainserver.global.common.BaseEntity;
+import com.jde.mainserver.main.entity.enums.SwipeAction;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
