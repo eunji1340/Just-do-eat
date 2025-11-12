@@ -10,6 +10,7 @@ package com.jde.mainserver.main.web.dto.response;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.List;
+import java.util.Map;
 
 @Schema(
 	description = "개인 추천 피드 응답 (무한 스크롤)",
@@ -177,7 +178,11 @@ public record FeedResponse(
 
             @Schema(description = "영업 중 여부", example = "true")
             @JsonProperty("is_open")
-            Boolean isOpen
+            Boolean isOpen,
+
+            @Schema(description = "점수 계산 상세 정보 (debug)", example = "{\"w_tag\": 0.0, \"w_saved\": 0.0, \"w_pref\": 0.015, \"base\": 0.115, \"distance_decay\": 0.98, \"final\": 0.1127}")
+            @JsonProperty("debug")
+            Map<String, Object> debug
     ) {
         @Schema(description = "영업시간 정보")
         public record HourItem(

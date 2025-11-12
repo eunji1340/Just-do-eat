@@ -19,7 +19,7 @@ class PersonalScoreRequest(BaseModel):
     """
     user: UserPrefFeature
     candidates: List[CandidateFeature] = Field(min_length=1)
-    debug: Optional[bool] = False
+    debug: Optional[bool] = True
 
 class PersonalScoreResponse(BaseModel):
     """

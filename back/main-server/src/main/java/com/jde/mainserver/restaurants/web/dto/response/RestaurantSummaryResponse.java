@@ -27,7 +27,7 @@ public class RestaurantSummaryResponse {
 	@JsonProperty("restaurant_id")
 	private Long restaurantId;
 
-	@Schema(description = "카카오 장소 ID", example = "27347714")
+	@Schema(description = "카카오 식당 ID", example = "1584928371")
 	@JsonProperty("kakao_id")
 	private Long kakaoId;
 
@@ -55,12 +55,16 @@ public class RestaurantSummaryResponse {
 	@JsonProperty("kakao_rating")
 	private Float kakaoRating;
 
+	@Schema(description = "카카오 리뷰 수", example = "321")
+	@JsonProperty("kakao_review_cnt")
+	private Integer kakaoReviewCnt;
+
 	@Schema(description = "가격대", example = "MEDIUM")
 	@JsonProperty("price_range")
 	private String priceRange;
 
-	@Schema(description = "이미지 URL 배열", example = "[\"http://t1.daumcdn.net/local/kakaomapPhoto/review/3166313fc72c663dd1a368548ddaed18792cbfdb?original\"]")
+	@Schema(description = "대표 이미지 URL(첫 번째 사진)", example = "http://t1.daumcdn.net/local/kakaomapPhoto/review/3166313fc72c663dd1a368548ddaed18792cbfdb?original")
 	@JsonProperty("image")
-	private Object image;
+	private String image;
 }
 
