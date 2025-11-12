@@ -21,18 +21,19 @@ export default function AppLayout({ children }: Props) {
     const { pathname } = location;
 
     // 정확히 일치하는 경로들
-    const exactPaths = ["/", "/favorites", "/my" ,"/groups"];
+    const exactPaths = ["/", "/favorites", "/my", "/groups"];
     if (exactPaths.includes(pathname)) {
       return true;
     }
 
     // 패턴 매칭이 필요한 경로들
     // 모임 상세: /groups/:id
-    // 약속 상세: /groups/appointments/:id 또는 /meetings/:meetingId/appointments/:id
+    // 약속 상세: /groups/appointments/:id 또는 /meetings/:meetingId/appointments/:id, /plans/:planId
     const showPatterns = [
       /^\/groups\/[^/]+$/, // 모임 상세
       /^\/groups\/[^/]+\/appointments\/[^/]+$/, // 약속 상세 (모임 하위)
       /^\/appointments\/[^/]+$/, // 약속 상세 (독립)
+      /^\/plans\/[^/]+$/, // 약속 상세 (단일 라우트)
     ];
 
     return showPatterns.some((pattern) => pattern.test(pathname));
