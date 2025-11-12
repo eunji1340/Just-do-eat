@@ -22,6 +22,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfig {
 
 	private final JwtUtil jwtUtil;
+	private final CorsConfig corsConfig;
 
 	// ✅ 인증 없이 접근 가능한 공개 URL 목록
 	private static final String[] ALLOW_URLS = {
@@ -32,7 +33,7 @@ public class SecurityConfig {
 			"/users/exists",
 			"/regions/**",
 			"/main/**",
-			"/restaurants/**" // ✅ 식당 검색/상세는 JWT 없이 허용
+			"/restaurants/**", // ✅ 식당 검색/상세는 JWT 없이 허용
 			"/test/**"
 	};
 
@@ -53,6 +54,8 @@ public class SecurityConfig {
 				.csrf(AbstractHttpConfigurer::disable)
 				.httpBasic(AbstractHttpConfigurer::disable)
 				.formLogin(AbstractHttpConfigurer::disable)
+
+				.addFilter(corsConfig.corsFilter())
 
 				// 요청별 접근 권한 설정
 				.authorizeHttpRequests(auth -> auth
