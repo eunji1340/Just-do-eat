@@ -33,6 +33,20 @@ logging:
     org.hibernate.SQL: debug
     org.hibernate.type.descriptor.sql.BasicBinder: trace
 
+# AWS S3 설정 (환경 변수로 오버라이드 가능)
+aws:
+  s3:
+    # 로컬 개발용 기본 버킷 이름 (없애고 싶으면 기본값 지우고 env에서만 설정)
+    bucket: ${AWS_S3_BUCKET:justdoeat-jde}
+    # 정적 파일용 기본 베이스 URL
+    base-url: ${AWS_BASE_URL:https://justdoeat-jde.s3.amazonaws.com}
+  region:
+    static: ${AWS_REGION_STATIC:us-east-1}
+  credentials:
+    # 실제 배포에서는 반드시 환경 변수로 주입해서 사용
+    access-key: ${AWS_CREDENTIALS_ACCESS_KEY:}
+    secret-key: ${AWS_CREDENTIALS_SECRET_KEY:}
+
 # 외부 점수 엔진(FastAPI) 호출 base URL
 # 환경 변수 SCORE_API_BASE로 오버라이드 가능 (배포 환경에서 사용)
 score:
