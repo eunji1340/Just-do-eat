@@ -25,6 +25,7 @@ import lombok.AllArgsConstructor; // 모든 필드를 받는 생성자 자동 �
 import lombok.AccessLevel; // 생성자 접근 수준 지정할 때 사용
 import lombok.Builder; // 빌더 패턴 자동 생성
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
