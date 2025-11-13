@@ -103,11 +103,6 @@ public class RestaurantQueryServiceImpl implements RestaurantQueryService {
 				predicates.add(cb.equal(root.get("priceRange"), req.priceRange()));
 			}
 
-			// 태그(부분일치) — tags가 TEXT/JSON 문자열이라 가정
-			if (req.tag() != null && !req.tag().isBlank()) {
-				predicates.add(cb.like(cb.lower(root.get("tags")), "%" + req.tag().toLowerCase() + "%"));
-			}
-
 			return cb.and(predicates.toArray(new Predicate[0]));
 		};
 
@@ -143,12 +138,7 @@ public class RestaurantQueryServiceImpl implements RestaurantQueryService {
 			// 영업 상태
 			if (req.openStatus() != null && req.openStatus() != r.getOpenStatus())
 				return false;
-			// 태그
-			if (req.tag() != null && !req.tag().isBlank()) {
-				String tags = r.getTags() == null ? "" : r.getTags().toLowerCase();
-				if (!tags.contains(req.tag().toLowerCase()))
-					return false;
-			}
+
 			// 텍스트 검색(거리모드에서도 허용)
 			if (req.query() != null && !req.query().isBlank()) {
 				String q = req.query().toLowerCase();

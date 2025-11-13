@@ -118,9 +118,6 @@ public class Restaurant extends BaseEntity {
 	@Column(name = "is_reservation")
 	private Boolean isReservation;
 
-	@Column(name = "tags", columnDefinition = "TEXT")
-	private String tags;
-
 	/** 영업시간(1:N) */
 	@OneToMany(mappedBy = "restaurant", cascade = CascadeType.ALL, orphanRemoval = true)
 	private List<RestaurantHour> hours;
