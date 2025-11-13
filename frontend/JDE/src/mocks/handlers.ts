@@ -221,9 +221,14 @@ export const handlers = [
     const body = (await request.json()) as {
       mukbtiAnswers?: MukbtiAnswer[];
       bingoResponses?: Array<{ id: string; vote: Tri }>;
+      sessionId?: string;
     };
 
     await delay(300);
+
+    if (body.sessionId) {
+      console.log('[Mock] 온보딩 import 요청에 세션 ID 포함:', body.sessionId);
+    }
 
     // MBTI 결과 계산
     const mukbtiResult = computeMukbtiServerSide(MUKBTI_QUESTIONS, body.mukbtiAnswers ?? []);
