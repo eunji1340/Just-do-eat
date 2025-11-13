@@ -100,7 +100,7 @@ public interface UserRestaurantStateRepository extends JpaRepository<UserRestaur
 	 * @param prefDelta 선호 점수 증분
 	 * @return 영향받은 행 수
 	 */
-	@Modifying
+	@Modifying(clearAutomatically = true, flushAutomatically = true)
 	@Query(value = """
 		INSERT INTO user_restaurant_state (
 			user_id, restaurant_id, is_saved, view_count, share_count, pref_score, created_at, updated_at
@@ -130,7 +130,7 @@ public interface UserRestaurantStateRepository extends JpaRepository<UserRestaur
 	 * @param prefDelta 선호 점수 증분
 	 * @return 영향받은 행 수
 	 */
-	@Modifying
+	@Modifying(clearAutomatically = true, flushAutomatically = true)
 	@Query(value = """
 		INSERT INTO user_restaurant_state (
 			user_id, restaurant_id, is_saved, view_count, share_count, pref_score, created_at, updated_at
@@ -193,9 +193,46 @@ public interface UserRestaurantStateRepository extends JpaRepository<UserRestaur
 	@Query("""
 		SELECT urs FROM UserRestaurantState urs
 		WHERE urs.id.userId = :userId
-		AND urs.lastSwipe = com.jde.mainserver.main.entity.SwipeAction.SELECT
+		AND urs.lastSwipe = :swipeAction
 		ORDER BY urs.lastSwipeAt DESC
-		LIMIT 1
 		""")
-	java.util.Optional<UserRestaurantState> findLastSelectedByUserId(@Param("userId") Long userId);
+	java.util.Optional<UserRestaurantState> findLastSelectedByUserId(
+		@Param("userId") Long userId,
+		@Param("swipeAction") com.jde.mainserver.main.entity.enums.SwipeAction swipeAction
+	);
+
+	default java.util.Optional<UserRestaurantState> findLastSelectedByUserId(Long userId) {
+		return findLastSelectedByUserId(userId, com.jde.mainserver.main.entity.enums.SwipeAction.SELECT);
+	}
+
+	/**
+	 * 사용자가 pref_score를 가진 식당이 있는지 확인
+	 *
+	 * @param userId 사용자 ID
+	 * @return pref_score가 있는 식당이 하나라도 있으면 true
+	 */
+	@Query("""
+		SELECT COUNT(urs)
+		FROM UserRestaurantState urs
+		WHERE urs.id.userId = :userId
+		AND urs.prefScore <> 0
+		""")
+	long countByUserIdAndPrefScoreNotZero(@Param("userId") Long userId);
+
+	default boolean existsByUserIdAndPrefScoreNotZero(Long userId) {
+		return countByUserIdAndPrefScoreNotZero(userId) > 0;
+	}
+
+	/**
+	 * 사용자가 즐겨찾기한 식당 ID 리스트 조회
+	 *
+	 * @param userId 사용자 ID
+	 * @return is_saved=true인 식당 ID 리스트
+	 */
+	@Query("""
+		SELECT urs.id.restaurantId FROM UserRestaurantState urs
+		WHERE urs.id.userId = :userId
+		AND urs.isSaved = true
+		""")
+	List<Long> findSavedRestaurantIdsByUserId(@Param("userId") Long userId);
 }

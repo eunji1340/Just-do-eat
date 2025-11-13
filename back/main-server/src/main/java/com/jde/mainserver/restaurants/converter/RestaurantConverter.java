@@ -18,15 +18,15 @@ import java.util.List;
 
 public class RestaurantConverter {
 
-	/**
-	 * Restaurant 엔티티를 RestaurantSummaryResponse로 변환
-	 *
-	 * @param restaurant 식당 엔티티
-	 * @return RestaurantSummaryResponse
-	 */
 	public static RestaurantSummaryResponse toSummary(Restaurant restaurant) {
 		if (restaurant == null) {
 			return null;
+		}
+
+		// 대표 이미지 (첫 번째)
+		String firstImage = null;
+		if (restaurant.getImage() != null && !restaurant.getImage().isEmpty()) {
+			firstImage = restaurant.getImage().get(0);
 		}
 
 		return RestaurantSummaryResponse.builder()
@@ -38,18 +38,12 @@ public class RestaurantConverter {
 			.category2(restaurant.getCategory2())
 			.category3(restaurant.getCategory3())
 			.kakaoRating(restaurant.getKakaoRating() != null ? restaurant.getKakaoRating().floatValue() : null)
+			.kakaoReviewCnt(restaurant.getKakaoReviewCnt())
 			.priceRange(restaurant.getPriceRange() != null ? restaurant.getPriceRange().name() : null)
-			.image(restaurant.getImage()) // JSONB List<String>
+			.image(firstImage)
 			.build();
 	}
 
-	/**
-	 * Restaurant 엔티티를 RestaurantDetailResponse로 변환
-	 * FeedResponse.RestaurantItem과 동일한 구조 (카카오 트래픽 제외)
-	 *
-	 * @param restaurant 식당 엔티티
-	 * @return RestaurantDetailResponse
-	 */
 	public static RestaurantDetailResponse toDetail(Restaurant restaurant) {
 		if (restaurant == null) {
 			return null;
@@ -87,12 +81,6 @@ public class RestaurantConverter {
 			.build();
 	}
 
-	/**
-	 * RestaurantHour 엔티티를 RestaurantDetailResponse.HourItem으로 변환
-	 *
-	 * @param hour 영업시간 엔티티
-	 * @return RestaurantDetailResponse.HourItem
-	 */
 	private static RestaurantDetailResponse.HourItem toHourItem(RestaurantHour hour) {
 		return RestaurantDetailResponse.HourItem.builder()
 			.dow(hour.getDow())
@@ -104,12 +92,6 @@ public class RestaurantConverter {
 			.build();
 	}
 
-	/**
-	 * Restaurant 엔티티를 RestaurantShareResponse로 변환
-	 *
-	 * @param restaurant 식당 엔티티
-	 * @return RestaurantShareResponse
-	 */
 	public static RestaurantShareResponse toShare(Restaurant restaurant) {
 		if (restaurant == null) {
 			return null;
@@ -122,13 +104,6 @@ public class RestaurantConverter {
 			.build();
 	}
 
-	/**
-	 * Restaurant 엔티티와 저장된 수를 RestaurantBookmarkResponse로 변환
-	 *
-	 * @param restaurant 식당 엔티티
-	 * @param savedCount 해당 식당이 저장된 사용자 수
-	 * @return RestaurantBookmarkResponse
-	 */
 	public static RestaurantBookmarkResponse toBookmark(Restaurant restaurant, Long savedCount) {
 		if (restaurant == null) {
 			return null;

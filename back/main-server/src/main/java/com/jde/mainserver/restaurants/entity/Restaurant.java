@@ -53,6 +53,7 @@ public class Restaurant extends BaseEntity {
 	private String addressLot;
 
 	/** 위치(좌표) - GEOMETRY(Point,4326) : x=경도, y=위도 */
+	@JdbcTypeCode(SqlTypes.GEOMETRY)
 	@Column(name = "geom", columnDefinition = "geometry(Point,4326)")
 	private Point geom;
 
@@ -116,6 +117,9 @@ public class Restaurant extends BaseEntity {
 
 	@Column(name = "is_reservation")
 	private Boolean isReservation;
+
+	@Column(name = "tags", columnDefinition = "TEXT")
+	private String tags;
 
 	/** 영업시간(1:N) */
 	@OneToMany(mappedBy = "restaurant", cascade = CascadeType.ALL, orphanRemoval = true)

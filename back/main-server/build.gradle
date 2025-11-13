@@ -46,14 +46,6 @@ dependencies {
     // Prometheus
     // implementation 'io.micrometer:micrometer-registry-prometheus'
 
-    // PostgreSQL
-    runtimeOnly 'org.postgresql:postgresql'
-
-    // Hibernate Spatial (PostGIS 연동, geometry 타입)
-    implementation 'org.hibernate.orm:hibernate-spatial'
-
-    // JSONB 매핑 (JsonBinaryType)
-    implementation 'com.vladmihalcea:hibernate-types-60:2.21.1'
 
     // Lombok
     compileOnly 'org.projectlombok:lombok'
@@ -66,8 +58,6 @@ dependencies {
 
     // Flyway
     implementation 'org.flywaydb:flyway-core'
-    // PostgreSQL
-    runtimeOnly 'org.postgresql:postgresql'
     implementation 'org.flywaydb:flyway-database-postgresql'
 
     // JWT 쓸려면 아래 필요함 대신 버전 관리 할 것
@@ -97,11 +87,22 @@ dependencies {
     // @Valid 용
     // implementation 'org.springframework.boot:spring-boot-starter-validation'
 
+    //지오메트리 매핑용
+    implementation 'org.locationtech.jts:jts-core:1.19.0'
+
+    // PostgreSQL
+    runtimeOnly 'org.postgresql:postgresql'
+    implementation 'com.vladmihalcea:hibernate-types-60:2.21.1'
+    // Hibernate Spatial (PostGIS 연동, geometry 타입)
+    implementation platform("org.hibernate.orm:hibernate-platform:6.6.33.Final")
+    implementation 'org.hibernate.orm:hibernate-core'
+    implementation 'org.hibernate.orm:hibernate-spatial'
 
     // 왜 있는지 모름
     // developmentOnly 'org.springframework.boot:spring-boot-devtools'
     // annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
     // implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
+
 }
 
 //dependencyManagement {
@@ -112,4 +113,12 @@ dependencies {
 
 tasks.named('test') {
     useJUnitPlatform()
+}
+
+springBoot {
+    mainClass = 'com.jde.mainserver.MainServerApplication'
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
 }
