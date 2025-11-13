@@ -29,7 +29,7 @@ import java.util.stream.Collectors;
 @Component
 public class CandidateRepository {
 
-	private static final int DEFAULT_MAX_CANDIDATES = 100;
+	private static final int DEFAULT_MAX_CANDIDATES = 200; // 후보 수 증가 (pref_score 반영을 위해)
 	private static final int MAX_RADIUS_SEARCH = 200; // 반경 검색 시 최대 개수
 	private static final double PREF_SCORE_THRESHOLD = -0.8; // 선호 점수 임계값 (이하 제외)
 	private static final int EARTH_RADIUS_M = 6371000; // 지구 반지름 (미터)
@@ -86,10 +86,10 @@ public class CandidateRepository {
 
 		// 3. 사용자 상태 로딩 및 필터링 (userId가 null이면 생략)
 		List<Long> restaurantIds = restaurants.stream().map(Restaurant::getId).toList();
-		Map<Long, UserRestaurantState> stateMap = userId != null 
+		Map<Long, UserRestaurantState> stateMap = userId != null
 			? loadUserStates(userId, restaurantIds)
 			: Collections.emptyMap();
-		
+
 		if (userId != null) {
 			filterByUserPreference(restaurants, stateMap);
 		}
@@ -110,9 +110,6 @@ public class CandidateRepository {
 
 	/**
 	 * 식당 조회 (반경 기반 검색, 거리순 정렬)
-	 *
-	 * 항상 기본 위치를 기준으로 반경 검색을 수행합니다.
-	 * 가변 리스트로 반환하여 필터링 가능하도록 합니다.
 	 */
 	private List<Restaurant> fetchRestaurants(Double userLat, Double userLng, Double radiusM, int maxCandidates) {
 		// 반경 기반 검색 (거리순 정렬)
@@ -200,8 +197,8 @@ public class CandidateRepository {
 			// 영업 상태 계산
 			Boolean isOpen = calculateOpenStatus(r.getId(), hoursMap);
 
-			// 가격대 매핑 (FastAPI 스키마: 0~3)
-			Integer priceRange = mapPriceRange(r.getPriceRange());
+			// 가격대: enum name 그대로 전달 ("LOW", "MEDIUM", "HIGH", "PREMIUM")
+			String priceRange = r.getPriceRange() != null ? r.getPriceRange().name() : null;
 
 			// 태그 선호도 맵 (restaurant_tag.weight, confidence 사용)
 			Map<Long, PersonalScoreRequest.TagPreference> tagPref = buildTagPreferenceMap(
@@ -262,22 +259,6 @@ public class CandidateRepository {
 			// 영업시간 계산 실패 시 안전하게 false 반환
 			return false;
 		}
-	}
-
-	/**
-	 * 가격대 Enum을 FastAPI 스키마 정수로 매핑
-	 * 0=LOW(~1만원), 1=MEDIUM(~2만5천원), 2=HIGH(~6만원), 3=PREMIUM(6만원~)
-	 */
-	private Integer mapPriceRange(com.jde.mainserver.restaurants.entity.enums.PriceRange priceRange) {
-		if (priceRange == null) {
-			return 0; // 기본값
-		}
-		return switch (priceRange) {
-			case LOW -> 0;
-			case MEDIUM -> 1;
-			case HIGH -> 2;
-			case PREMIUM -> 3;
-		};
 	}
 
 	/**

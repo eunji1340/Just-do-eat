@@ -49,22 +49,19 @@ public class ScoreEngineHttpClient {
 			.baseUrl(baseUrl)
 			.clientConnector(new ReactorClientHttpConnector(httpClient))
 			.build();
-
-		log.info("ScoreEngineHttpClient initialized with baseUrl={}", baseUrl);
 	}
 
 	/**
 	 * FastAPI 점수 엔진에 점수 계산 요청
 	 *
-	 * @param req 개인화 점수 계산 요청
-	 * @param savedRestaurantIds 북마크된 식당 ID 리스트
-	 * @return 점수 계산 결과
-	 * @throws RuntimeException FastAPI 호출 실패 시
+	 * @param req 개인화 점수 계산 요청 (유저/후보 식당/태그 등 정보 포함)
+	 * @return 점수 계산 결과 (식당별 점수 + 디버그 메타 정보)
 	 */
-	public PersonalScoreResponse score(PersonalScoreRequest req, List<Long> savedRestaurantIds) {
+	public PersonalScoreResponse score(PersonalScoreRequest req) {
 		try {
-			Map<String, Object> fastApiReq = MainConverter.convertToFastApiSchema(req, savedRestaurantIds);
+			Map<String, Object> fastApiReq = MainConverter.convertToFastApiSchema(req);
 
+			@SuppressWarnings("unchecked")
 			Map<String, Object> response = webClient.post()
 				.uri(SCORE_ENDPOINT)
 				.bodyValue(fastApiReq)
@@ -81,47 +78,35 @@ public class ScoreEngineHttpClient {
 			return convertResponse(response);
 
 		} catch (Exception e) {
-			log.error("FastAPI 점수 계산 실패: userId={}, error={}, message={}", 
+			log.error("FastAPI 점수 계산 실패: userId={}, error={}, message={}",
 				req.userId(), e.getClass().getSimpleName(), e.getMessage(), e);
 			throw new RuntimeException("FastAPI 점수 계산 실패: " + e.getMessage(), e);
 		}
 	}
 
 	/**
-	 * FastAPI 응답을 PersonalScoreResponse로 변환
+	 * FastAPI 응답(Map)을 PersonalScoreResponse로 변환
 	 *
-	 * @param response FastAPI 응답 Map
-	 * @return PersonalScoreResponse
+	 * 응답 예시:
+	 * {
+	 *   "scores": [
+	 *     { "restaurant_id": 1, "score": 0.87, "debug": { ... } },
+	 *     ...
+	 *   ],
+	 *   "algo_version": "v1",
+	 *   "elapsed_ms": 34
+	 * }
 	 */
-	@SuppressWarnings("unchecked")
 	private PersonalScoreResponse convertResponse(Map<String, Object> response) {
+		@SuppressWarnings("unchecked")
 		List<Map<String, Object>> scores = (List<Map<String, Object>>)response.getOrDefault("scores", List.of());
 
 		List<PersonalScoreResponse.ScoredItem> items = scores.stream()
 			.map(scoreMap -> {
 				Long restaurantId = ((Number)scoreMap.get("restaurant_id")).longValue();
 				double score = ((Number)scoreMap.get("score")).doubleValue();
-				
-				// debug 필드 추출
-				Object debugObj = scoreMap.get("debug");
-				Map<String, Object> reasons = null;
-				if (debugObj != null) {
-					if (debugObj instanceof Map) {
-						@SuppressWarnings("unchecked")
-						Map<String, Object> debugMap = (Map<String, Object>)debugObj;
-						reasons = debugMap.isEmpty() ? null : debugMap;
-					} else {
-						// Map이 아닌 경우도 처리 (예: LinkedHashMap 등)
-						try {
-							@SuppressWarnings("unchecked")
-							Map<String, Object> debugMap = (Map<String, Object>)debugObj;
-							reasons = debugMap.isEmpty() ? null : debugMap;
-						} catch (ClassCastException e) {
-							// 변환 실패 시 null
-							reasons = null;
-						}
-					}
-				}
+
+				Map<String, Object> reasons = extractDebug(scoreMap.get("debug"));
 
 				return new PersonalScoreResponse.ScoredItem(restaurantId, score, reasons);
 			})
@@ -133,6 +118,14 @@ public class ScoreEngineHttpClient {
 		);
 
 		return new PersonalScoreResponse(items, debug);
+	}
+
+	@SuppressWarnings("unchecked")
+	private Map<String, Object> extractDebug(Object debugObj) {
+		if (debugObj instanceof Map<?, ?> debugMap && !debugMap.isEmpty()) {
+			return (Map<String, Object>)debugMap;
+		}
+		return null;
 	}
 }
 

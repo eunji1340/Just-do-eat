@@ -43,7 +43,7 @@ public record PersonalScoreRequest(
             Boolean isOpen,
 
             @JsonProperty("price_range")
-            Integer priceRange,  // 0~3
+            String priceRange,  // "LOW", "MEDIUM", "HIGH", "PREMIUM"
 
             @JsonProperty("pref_score")
             Float prefScore
