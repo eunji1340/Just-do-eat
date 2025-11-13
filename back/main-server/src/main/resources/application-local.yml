@@ -62,4 +62,5 @@ cloud:
       bucket: justdoeat-jde
       public-base-url: https://justdoeat-jde.s3.amazonaws.com
     credentials:
-
+      access-key: AKIAQ3ZHFQYZ6Y7ZG24B
+      secret-key: 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
