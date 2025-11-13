@@ -12,6 +12,7 @@ export default function SignupPage() {
   const {
     formData,
     handleChange,
+    handleImageSelect,
     submitting,
     error,
     handleSubmit: submit,
@@ -65,6 +66,7 @@ export default function SignupPage() {
       <SignupForm
         formData={formData}
         handleChange={handleChange}
+        handleImageSelect={handleImageSelect}
         submitting={submitting}
         error={error}
         handleSubmit={handleSubmit}
