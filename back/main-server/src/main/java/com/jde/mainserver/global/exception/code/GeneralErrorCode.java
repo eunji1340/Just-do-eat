@@ -21,7 +21,9 @@ public enum GeneralErrorCode implements BaseErrorCode {
     MALFORMED_TOKEN(HttpStatus.UNAUTHORIZED, "401", "토큰 포맷이 올바르지 않습니다."),
     INVALID_SIGNATURE(HttpStatus.UNAUTHORIZED, "401", "토큰 서명이 유효하지 않습니다."),
     UNSUPPORTED_TOKEN(HttpStatus.UNAUTHORIZED, "401", "지원하지 않는 토큰입니다."),
-    BLACKLISTED_TOKEN(HttpStatus.UNAUTHORIZED, "401", "블랙리스트에 등록된 토큰입니다.");
+    BLACKLISTED_TOKEN(HttpStatus.UNAUTHORIZED, "401", "블랙리스트에 등록된 토큰입니다."),
+
+    NOT_USER(HttpStatus.UNAUTHORIZED, "401", "로그인이 필요합니다.");
 
     private final HttpStatus status;
     private final String code;
