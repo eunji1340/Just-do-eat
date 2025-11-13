@@ -1,4 +1,4 @@
-package com.jde.mainserver.rooms.web.dto.response;
+package com.jde.mainserver.room.web.dto.response;
 
 import java.util.List;
 
