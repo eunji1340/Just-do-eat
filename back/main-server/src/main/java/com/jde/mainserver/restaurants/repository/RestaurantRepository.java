@@ -8,13 +8,13 @@
 
 package com.jde.mainserver.restaurants.repository;
 
-import com.jde.mainserver.main.entity.UserRestaurantState;
 import com.jde.mainserver.restaurants.entity.Restaurant;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -23,53 +23,35 @@ import java.util.Collection;
 import java.util.List;
 
 @Repository
-public interface RestaurantRepository extends JpaRepository<Restaurant, Long> {
+public interface RestaurantRepository extends JpaRepository<Restaurant, Long>, JpaSpecificationExecutor<Restaurant> {
 
 	/** 여러 ID로 일괄 조회 (피드/추천용) - hours 포함 */
 	@EntityGraph(attributePaths = {"hours"})
 	List<Restaurant> findAllByIdIn(Collection<Long> ids);
 
-	/** 반경 내 모든 식당 (페이징 없음, 간단 버전) */
-	@Query(value = """
-			SELECT *
-			FROM restaurant r
-			WHERE ST_DWithin(
-				r.geom::geography,
-				ST_SetSRID(ST_MakePoint(:lng, :lat), 4326)::geography,
-				:meters
-			)
-		""", nativeQuery = true)
-	List<Restaurant> findWithinMeters(
-		@Param("lng") double lng,
-		@Param("lat") double lat,
-		@Param("meters") double meters
-	);
-
-	/** 반경 내 + 거리순 정렬 (페이징)
-	 *  - Page 지원을 위해 countQuery 제공
-	 */
+	/** 반경 내 + 거리순 정렬 (페이징) */
 	@Query(
 		value = """
-				SELECT *
-				FROM restaurant r
-				WHERE ST_DWithin(
-					r.geom::geography,
-					ST_SetSRID(ST_MakePoint(:lng, :lat), 4326)::geography,
-					:meters
-				)
-				ORDER BY ST_Distance(
-					r.geom::geography,
-					ST_SetSRID(ST_MakePoint(:lng, :lat), 4326)::geography
-				)
+			    SELECT *
+			    FROM restaurant r
+			    WHERE ST_DWithin(
+			        r.geom::geography,
+			        ST_SetSRID(ST_MakePoint(:lng, :lat), 4326)::geography,
+			        :meters
+			    )
+			    ORDER BY ST_Distance(
+			        r.geom::geography,
+			        ST_SetSRID(ST_MakePoint(:lng, :lat), 4326)::geography
+			    )
 			""",
 		countQuery = """
-				SELECT COUNT(1)
-				FROM restaurant r
-				WHERE ST_DWithin(
-					r.geom::geography,
-					ST_SetSRID(ST_MakePoint(:lng, :lat), 4326)::geography,
-					:meters
-				)
+			    SELECT COUNT(1)
+			    FROM restaurant r
+			    WHERE ST_DWithin(
+			        r.geom::geography,
+			        ST_SetSRID(ST_MakePoint(:lng, :lat), 4326)::geography,
+			        :meters
+			    )
 			""",
 		nativeQuery = true
 	)
@@ -80,18 +62,10 @@ public interface RestaurantRepository extends JpaRepository<Restaurant, Long> {
 		Pageable pageable
 	);
 
-	/** 전체 조회 (페이징) - hours 포함 */
-	@EntityGraph(attributePaths = {"hours"})
-	@Query("SELECT r FROM Restaurant r")
-	Page<Restaurant> findAllWithHours(Pageable pageable);
-
 	/** 단일 식당 조회 - hours 포함 */
 	@EntityGraph(attributePaths = {"hours"})
 	@Query("SELECT r FROM Restaurant r WHERE r.id = :id")
 	java.util.Optional<Restaurant> findByIdWithHours(@Param("id") Long id);
-
-	/** 이름으로 검색 (대소문자 무시, 부분일치) */
-	Page<Restaurant> findByNameContainingIgnoreCase(String name, Pageable pageable);
 
 	/**
 	 * 특정 사용자가 즐겨찾기한 식당들 조회
@@ -120,4 +94,56 @@ public interface RestaurantRepository extends JpaRepository<Restaurant, Long> {
 		WHERE urs.id.restaurantId = :restaurantId AND urs.isSaved = true
 		""")
 	Long countSavedUsersByRestaurantId(@Param("restaurantId") Long restaurantId);
+
+	/**
+	 * 위치 기반 인기 식당 조회 (즐겨찾기 수 기준 정렬) - 카테고리 필터 옵션
+	 * - useCategory=false 인 경우 category2List는 무시됩니다.
+	 * - 빈 리스트 IN () 회피를 위해 서비스에서 useCategory=false이면 category2List에 더미 값을 전달하세요.
+	 */
+	@Query(value = """
+		WITH ranked_restaurants AS (
+			SELECT
+				r.restaurant_id,
+				COALESCE(COUNT(CASE WHEN urs.is_saved = true THEN 1 END), 0) AS bookmark_count,
+				r.kakao_rating,
+				r.kakao_review_cnt
+			FROM restaurant r
+			LEFT JOIN user_restaurant_state urs ON r.restaurant_id = urs.restaurant_id
+			WHERE r.geom IS NOT NULL
+				AND ST_DWithin(
+					r.geom::geography,
+					ST_SetSRID(ST_MakePoint(:lng, :lat), 4326)::geography,
+					:meters
+				)
+				AND (
+					:useCategory = false
+					OR r.category2 IN (:category2List)
+				)
+			GROUP BY r.restaurant_id, r.kakao_rating, r.kakao_review_cnt
+			ORDER BY
+				bookmark_count DESC,
+				COALESCE(r.kakao_rating, 0) * COALESCE(r.kakao_review_cnt, 0) DESC,
+				r.kakao_rating DESC NULLS LAST,
+				r.kakao_review_cnt DESC NULLS LAST,
+				r.restaurant_id
+			LIMIT :limit
+		)
+		SELECT r.*
+		FROM restaurant r
+		INNER JOIN ranked_restaurants rr ON r.restaurant_id = rr.restaurant_id
+		ORDER BY 
+			rr.bookmark_count DESC,
+			COALESCE(r.kakao_rating, 0) * COALESCE(r.kakao_review_cnt, 0) DESC,
+			r.kakao_rating DESC NULLS LAST,
+			r.kakao_review_cnt DESC NULLS LAST,
+			r.restaurant_id
+		""", nativeQuery = true)
+	List<Restaurant> findPopularRestaurantsByLocationOptionalCategory(
+		@Param("lng") double lng,
+		@Param("lat") double lat,
+		@Param("meters") double meters,
+		@Param("limit") int limit,
+		@Param("useCategory") boolean useCategory,
+		@Param("category2List") List<String> category2List
+	);
 }

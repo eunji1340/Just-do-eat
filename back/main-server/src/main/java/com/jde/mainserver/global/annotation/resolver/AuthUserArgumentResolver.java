@@ -28,9 +28,12 @@ public class AuthUserArgumentResolver implements HandlerMethodArgumentResolver {
 
     @Override
     public boolean supportsParameter(MethodParameter parameter) {
-        // ← 파라미터에 @AuthMember가 붙어 있고 타입이 Member일 때만 동작
-        return parameter.hasParameterAnnotation(AuthUser.class)
-                && Member.class.isAssignableFrom(parameter.getParameterType());
+        // 파라미터에 @AuthUser가 붙어 있고 타입이 Long 또는 Member일 때 동작
+        if (!parameter.hasParameterAnnotation(AuthUser.class)) {
+            return false;
+        }
+        Class<?> type = parameter.getParameterType();
+        return Long.class.isAssignableFrom(type) || Member.class.isAssignableFrom(type);
     }
 
     @Override
@@ -40,9 +43,33 @@ public class AuthUserArgumentResolver implements HandlerMethodArgumentResolver {
             NativeWebRequest webRequest,
             WebDataBinderFactory binderFactory
     ) {
-        // ← SecurityContext에서 인증 정보 꺼내기
+        // SecurityContext에서 인증 정보 꺼내기
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth == null || !auth.isAuthenticated()) {
+        boolean isLongParam = Long.class.isAssignableFrom(parameter.getParameterType());
+        
+        log.debug("AuthUserArgumentResolver: auth={}, authType={}, isAuthenticated={}, isLongParam={}", 
+            auth, auth != null ? auth.getClass().getSimpleName() : "null", 
+            auth != null ? auth.isAuthenticated() : false, isLongParam);
+        
+        // auth가 null이거나, UsernamePasswordAuthenticationToken이지만 principal이 없으면 null 반환
+        if (auth == null) {
+            if (isLongParam) {
+                log.debug("AuthUserArgumentResolver: auth is null, returning null for Long param");
+                return null;
+            }
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthenticated");
+        }
+        
+        // UsernamePasswordAuthenticationToken인 경우 principal만 확인 (authorities가 없어도 인증된 것으로 간주)
+        if (auth instanceof UsernamePasswordAuthenticationToken) {
+            // principal이 있으면 인증된 것으로 간주 (isAuthenticated()는 authorities가 있어야 true이므로 별도 체크)
+            // 이 경우는 통과
+        } else if (!auth.isAuthenticated()) {
+            // 다른 Authentication 타입이고 인증되지 않은 경우
+            if (isLongParam) {
+                log.debug("AuthUserArgumentResolver: auth not authenticated, returning null for Long param");
+                return null;
+            }
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthenticated");
         }
 
@@ -52,23 +79,39 @@ public class AuthUserArgumentResolver implements HandlerMethodArgumentResolver {
             Object principal = upat.getPrincipal();
 
             if (!(principal instanceof String subject)) {
+                // Long 타입이면 비인증으로 간주
+                if (isLongParam) return null;
                 throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid principal");
+            }
+
+            // anonymousUser는 비인증 처리
+            if ("anonymousUser".equals(subject)) {
+                if (isLongParam) return null;
+                throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthenticated");
             }
 
             Long memberId;
             try {
                 memberId = Long.valueOf(subject);
             } catch (NumberFormatException e) {
+                if (isLongParam) return null;
                 throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid subject");
             }
 
-            Member member = memberRepository.findById(memberId)
-                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Member not found"));
-
-            return member;
+            if (isLongParam) {
+                return memberId;
+            } else {
+                Member member = memberRepository.findById(memberId)
+                        .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Member not found"));
+                return member;
+            }
         }
 
-        // ← (방어적) 다른 타입이면 인증 설정이 달라진 것. 401로 처리
-        throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unsupported authentication");
+        // 다른 Authentication 타입(예: AnonymousAuthenticationToken)인 경우
+        // Long 요청이면 비회원으로 간주하여 null 반환, Member 요청이면 401
+        if (isLongParam) {
+            return null;
+        }
+        throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthenticated");
     }
 }

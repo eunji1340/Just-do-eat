@@ -5,7 +5,7 @@
  * Date: 2025-11-06
  */
 
-package com.jde.mainserver.main.entity;
+package com.jde.mainserver.main.entity.enums;
 
 public enum SwipeAction {
     HOLD, DISLIKE, SELECT
