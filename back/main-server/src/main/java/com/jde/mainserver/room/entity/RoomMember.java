@@ -1,4 +1,4 @@
-package com.jde.mainserver.rooms.entity;
+package com.jde.mainserver.room.entity;
 
 import com.jde.mainserver.global.common.BaseEntity;
 import com.jde.mainserver.member.entity.Member;

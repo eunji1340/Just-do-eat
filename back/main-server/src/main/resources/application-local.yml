@@ -54,3 +54,13 @@ springdoc:
     # 로컬 개발 환경: 같은 서버의 API 정의 사용 (CORS 문제 방지)
     # context-path(/api)가 자동으로 붙으므로 /api를 포함하지 않음
     url: /v3/api-docs
+
+cloud:
+  aws:
+    region: us-east-1
+    s3:
+      bucket: justdoeat-jde
+      public-base-url: https://justdoeat-jde.s3.amazonaws.com
+    credentials:
+      access-key: AKIAQ3ZHFQYZ6Y7ZG24B
+      secret-key: 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
