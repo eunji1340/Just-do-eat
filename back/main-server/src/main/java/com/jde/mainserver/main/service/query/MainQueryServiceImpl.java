@@ -176,11 +176,19 @@ public class MainQueryServiceImpl implements MainQueryService {
 				);
 			}
 		} else {
-			// 기존 회원: 항상 새로 생성 (debug 정보 포함을 위해)
-			// TODO: 성능 최적화를 위해 캐시를 사용하려면 캐시된 데이터에 debug 정보가 있는지 확인 필요
-			pool = preparePoolForExistingUser(userId, ctx);
+			// 기존 회원: Redis 사용 (100개까지 중복 없이 보기 위해)
 			String redisKey = REDIS_KEY_PREFIX + userId;
-			redisTemplate.opsForValue().set(redisKey, pool, CACHE_TTL);
+			if (isFirstRequest) {
+				pool = preparePoolForExistingUser(userId, ctx);
+				redisTemplate.opsForValue().set(redisKey, pool, CACHE_TTL);
+			} else {
+				pool = getPoolFromRedisOrRegenerateGeneric(
+					redisKey,
+					CACHE_TTL,
+					() -> preparePoolForExistingUser(userId, ctx),
+					"existing_user"
+				);
+			}
 		}
 
 		// 배치 추출
@@ -327,12 +335,9 @@ public class MainQueryServiceImpl implements MainQueryService {
 				c -> c
 			));
 
-		// 북마크된 식당 ID 리스트 조회
-		List<Long> savedRestaurantIds = userRestaurantStateRepository.findSavedRestaurantIdsByUserId(userId);
-
 		// 점수 계산
 		var req = PersonalScoreRequest.of(userId, userTagPref, candidates);
-		var res = scoreEngineHttpClient.score(req, savedRestaurantIds);
+		var res = scoreEngineHttpClient.score(req);
 
 		// 점수순 정렬
 		var sortedItems = res.items().stream()
@@ -908,8 +913,7 @@ public class MainQueryServiceImpl implements MainQueryService {
 			));
 		var candidates = candidateRepository.getCandidates(userId, ctx);
 		var req = PersonalScoreRequest.of(userId, userTagPref, candidates);
-		List<Long> savedRestaurantIds = userRestaurantStateRepository.findSavedRestaurantIdsByUserId(userId);
-		var res = scoreEngineHttpClient.score(req, savedRestaurantIds);
+		var res = scoreEngineHttpClient.score(req);
 
 		// 점수 높은 순으로 정렬 (내림차순)
 		var sortedItems = res.items().stream()
