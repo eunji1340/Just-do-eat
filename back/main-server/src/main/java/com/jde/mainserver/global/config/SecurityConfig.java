@@ -60,6 +60,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(PathRequest.toStaticResources().atCommonLocations()).permitAll()
                         .requestMatchers(ALLOW_URLS).permitAll()
+                        .requestMatchers("/files/profile/**").authenticated()
                         .anyRequest().authenticated()
                 )
 
