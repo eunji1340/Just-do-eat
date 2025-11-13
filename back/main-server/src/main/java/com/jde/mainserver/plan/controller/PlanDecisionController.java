@@ -32,7 +32,7 @@ public class PlanDecisionController {
         }
     }
 
-    // 1) 결정 도구 선택 POST /plans/{planId}/tool?type={VOTE|LADDER}
+    // 1) 결정 도구 선택 POST /plans/{planId}/tool?type={VOTE|LADDER|ROULETTE}
     @PostMapping("/tool")
     public ApiResponse<DecisionResponse> selectTool(
             @PathVariable Long planId,
@@ -52,6 +52,7 @@ public class PlanDecisionController {
         var d = decisionService.confirmFinal(planId, req);
         return ApiResponse.onSuccess(DecisionResponse.from(d));
     }
+
 
     // 3) 투표 시작 POST /plans/{planId}/decision/vote/start
     @PostMapping("/decision/vote/start")
