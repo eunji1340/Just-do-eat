@@ -34,6 +34,23 @@ export function useSignup() {
     }
   };
 
+  const handleImageSelect = useCallback((file: File | null) => {
+    if (!file) {
+      setFormData(prev => ({ ...prev, imageUrl: null }));
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const result = reader.result;
+      setFormData(prev => ({
+        ...prev,
+        imageUrl: typeof result === 'string' ? result : null,
+      }));
+    };
+    reader.readAsDataURL(file);
+  }, []);
+
   const setNameCheckResult = useCallback((result: { checking: boolean; available: boolean | null; message: string }) => {
     setNameCheck(result);
   }, []);
@@ -113,6 +130,7 @@ export function useSignup() {
   return {
     formData,
     handleChange,
+    handleImageSelect,
     submitting,
     error,
     handleSubmit,
