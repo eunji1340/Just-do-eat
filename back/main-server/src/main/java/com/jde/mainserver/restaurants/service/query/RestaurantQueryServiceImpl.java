@@ -57,25 +57,32 @@ public class RestaurantQueryServiceImpl implements RestaurantQueryService {
 	public Page<RestaurantSummaryResponse> search(RestaurantSearchRequest req, Pageable pageable) {
 
 		boolean hasGeo = req.lat() != null && req.lng() != null && req.meters() != null;
+		boolean hasQuery = req.query() != null && !req.query().isBlank();
+		boolean hasFilter = req.priceRange() != null || req.tag() != null || req.openStatus() != null;
+
+		// ⭐ 검색 조건이 하나도 없으면 빈 결과 반환
+		if (!hasGeo && !hasQuery && !hasFilter) {
+			return Page.empty(pageable);
+		}
 
 		// 1) 반경 검색이 있으면: 거리 정렬 네이티브 먼저 → 이후 나머지 필터는 in-memory 필터링
 		if (hasGeo) {
 			Page<Restaurant> page = restaurantRepository.findNearestWithinMeters(
-				req.lng(), req.lat(), req.meters(), pageable
+					req.lng(), req.lat(), req.meters(), pageable
 			);
 
 			List<Restaurant> filtered = page.getContent().stream()
-				.filter(inMemoryFilter(req))
-				.collect(Collectors.toList());
+					.filter(inMemoryFilter(req))
+					.collect(Collectors.toList());
 
 			List<RestaurantSummaryResponse> mapped = filtered.stream()
-				.map(RestaurantConverter::toSummary)
-				.collect(Collectors.toList());
+					.map(RestaurantConverter::toSummary)
+					.collect(Collectors.toList());
 
 			// countQuery는 반경 내 전체이므로, 추가 필터 반영해 total 재계산
 			long totalWithFilters = page.get()
-				.filter(inMemoryFilter(req))
-				.count();
+					.filter(inMemoryFilter(req))
+					.count();
 
 			return new PageImpl<>(mapped, pageable, totalWithFilters);
 		}
@@ -88,19 +95,29 @@ public class RestaurantQueryServiceImpl implements RestaurantQueryService {
 			if (req.query() != null && !req.query().isBlank()) {
 				String q = "%" + req.query().toLowerCase() + "%";
 				predicates.add(
-					cb.or(
-						cb.like(cb.lower(root.get("name")), q),
-						cb.like(cb.lower(root.get("address")), q),
-						cb.like(cb.lower(root.get("category1")), q),
-						cb.like(cb.lower(root.get("category2")), q),
-						cb.like(cb.lower(root.get("category3")), q)
-					)
+						cb.or(
+								cb.like(cb.lower(root.get("name")), q),
+								cb.like(cb.lower(root.get("address")), q),
+								cb.like(cb.lower(root.get("category1")), q),
+								cb.like(cb.lower(root.get("category2")), q),
+								cb.like(cb.lower(root.get("category3")), q)
+						)
 				);
 			}
 
 			// 가격대
 			if (req.priceRange() != null) {
 				predicates.add(cb.equal(root.get("priceRange"), req.priceRange()));
+			}
+
+			// 태그(부분일치) — tags가 TEXT/JSON 문자열이라 가정
+			if (req.tag() != null && !req.tag().isBlank()) {
+				predicates.add(cb.like(cb.lower(root.get("tags")), "%" + req.tag().toLowerCase() + "%"));
+			}
+
+			// ⭐ predicates가 비어있으면 항상 false 반환 (빈 결과)
+			if (predicates.isEmpty()) {
+				return cb.disjunction(); // WHERE 1=0과 동일
 			}
 
 			return cb.and(predicates.toArray(new Predicate[0]));
@@ -111,17 +128,17 @@ public class RestaurantQueryServiceImpl implements RestaurantQueryService {
 		// openStatus 필터링이 있으면 in-memory 필터링 적용 (@Transient 필드이므로)
 		if (req.openStatus() != null) {
 			List<Restaurant> filtered = page.getContent().stream()
-				.filter(r -> r.getOpenStatus() == req.openStatus())
-				.collect(Collectors.toList());
+					.filter(r -> r.getOpenStatus() == req.openStatus())
+					.collect(Collectors.toList());
 
 			List<RestaurantSummaryResponse> mapped = filtered.stream()
-				.map(RestaurantConverter::toSummary)
-				.collect(Collectors.toList());
+					.map(RestaurantConverter::toSummary)
+					.collect(Collectors.toList());
 
 			// total 재계산
 			long totalWithOpenStatus = page.get()
-				.filter(r -> r.getOpenStatus() == req.openStatus())
-				.count();
+					.filter(r -> r.getOpenStatus() == req.openStatus())
+					.count();
 
 			return new PageImpl<>(mapped, pageable, totalWithOpenStatus);
 		}
@@ -166,7 +183,7 @@ public class RestaurantQueryServiceImpl implements RestaurantQueryService {
 		}
 
 		Restaurant restaurant = restaurantRepository.findByIdWithHours(restaurantId)
-			.orElseThrow(() -> new RestaurantException(RestaurantErrorCode.NOT_FOUND_RESTAURANT));
+				.orElseThrow(() -> new RestaurantException(RestaurantErrorCode.NOT_FOUND_RESTAURANT));
 
 		return RestaurantConverter.toDetail(restaurant);
 	}
@@ -178,7 +195,7 @@ public class RestaurantQueryServiceImpl implements RestaurantQueryService {
 		}
 
 		Restaurant restaurant = restaurantRepository.findById(restaurantId)
-			.orElseThrow(() -> new RestaurantException(RestaurantErrorCode.NOT_FOUND_RESTAURANT));
+				.orElseThrow(() -> new RestaurantException(RestaurantErrorCode.NOT_FOUND_RESTAURANT));
 
 		return RestaurantConverter.toShare(restaurant);
 	}
@@ -200,7 +217,7 @@ public class RestaurantQueryServiceImpl implements RestaurantQueryService {
 		List<Restaurant> restaurants = null;
 		for (double radius : radiusSteps) {
 			restaurants = restaurantRepository.findPopularRestaurantsByLocationOptionalCategory(
-				lng, lat, radius, targetCount, false, List.of("__DUMMY__"));
+					lng, lat, radius, targetCount, false, List.of("__DUMMY__"));
 
 			if (restaurants != null && restaurants.size() >= targetCount) {
 				break;
@@ -216,9 +233,9 @@ public class RestaurantQueryServiceImpl implements RestaurantQueryService {
 		final List<Restaurant> finalRestaurants = restaurants;
 		int size = Math.min(finalRestaurants.size(), targetCount);
 		return IntStream.range(0, size)
-			.mapToObj(i -> RestaurantConverter.toSummary(finalRestaurants.get(i)))
-			.filter(Objects::nonNull)
-			.toList();
+				.mapToObj(i -> RestaurantConverter.toSummary(finalRestaurants.get(i)))
+				.filter(Objects::nonNull)
+				.toList();
 	}
 
 	@Override
@@ -248,7 +265,7 @@ public class RestaurantQueryServiceImpl implements RestaurantQueryService {
 		if (offset == 0) {
 			for (double radius : radiusSteps) {
 				allRestaurants = restaurantRepository.findPopularRestaurantsByLocationOptionalCategory(
-					lng, lat, radius, maxLimit, true, category2List);
+						lng, lat, radius, maxLimit, true, category2List);
 
 				if (allRestaurants != null && allRestaurants.size() >= minCount) {
 					break;
@@ -256,7 +273,7 @@ public class RestaurantQueryServiceImpl implements RestaurantQueryService {
 			}
 		} else {
 			allRestaurants = restaurantRepository.findPopularRestaurantsByLocationOptionalCategory(
-				lng, lat, radiusSteps[radiusSteps.length - 1], maxLimit, true, category2List);
+					lng, lat, radiusSteps[radiusSteps.length - 1], maxLimit, true, category2List);
 		}
 
 		// 결과가 없으면 빈 리스트 반환
@@ -277,40 +294,40 @@ public class RestaurantQueryServiceImpl implements RestaurantQueryService {
 
 		// 식당 ID 목록 추출
 		List<Long> batchRestaurantIds = IntStream.range(startIdx, endIdx)
-			.mapToObj(i -> finalRestaurants.get(i).getId())
-			.toList();
+				.mapToObj(i -> finalRestaurants.get(i).getId())
+				.toList();
 
 		// 식당 정보 조회 (hours 포함)
 		Map<Long, Restaurant> restaurantMap = restaurantRepository.findAllByIdIn(batchRestaurantIds).stream()
-			.collect(Collectors.toMap(Restaurant::getId, r -> r));
+				.collect(Collectors.toMap(Restaurant::getId, r -> r));
 
 		// 영업시간 맵 생성
 		Map<Long, List<RestaurantHour>> hoursMap = restaurantMap.values().stream()
-			.filter(r -> r.getHours() != null && !r.getHours().isEmpty())
-			.collect(Collectors.toMap(Restaurant::getId, Restaurant::getHours));
+				.filter(r -> r.getHours() != null && !r.getHours().isEmpty())
+				.collect(Collectors.toMap(Restaurant::getId, Restaurant::getHours));
 
 		// 현재 배치의 식당들 변환 (FeedResponse 형식)
 		List<FeedResponse.RestaurantItem> feedItems = IntStream.range(startIdx, endIdx)
-			.mapToObj(i -> {
-				Long restaurantId = finalRestaurants.get(i).getId();
-				Restaurant restaurant = restaurantMap.get(restaurantId);
-				if (restaurant == null) {
-					return null;
-				}
+				.mapToObj(i -> {
+					Long restaurantId = finalRestaurants.get(i).getId();
+					Restaurant restaurant = restaurantMap.get(restaurantId);
+					if (restaurant == null) {
+						return null;
+					}
 
-				// 거리 계산
-				Point restaurantPoint = restaurant.getGeom();
-				Integer distanceM = restaurantPoint != null
-					? calculateDistance(lat, lng, restaurantPoint)
-					: null;
+					// 거리 계산
+					Point restaurantPoint = restaurant.getGeom();
+					Integer distanceM = restaurantPoint != null
+							? calculateDistance(lat, lng, restaurantPoint)
+							: null;
 
-				// 영업 상태 계산
-				Boolean isOpen = calculateOpenStatus(restaurant.getId(), hoursMap);
+					// 영업 상태 계산
+					Boolean isOpen = calculateOpenStatus(restaurant.getId(), hoursMap);
 
-				return MainConverter.toFeedItem(restaurant, distanceM, isOpen, null);
-			})
-			.filter(Objects::nonNull)
-			.toList();
+					return MainConverter.toFeedItem(restaurant, distanceM, isOpen, null);
+				})
+				.filter(Objects::nonNull)
+				.toList();
 
 		// 다음 커서 생성
 		String nextCursor = endIdx < finalRestaurants.size() ? String.valueOf(endIdx) : null;
@@ -332,8 +349,8 @@ public class RestaurantQueryServiceImpl implements RestaurantQueryService {
 		double dLng = Math.toRadians(lng2 - lng);
 
 		double a = Math.sin(dLat / 2) * Math.sin(dLat / 2)
-			+ Math.cos(Math.toRadians(lat)) * Math.cos(Math.toRadians(lat2))
-			* Math.sin(dLng / 2) * Math.sin(dLng / 2);
+				+ Math.cos(Math.toRadians(lat)) * Math.cos(Math.toRadians(lat2))
+				* Math.sin(dLng / 2) * Math.sin(dLng / 2);
 
 		double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 		final double EARTH_RADIUS_M = 6371000; // 지구 반지름 (미터)
@@ -347,11 +364,10 @@ public class RestaurantQueryServiceImpl implements RestaurantQueryService {
 		try {
 			List<RestaurantHour> hours = hoursMap.getOrDefault(restaurantId, Collections.emptyList());
 			com.jde.mainserver.restaurants.entity.enums.OpenStatus status = OpenStatusUtil
-				.calcStatus(hours, java.time.ZoneId.of("Asia/Seoul"));
+					.calcStatus(hours, java.time.ZoneId.of("Asia/Seoul"));
 			return status == com.jde.mainserver.restaurants.entity.enums.OpenStatus.OPEN;
 		} catch (Exception e) {
 			return false;
 		}
 	}
 }
-
