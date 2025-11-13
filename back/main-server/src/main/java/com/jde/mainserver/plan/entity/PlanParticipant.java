@@ -1,6 +1,7 @@
 package com.jde.mainserver.plan.entity;
 
 // JPA (Jakarta Persistence)  관련, 엔티티와 DB 매핑할 때 사용하는 어노테이션
+import com.jde.mainserver.member.entity.Member;
 import com.jde.mainserver.plan.entity.enums.PlanRole;
 import jakarta.persistence.Column; // 필드를 DB 칼럼과 매핑하면서 세부 옵션 지정 (길이, not null ...)
 import jakarta.persistence.Entity; // "DB 테이블과 매핑되는 JPA 엔티티임"
@@ -39,9 +40,9 @@ public class PlanParticipant {
     @JoinColumn(name = "plan_id")
     private Plan plan;
 
-//    @ManyToOne(fetch = FetchType.LAZY)
-//    @JoinColumn(name = "user_id")
-//    private User user;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    private Member user;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "plan_role", nullable = false)
