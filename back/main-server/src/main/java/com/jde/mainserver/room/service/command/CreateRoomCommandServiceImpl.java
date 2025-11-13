@@ -1,11 +1,11 @@
-package com.jde.mainserver.rooms.service.command;
+package com.jde.mainserver.room.service.command;
 
 import com.jde.mainserver.member.entity.Member;
-import com.jde.mainserver.rooms.entity.Room;
-import com.jde.mainserver.rooms.entity.RoomMember;
-import com.jde.mainserver.rooms.repository.RoomRepository;
-import com.jde.mainserver.rooms.web.dto.request.CreateRoomRequest;
-import com.jde.mainserver.rooms.web.dto.response.CreateRoomResponse;
+import com.jde.mainserver.room.entity.Room;
+import com.jde.mainserver.room.entity.RoomMember;
+import com.jde.mainserver.room.repository.RoomRepository;
+import com.jde.mainserver.room.web.dto.request.CreateRoomRequest;
+import com.jde.mainserver.room.web.dto.response.CreateRoomResponse;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

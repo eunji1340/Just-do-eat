@@ -1,7 +1,7 @@
 package com.jde.mainserver.plan.entity;
 
 import com.jde.mainserver.global.common.BaseEntity;
-import com.jde.mainserver.rooms.entity.Room;
+import com.jde.mainserver.room.entity.Room;
 import com.jde.mainserver.plan.entity.enums.PlanDecisionTool;
 import com.jde.mainserver.plan.entity.enums.PlanPriceRange;
 import com.jde.mainserver.plan.entity.enums.PlanStatus;
