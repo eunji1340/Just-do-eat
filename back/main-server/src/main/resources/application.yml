@@ -64,5 +64,7 @@ jwt:
 
 springdoc:
   swagger-ui:
-    url: http://k13a701.p.ssafy.io/api/v3/api-docs
+    path: /api/swagger-ui/index.html
+  api-docs:
+    path: /api/v3/api-docs
 
