@@ -155,12 +155,7 @@ public class RestaurantQueryServiceImpl implements RestaurantQueryService {
 			// 영업 상태
 			if (req.openStatus() != null && req.openStatus() != r.getOpenStatus())
 				return false;
-			// 태그
-			if (req.tag() != null && !req.tag().isBlank()) {
-				String tags = r.getTags() == null ? "" : r.getTags().toLowerCase();
-				if (!tags.contains(req.tag().toLowerCase()))
-					return false;
-			}
+
 			// 텍스트 검색(거리모드에서도 허용)
 			if (req.query() != null && !req.query().isBlank()) {
 				String q = req.query().toLowerCase();

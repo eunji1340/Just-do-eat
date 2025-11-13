@@ -18,7 +18,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 
 @Data
-//@JsonPropertyOrder({"status", "com/jjogae/mainserver/payment/exception/code", "message", "data"})
+//@JsonPropertyOrder({"status", "com/jde/mainserver/payment/exception/code", "message", "data"})
 @JsonPropertyOrder({"status", "code", "message", "data"})
 public class ApiResponse<T> {
     private HttpStatus status;

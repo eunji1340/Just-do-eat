@@ -1,4 +1,4 @@
-package com.jde.mainserver.rooms.web.dto.request;
+package com.jde.mainserver.room.web.dto.request;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;

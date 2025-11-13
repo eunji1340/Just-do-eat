@@ -1,10 +1,7 @@
-package com.jde.mainserver.rooms.repository;
+package com.jde.mainserver.room.repository;
 
-import com.jde.mainserver.rooms.entity.Room;
-import com.jde.mainserver.rooms.entity.RoomMember;
+import com.jde.mainserver.room.entity.RoomMember;
 import org.springframework.data.jpa.repository.JpaRepository;
-
-import java.util.Optional;
 
 public interface RoomMemberRepository extends JpaRepository<RoomMember, Long> {
 
