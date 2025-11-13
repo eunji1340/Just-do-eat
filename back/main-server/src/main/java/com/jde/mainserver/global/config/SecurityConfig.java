@@ -30,6 +30,7 @@ public class SecurityConfig {
             "/swagger-ui/**", "/swagger-resources/**", "/v3/api-docs/**", "/swagger-ui.html",
             "/actuator/**",
             "/auth/**",
+            "/onboarding/**",
             "/users/exists",
             "/regions/**",
             "/main/**",
@@ -60,6 +61,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(PathRequest.toStaticResources().atCommonLocations()).permitAll()
                         .requestMatchers(ALLOW_URLS).permitAll()
+                        .requestMatchers("/files/profile/**").authenticated()
                         .anyRequest().authenticated()
                 )
 
