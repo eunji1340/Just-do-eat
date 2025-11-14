@@ -3,8 +3,6 @@
 
 export type CreateGroupPayload = {
   title: string;
-  description?: string;
-  maxMembers?: number;
 };
 
 export type CreateGroupResponse = {
