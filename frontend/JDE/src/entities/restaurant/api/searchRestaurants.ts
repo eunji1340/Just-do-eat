@@ -38,7 +38,7 @@ export async function searchRestaurants(
   console.log("🌐 [API] 검색 요청:", { query, page, size, queryString });
 
   // GET 요청
-  const response = await httpClient<PageResponse<RestaurantSearchResponse>>({
+  const response = await httpClient({
     method: "GET",
     url: `/restaurants?${queryString}`,
     meta: { authRequired: false }, // 비로그인 사용 가능
@@ -47,5 +47,5 @@ export async function searchRestaurants(
   console.log("🌐 [API] 검색 응답:", response);
   console.log("🌐 [API] response.data:", response.data);
 
-  return response.data;
+  return response.data as PageResponse<RestaurantSearchResponse>;
 }

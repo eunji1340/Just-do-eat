@@ -44,7 +44,7 @@ export function RestaurantCard({
             src={imageUrl}
             alt={restaurant.name}
             className="w-full h-full object-cover"
-            onError={(e) => {
+            onError={() => {
               console.error(`❌ 이미지 로드 실패: ${restaurant.name}`, imageUrl);
               setImageError(true);
             }}
