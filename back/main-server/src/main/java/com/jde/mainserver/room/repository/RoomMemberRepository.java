@@ -3,7 +3,11 @@ package com.jde.mainserver.room.repository;
 import com.jde.mainserver.room.entity.RoomMember;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.util.Optional;
+
 public interface RoomMemberRepository extends JpaRepository<RoomMember, Long> {
+
+    Optional<RoomMember> findById(Long id);
 
     // 같은 room에 같은 member가 이미 있는지 검사
 //    boolean existsByRoomAndUserAndIsDel(Room room, User user, Boolean isDel);

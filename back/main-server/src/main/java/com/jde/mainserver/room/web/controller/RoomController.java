@@ -4,9 +4,12 @@ import com.jde.mainserver.global.annotation.AuthUser;
 import com.jde.mainserver.global.api.ApiResponse;
 import com.jde.mainserver.global.exception.CustomException;
 import com.jde.mainserver.global.exception.code.GeneralErrorCode;
+import com.jde.mainserver.member.entity.Member;
 import com.jde.mainserver.room.service.command.CreateRoomCommandService;
+import com.jde.mainserver.room.service.query.GetMyRoomQueryService;
 import com.jde.mainserver.room.web.dto.request.CreateRoomRequest;
 import com.jde.mainserver.room.web.dto.response.CreateRoomResponse;
+import com.jde.mainserver.room.web.dto.response.GetMyRoomResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -23,6 +26,7 @@ import org.springframework.web.bind.annotation.*;
 public class RoomController {
 
     private final CreateRoomCommandService createRoomCommandService; // 명령(쓰기) 서비스 주입
+    private final GetMyRoomQueryService getMyRoomQueryService;
 
     @PostMapping
     @Operation(
@@ -37,8 +41,9 @@ public class RoomController {
 
     @GetMapping
     @Operation(summary = "내 모임 조회", description = "내 모임을 조회합니다.", security = @SecurityRequirement(name = "Json Web Token(JWT)"))
-    public void getRoom() {
-
+    public ApiResponse<GetMyRoomResponse> getRoom(@AuthUser Member user) {
+        GetMyRoomResponse getMyRoomResponse = getMyRoomQueryService.getMyRoom(user);
+        return ApiResponse.onSuccess(getMyRoomResponse);
     }
 }
 
