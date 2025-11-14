@@ -34,10 +34,11 @@ public class PlanParticipant {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(name = "plan_participant_id")
     private Long planParticipantId;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "plan_id")
+    @JoinColumn(name = "plan_id", nullable = false)
     private Plan plan;
 
     @ManyToOne(fetch = FetchType.LAZY)
