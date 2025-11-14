@@ -54,9 +54,8 @@ const REFRESH_ENABLED = false;
  * - withCredentials: 쿠키 자동 전송
  */
 const axiosInstance: AxiosInstance = axios.create({
-  baseURL:
-    import.meta.env.VITE_API_BASE_URL || "http://localhost:8080",
-  timeout: 5000,
+  baseURL: import.meta.env.VITE_API_BASE_URL || "http://localhost:8080",
+  timeout: 30000, // 30초로 증가
   withCredentials: true,
 });
 
@@ -123,8 +122,18 @@ axiosInstance.interceptors.request.use((config) => {
   }
 
   // 3. 개발 모드 로깅
-  if (config.baseURL && config.url) {
-    console.log("[REQ]", new URL(config.url, config.baseURL).toString());
+  try {
+    if (config.baseURL && config.url) {
+      // baseURL이 상대 경로면 그냥 연결, 절대 URL이면 URL 객체 생성
+      if (config.baseURL.startsWith("http")) {
+        // console.log("[REQ]", new URL(config.url, config.baseURL).toString());
+      } else {
+        // console.log("[REQ]", `${config.baseURL}${config.url}`);
+      }
+    }
+  } catch (err) {
+    // URL 생성 실패 시 단순 로깅
+    // console.log("[REQ] url 생성 실패", config.url);
   }
 
   return config;
@@ -138,16 +147,35 @@ axiosInstance.interceptors.request.use((config) => {
  * - 401 에러 시: 토큰 자동 갱신 후 재시도 (REFRESH_ENABLED일 때)
  */
 axiosInstance.interceptors.response.use(
-  (res) => res,
+  (res) => {
+    console.log("✅ [응답 성공]", res.config.url, "status:", res.status);
+    return res;
+  },
   async (error: AxiosError) => {
+    console.error("❌ [응답 에러]", {
+      url: error.config?.url,
+      status: error.response?.status,
+      code: error.code,
+      message: error.message,
+    });
+
     const originalReq = error.config as AxiosRequestConfig & {
       __retry?: boolean;
     };
 
     // 에러 타입 체크
-    if (!error.response) throw error;          // 네트워크 에러
-    if (originalReq?.__retry) throw error;     // 재시도 실패
-    if (error.response.status !== 401) throw error;  // 401 아닌 에러
+    if (!error.response) {
+      console.error("❌ [네트워크 에러] 응답 없음");
+      throw error;
+    }
+    if (originalReq?.__retry) {
+      console.error("❌ [재시도 실패]");
+      throw error;
+    }
+    if (error.response.status !== 401) {
+      console.error(`❌ [HTTP ${error.response.status}]`);
+      throw error;
+    }
 
     // 리프레시 비활성화 시 토큰 제거 후 종료
     if (!REFRESH_ENABLED) {
@@ -234,7 +262,7 @@ function customAxios<T = any>(config: CustomAxiosRequestConfig) {
 (customAxios as any).post = axiosInstance.post;
 (customAxios as any).put = axiosInstance.put;
 (customAxios as any).delete = axiosInstance.delete;
-(customAxios as any).patch   = axiosInstance.patch.bind(axiosInstance);
+(customAxios as any).patch = axiosInstance.patch.bind(axiosInstance);
 (customAxios as any).request = axiosInstance.request.bind(axiosInstance);
 
 /**

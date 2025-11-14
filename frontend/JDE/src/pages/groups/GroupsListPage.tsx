@@ -22,7 +22,7 @@ export default function GroupsListPage() {
   return (
     <>
       {/* 상단 네비바 */}
-      <TopNavBar variant="default" onSearchClick={() => navigate("/search")} />
+      <TopNavBar variant="default" onSearchClick={() => navigate("/search/start")} />
 
       {/* 메인 콘텐츠 */}
       {groups.length === 0 ? (
