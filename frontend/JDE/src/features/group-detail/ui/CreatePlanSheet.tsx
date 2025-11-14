@@ -198,7 +198,7 @@ export default function CreatePlanSheet({ open, onOpenChange, onCreated, groupId
                   <Calendar
                     mode="single"
                     selected={date ? new Date(date + "T00:00:00") : undefined}
-                    onSelect={(d) => {
+                    onSelect={(d: Date | undefined) => {
                       if (!d) return;
                       const year = d.getFullYear();
                       const month = `${d.getMonth() + 1}`.padStart(2, "0");
