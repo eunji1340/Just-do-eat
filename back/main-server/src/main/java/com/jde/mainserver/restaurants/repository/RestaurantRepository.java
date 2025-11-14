@@ -34,7 +34,7 @@ public interface RestaurantRepository extends JpaRepository<Restaurant, Long>, J
 
 	/** 반경 내 + 거리순 정렬 (페이징) */
 	@Query(
-		value = """
+			value = """
 			    SELECT *
 			    FROM restaurant r
 			    WHERE ST_DWithin(
@@ -47,7 +47,7 @@ public interface RestaurantRepository extends JpaRepository<Restaurant, Long>, J
 			        ST_SetSRID(ST_MakePoint(:lng, :lat), 4326)::geography
 			    )
 			""",
-		countQuery = """
+			countQuery = """
 			    SELECT COUNT(1)
 			    FROM restaurant r
 			    WHERE ST_DWithin(
@@ -56,13 +56,13 @@ public interface RestaurantRepository extends JpaRepository<Restaurant, Long>, J
 			        :meters
 			    )
 			""",
-		nativeQuery = true
+			nativeQuery = true
 	)
 	Page<Restaurant> findNearestWithinMeters(
-		@Param("lng") double lng,
-		@Param("lat") double lat,
-		@Param("meters") double meters,
-		Pageable pageable
+			@Param("lng") double lng,
+			@Param("lat") double lat,
+			@Param("meters") double meters,
+			Pageable pageable
 	);
 
 	/** 단일 식당 조회 - hours 포함 */
@@ -97,6 +97,21 @@ public interface RestaurantRepository extends JpaRepository<Restaurant, Long>, J
 		WHERE urs.id.restaurantId = :restaurantId AND urs.isSaved = true
 		""")
 	Long countSavedUsersByRestaurantId(@Param("restaurantId") Long restaurantId);
+
+	/**
+	 * 주어진 식당 ID 목록 중, 해당 사용자가 북마크한 식당 ID 목록 조회
+	 */
+	@Query("""
+		SELECT urs.id.restaurantId
+		FROM UserRestaurantState urs
+		WHERE urs.id.userId = :userId
+		  AND urs.isSaved = true
+		  AND urs.id.restaurantId IN :restaurantIds
+		""")
+	List<Long> findSavedRestaurantIdsByUserIdAndRestaurantIds(
+			@Param("userId") Long userId,
+			@Param("restaurantIds") List<Long> restaurantIds
+	);
 
 	/**
 	 * 위치 기반 인기 식당 조회 (즐겨찾기 수 기준 정렬) - 카테고리 필터 옵션
@@ -142,12 +157,12 @@ public interface RestaurantRepository extends JpaRepository<Restaurant, Long>, J
 			r.restaurant_id
 		""", nativeQuery = true)
 	List<Restaurant> findPopularRestaurantsByLocationOptionalCategory(
-		@Param("lng") double lng,
-		@Param("lat") double lat,
-		@Param("meters") double meters,
-		@Param("limit") int limit,
-		@Param("useCategory") boolean useCategory,
-		@Param("category2List") List<String> category2List
+			@Param("lng") double lng,
+			@Param("lat") double lat,
+			@Param("meters") double meters,
+			@Param("limit") int limit,
+			@Param("useCategory") boolean useCategory,
+			@Param("category2List") List<String> category2List
 	);
 
 }
