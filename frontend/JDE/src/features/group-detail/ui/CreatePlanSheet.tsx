@@ -7,7 +7,7 @@ import * as React from "react";
 import BottomSheet from "@/shared/ui/sheet/BottomSheet";
 import { Button } from "@/shared/ui/shadcn/button";
 // TODO: 실제 API 경로/이름에 맞게 수정하세요.
-import { createPlan, type CreatePlanPayload } from "@/features/groups/api/createPlan";
+import { createPlan, type CreatePlanPayload } from "@/features/group-detail/createPlan";
 import { ChevronDown } from "lucide-react";
 
 import TimePickerInSheet from "@/shared/ui/time-picker/TimePickerInSheet";
