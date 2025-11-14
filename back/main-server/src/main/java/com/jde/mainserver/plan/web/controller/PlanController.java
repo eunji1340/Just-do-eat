@@ -35,9 +35,7 @@ public class PlanController {
 	public PlanCreateResponse createPlan(
 		@Parameter(description = "모임 방 ID", example = "1", required = true)
 		@PathVariable Long roomId,
-
 		@AuthUser Long userId,
-
 		@Valid @RequestBody PlanCreateRequest request
 	) {
 		return planCommandService.createPlan(roomId, userId, request);

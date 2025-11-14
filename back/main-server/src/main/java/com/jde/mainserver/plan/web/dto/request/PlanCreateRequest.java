@@ -25,6 +25,7 @@ import java.util.List;
 	description = "약속 생성 요청",
 	example = """
 		{
+			"participantIds": [2, 3, 4],
 			"planName": "강남 저녁 회식",
 			"centerLat": 37.500901,
 			"centerLon": 127.028639,
@@ -42,6 +43,9 @@ public class PlanCreateRequest {
 	@NotBlank
 	@Size(max = 10)
 	private String planName;
+
+	@Schema(description = "약속 참여자 ID 목록", example = "[2, 3, 4]")
+	private List<Long> participantIds;
 
 	@Schema(description = "약속 중심 위도", example = "37.500901")
 	@NotNull
