@@ -1,8 +1,8 @@
 package com.jde.mainserver.plan.service;
 
-import com.jde.mainserver.plan.dto.request.ConfirmDecisionRequest;
-import com.jde.mainserver.plan.dto.request.SubmitBallotRequest;
-import com.jde.mainserver.plan.dto.response.TallyResponse;
+import com.jde.mainserver.plan.web.dto.request.ConfirmDecisionRequest;
+import com.jde.mainserver.plan.web.dto.request.SubmitBallotRequest;
+import com.jde.mainserver.plan.web.dto.response.TallyResponse;
 import com.jde.mainserver.plan.entity.PlanDecision;
 import com.jde.mainserver.plan.entity.PlanVote;
 import com.jde.mainserver.plan.entity.enums.DecisionStatus;

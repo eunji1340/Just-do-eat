@@ -1,10 +1,10 @@
-package com.jde.mainserver.plan.controller;
+package com.jde.mainserver.plan.web.controller;
 
 import com.jde.mainserver.global.api.ApiResponse;
-import com.jde.mainserver.plan.dto.request.ConfirmDecisionRequest;
-import com.jde.mainserver.plan.dto.request.SubmitBallotRequest;
-import com.jde.mainserver.plan.dto.response.DecisionResponse;
-import com.jde.mainserver.plan.dto.response.TallyResponse;
+import com.jde.mainserver.plan.web.dto.request.ConfirmDecisionRequest;
+import com.jde.mainserver.plan.web.dto.request.SubmitBallotRequest;
+import com.jde.mainserver.plan.web.dto.response.DecisionResponse;
+import com.jde.mainserver.plan.web.dto.response.TallyResponse;
 import com.jde.mainserver.plan.entity.enums.DecisionToolType;
 import com.jde.mainserver.plan.service.PlanDecisionService;
 import lombok.RequiredArgsConstructor;
