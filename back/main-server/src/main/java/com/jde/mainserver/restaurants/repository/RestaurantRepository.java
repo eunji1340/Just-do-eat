@@ -19,12 +19,15 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import javax.swing.text.html.Option;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface RestaurantRepository extends JpaRepository<Restaurant, Long>, JpaSpecificationExecutor<Restaurant> {
 
+	Optional<Restaurant> findById(Long id);
 	/** 여러 ID로 일괄 조회 (피드/추천용) - hours 포함 */
 	@EntityGraph(attributePaths = {"hours"})
 	List<Restaurant> findAllByIdIn(Collection<Long> ids);
@@ -146,4 +149,5 @@ public interface RestaurantRepository extends JpaRepository<Restaurant, Long>, J
 		@Param("useCategory") boolean useCategory,
 		@Param("category2List") List<String> category2List
 	);
+
 }
