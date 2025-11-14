@@ -12,6 +12,7 @@ import OnboardingResult from "../../pages/Onboarding/result";
 import SignupPage from "../../pages/Signup";
 import LoginPage from "../../pages/Login";
 import GroupsListPage from "@/pages/groups/GroupsListPage";
+import GroupDetailPage from "@/pages/groups/GroupDetailPage";
 import RoulettePage from "@/pages/roulette/RoulettePage";
 
 const router = createBrowserRouter([
@@ -56,6 +57,14 @@ const router = createBrowserRouter([
     element: (
       <AppLayout>
         <GroupsListPage />
+      </AppLayout>
+    ),
+  },
+  {
+    path: "/groups/:groupId",
+    element: (
+      <AppLayout>
+        <GroupDetailPage />
       </AppLayout>
     ),
   },
