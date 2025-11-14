@@ -3,6 +3,8 @@ package com.jde.mainserver.onboarding.controller;
 import com.jde.mainserver.global.api.ApiResponse;
 import com.jde.mainserver.global.exception.code.GeneralSuccessCode;
 import com.jde.mainserver.onboarding.OnboardingSurveyStore;
+import com.jde.mainserver.onboarding.bingo.dto.BingoItemsResponse;
+import com.jde.mainserver.onboarding.bingo.service.BingoQueryService;
 import com.jde.mainserver.onboarding.mbti.dto.MbtiQuestionsResponse;
 import com.jde.mainserver.onboarding.mbti.service.MbtiQueryService;
 import com.jde.mainserver.onboarding.dto.request.SubmitSurveyRequest;
@@ -27,6 +29,7 @@ public class OnboardingController {
     private final OnboardingSurveyStore store;
     private final ObjectMapper om;
     private final MbtiQueryService mbtiQueryService;
+    private final BingoQueryService bingoQueryService;
 
     /** 세션 발급: POST /api/onboarding/session (permitAll) */
     @PostMapping("/session")
@@ -93,5 +96,12 @@ public class OnboardingController {
     public ApiResponse<MbtiQuestionsResponse> getMbtiQuestions() {
         MbtiQuestionsResponse body = mbtiQueryService.getQuestions();
         return ApiResponse.onSuccess(GeneralSuccessCode.OK, body);
+    }
+
+    /** 빙고 메뉴 조회: GET /api/onboarding/bingo (permitAll, RAW JSON) */
+    @Operation(summary = "빙고 메뉴 조회", description = "DB의 bingo_menu_master 에서 온보딩 빙고 메뉴를 조회합니다.")
+    @GetMapping("/bingo")
+    public BingoItemsResponse getBingo() {
+        return bingoQueryService.getItems();
     }
 }
