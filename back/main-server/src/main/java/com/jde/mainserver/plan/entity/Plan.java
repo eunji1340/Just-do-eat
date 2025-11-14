@@ -8,6 +8,7 @@ import com.jde.mainserver.plan.entity.enums.PlanStatus;
 import com.jde.mainserver.restaurants.entity.Restaurant;
 
 // JPA (Jakarta Persistence)  관련, 엔티티와 DB 매핑할 때 사용하는 어노테이션
+import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column; // 필드를 DB 칼럼과 매핑하면서 세부 옵션 지정 (길이, not null ...)
 import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity; // "DB 테이블과 매핑되는 JPA 엔티티임"
@@ -31,6 +32,7 @@ import lombok.NoArgsConstructor; // 파라미터 없는 생성자 자동 생성
 import lombok.AllArgsConstructor; // 모든 필드를 받는 생성자 자동 생성
 import lombok.AccessLevel; // 생성자 접근 수준 지정할 때 사용
 import lombok.Builder; // 빌더 패턴 자동 생성
+
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 import org.locationtech.jts.geom.Point;
@@ -46,48 +48,47 @@ import java.util.List;
 @Builder
 public class Plan extends BaseEntity {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long planId;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(name = "plan_id")
+	private Long planId;
 
-    @NotBlank
-    @Size(max = 10)
-    @Column(name = "plan_name", length = 10, nullable = false)
-    private String planName;
+	@Size(max = 10)
+	@Column(name = "plan_name", length = 10, nullable = false)
+	private String planName;
 
-    @JdbcTypeCode(SqlTypes.GEOMETRY)
-    @Column(name = "plan_geom", columnDefinition="geometry(Point,4326)")
-    private Point planGeom;
+	@JdbcTypeCode(SqlTypes.GEOMETRY)
+	@Column(name = "plan_geom", columnDefinition = "geometry(Point,4326)", nullable = false)
+	private Point planGeom;
 
-    @NotBlank
-    @Column(name = "radius_m", nullable = false)
-    private String radiusM;
+	@Column(name = "radius_m", nullable = false)
+	private Integer radiusM;
 
-    // DateTime? LocalDateTime?
-    @Column(name = "starts_at", nullable = true)
-    private LocalDateTime startsAt;
+	// DateTime? LocalDateTime?
+	@Column(name = "starts_at")
+	private LocalDateTime startsAt;
 
-    @ElementCollection
-    @Column(name = "dislike_categories", nullable = true)
-    private List<String> dislikeCategories;
+	@JdbcTypeCode(SqlTypes.JSON)
+	@Column(name = "dislike_categories", columnDefinition = "jsonb")
+	private List<String> dislikeCategories;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "price_range", nullable = true)
-    private PlanPriceRange privceRange;
+	@JdbcTypeCode(SqlTypes.JSON)
+	@Column(name = "price_range", columnDefinition = "jsonb")
+	private List<PlanPriceRange> priceRanges;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "status", nullable = false)
-    private PlanStatus status;
+	@Enumerated(EnumType.STRING)
+	@Column(name = "status", nullable = false)
+	private PlanStatus status;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "decision_tool", nullable = true)
-    private PlanDecisionTool decisionTool;
+	@Enumerated(EnumType.STRING)
+	@Column(name = "decision_tool")
+	private PlanDecisionTool decisionTool;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "room_id")
-    private Room room;
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "room_id", nullable = false)
+	private Room room;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "restaurant_id")
-    private Restaurant restaurant;
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "restaurant_id")
+	private Restaurant restaurant;
 }
