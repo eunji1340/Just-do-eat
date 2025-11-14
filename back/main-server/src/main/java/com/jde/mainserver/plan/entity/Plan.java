@@ -33,7 +33,6 @@ import lombok.AllArgsConstructor; // 모든 필드를 받는 생성자 자동 �
 import lombok.AccessLevel; // 생성자 접근 수준 지정할 때 사용
 import lombok.Builder; // 빌더 패턴 자동 생성
 
-import org.antlr.v4.runtime.misc.NotNull;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 import org.locationtech.jts.geom.Point;
@@ -62,25 +61,20 @@ public class Plan extends BaseEntity {
 	@Column(name = "plan_geom", columnDefinition = "geometry(Point,4326)", nullable = false)
 	private Point planGeom;
 
-	@NotNull
 	@Column(name = "radius_m", nullable = false)
 	private Integer radiusM;
 
 	// DateTime? LocalDateTime?
-	@Column(name = "starts_at", nullable = true)
+	@Column(name = "starts_at")
 	private LocalDateTime startsAt;
 
-	@ElementCollection(fetch = FetchType.LAZY)
-	@CollectionTable(
-		name = "plan_dislike_category",
-		joinColumns = @JoinColumn(name = "plan_id")
-	)
-	@Column(name = "dislike_categories", nullable = true)
+	@JdbcTypeCode(SqlTypes.JSON)
+	@Column(name = "dislike_categories", columnDefinition = "jsonb")
 	private List<String> dislikeCategories;
 
-	@Enumerated(EnumType.STRING)
-	@Column(name = "price_range")
-	private PlanPriceRange privceRange;
+	@JdbcTypeCode(SqlTypes.JSON)
+	@Column(name = "price_range", columnDefinition = "jsonb")
+	private List<PlanPriceRange> priceRanges;
 
 	@Enumerated(EnumType.STRING)
 	@Column(name = "status", nullable = false)
