@@ -11,6 +11,8 @@ import com.jde.mainserver.member.entity.enums.Gender;
 import com.jde.mainserver.member.entity.enums.Role;
 import com.jde.mainserver.member.repository.MemberRepository;
 import com.jde.mainserver.onboarding.OnboardingSurveyStore;
+import com.jde.mainserver.region.entity.Region;
+import com.jde.mainserver.region.repository.RegionRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -29,6 +31,9 @@ public class AuthCommandService {
     // 온보딩 이관 저장소
     private final OnboardingSurveyStore onboardingSurveyStore;
 
+    // ⭐ 기본 지역 조회용
+    private final RegionRepository regionRepository;
+
     /**
      * 회원가입
      * - userId: PK (AUTO_INCREMENT)
@@ -45,6 +50,11 @@ public class AuthCommandService {
         Gender gender = req.getGender();
         Role role = Role.USER;
 
+        // ⭐ 기본 지역 로딩 (id = 1)
+        Region defaultRegion = regionRepository.findById(1L)
+                .orElseThrow(() -> new IllegalStateException("기본 지역(1)이 존재하지 않습니다."));
+
+        // ⭐ region 자리에 기본 지역 세팅
         Member member = new Member(
                 req.getName(),
                 encoded,
@@ -52,7 +62,7 @@ public class AuthCommandService {
                 role,
                 ageGroup,
                 gender,
-                null
+                defaultRegion
         );
 
         memberRepository.save(member);
