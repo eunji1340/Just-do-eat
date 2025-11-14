@@ -1,3 +1,4 @@
+import { useState } from "react";
 import type { Restaurant } from "../types";
 
 // RestaurantCard Props 타입 정의
@@ -24,22 +25,36 @@ export function RestaurantCard({
   // 대표 메뉴 2개 추출
   const topMenus = restaurant.menu.slice(0, 2);
 
+  // 이미지 로드 실패 상태
+  const [imageError, setImageError] = useState(false);
+
+  // 이미지 체크
+  const hasImage = restaurant.image && restaurant.image.length > 0;
+  const imageUrl = hasImage ? restaurant.image[0] : null;
+
   return (
     <div
       className="flex gap-4 p-4 bg-white rounded-lg border border-gray-200 hover:shadow-md transition-shadow cursor-pointer"
       onClick={onClick}
     >
       {/* 왼쪽: 식당 이미지 */}
-      <div className="w-[120px] h-[120px] rounded-lg overflow-hidden flex-shrink-0">
-        {restaurant.image && restaurant.image.length > 0 ? (
+      <div className="w-[120px] h-[120px] rounded-lg overflow-hidden flex-shrink-0 bg-gray-200">
+        {hasImage && imageUrl && !imageError ? (
           <img
-            src={restaurant.image[0]}
+            src={imageUrl}
             alt={restaurant.name}
             className="w-full h-full object-cover"
+            onError={(e) => {
+              console.error(`❌ 이미지 로드 실패: ${restaurant.name}`, imageUrl);
+              setImageError(true);
+            }}
+            onLoad={() => {
+              console.log(`✅ 이미지 로드 성공: ${restaurant.name}`);
+            }}
           />
         ) : (
-          // 이미지가 없을 경우 placeholder
-          <div className="w-full h-full bg-gray-200 flex items-center justify-center">
+          // 이미지가 없거나 로드 실패 시 placeholder
+          <div className="w-full h-full flex items-center justify-center">
             <span className="text-gray-400 text-sm">No Image</span>
           </div>
         )}
@@ -61,17 +76,28 @@ export function RestaurantCard({
             {restaurant.name}
           </h3>
 
+          {/* 가격대 */}
+          {restaurant.price_range && (
+            <div className="text-sm">
+              <span className="font-medium text-primary">
+                {restaurant.price_range}
+              </span>
+            </div>
+          )}
+
           {/* 대표 메뉴 목록 */}
-          <div className="space-y-0.5">
-            {topMenus.map((menu, index) => (
-              <p
-                key={index}
-                className="text-sm text-gray-600 line-clamp-1"
-              >
-                {menu.name}
-              </p>
-            ))}
-          </div>
+          {topMenus.length > 0 && (
+            <div className="space-y-0.5">
+              {topMenus.map((menu, index) => (
+                <p
+                  key={index}
+                  className="text-sm text-gray-600 line-clamp-1"
+                >
+                  {menu.name}
+                </p>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* 하단 영역: 즐겨찾기 정보 */}
