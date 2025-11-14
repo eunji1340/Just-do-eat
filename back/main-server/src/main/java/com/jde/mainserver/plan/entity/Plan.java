@@ -91,4 +91,14 @@ public class Plan extends BaseEntity {
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "restaurant_id")
 	private Restaurant restaurant;
+
+	// 결정 도구 설정용 setter
+	public void setDecisionTool(PlanDecisionTool decisionTool) {
+		this.decisionTool = decisionTool;
+	}
+
+	// 상태 변경용 setter
+	public void setStatus(PlanStatus status) {
+		this.status = status;
+	}
 }

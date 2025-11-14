@@ -41,11 +41,8 @@ import org.locationtech.jts.geom.PrecisionModel;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.time.Duration;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
@@ -58,10 +55,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Transactional
 public class PlanCommandServiceImpl implements PlanCommandService {
-	private static final int POOL_SIZE = 100; // 점수 계산할 큰 풀
-	private static final int INITIAL_BATCH_SIZE = 8; // 약속 생성 시 반환할 개수
-	private static final String REDIS_KEY_PREFIX = "plan:pool:";
-	private static final Duration CACHE_TTL = Duration.ofHours(1);
+	private static final int INITIAL_BATCH_SIZE = 8; // 약속 생성 시 반환할 개수 (미리보기용)
 
 	private final PlanRepository planRepository;
 	private final RoomRepository roomRepository;
@@ -73,7 +67,6 @@ public class PlanCommandServiceImpl implements PlanCommandService {
 	private final RestaurantTagRepository restaurantTagRepository;
 	private final UserRestaurantStateRepository userRestaurantStateRepository;
 	private final ScoreEngineHttpClient scoreEngineHttpClient;
-	private final RedisTemplate<String, Object> redisTemplate;
 
 	private final GeometryFactory geometryFactory = new GeometryFactory(new PrecisionModel(), 4326);
 
@@ -174,8 +167,9 @@ public class PlanCommandServiceImpl implements PlanCommandService {
 	 * 3. 참여자들의 태그 선호도 조회
 	 * 4. 후보 식당의 태그 정보 조회
 	 * 5. FastAPI로 그룹 점수 계산 요청
-	 * 6. 점수순 정렬하여 상위 100개를 Redis에 저장
-	 * 7. 상위 8개를 PlanCandidateResponse로 변환하여 반환
+	 * 6. 점수순 정렬하여 상위 8개를 PlanCandidateResponse로 변환하여 반환
+	 *
+	 * 참고: 약속 생성 시 미리보기용으로만 사용되며, DB/Redis에 저장하지 않음
 	 */
 	private List<PlanCandidateResponse> getCandidates(Plan plan) {
 		Point center = plan.getPlanGeom();
@@ -298,23 +292,14 @@ public class PlanCommandServiceImpl implements PlanCommandService {
 		GroupScoreResponse groupScoreResponse = scoreEngineHttpClient.groupScore(groupScoreRequest);
 		Map<Long, Float> scores = groupScoreResponse.getScores();
 
-		// 7. 점수순 정렬하여 상위 100개를 Redis에 저장
+		// 6. 점수순 정렬하여 상위 8개를 PlanCandidateResponse로 변환하여 반환
 		List<Map.Entry<Long, Float>> sortedEntries = scores.entrySet().stream()
 			.sorted((a, b) -> Float.compare(b.getValue(), a.getValue()))
-			.limit(POOL_SIZE)
-			.toList();
-
-		// Redis에 저장 (식당 ID 리스트로 저장)
-		List<Long> poolRestaurantIds = sortedEntries.stream()
-			.map(Map.Entry::getKey)
-			.toList();
-
-		String redisKey = REDIS_KEY_PREFIX + plan.getPlanId();
-		redisTemplate.opsForValue().set(redisKey, poolRestaurantIds, CACHE_TTL);
-
-		// 8. 상위 8개를 PlanCandidateResponse로 변환하여 반환
-		List<Long> topRestaurantIds = poolRestaurantIds.stream()
 			.limit(INITIAL_BATCH_SIZE)
+			.toList();
+
+		List<Long> topRestaurantIds = sortedEntries.stream()
+			.map(Map.Entry::getKey)
 			.toList();
 
 		Map<Long, Restaurant> restaurantMap = restaurantRepository.findAllByIdIn(topRestaurantIds).stream()
