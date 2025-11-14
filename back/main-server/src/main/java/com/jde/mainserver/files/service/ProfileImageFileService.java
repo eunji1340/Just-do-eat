@@ -19,10 +19,10 @@ public class ProfileImageFileService {
 
     private final S3Presigner s3Presigner;
 
-    @Value("${cloud.aws.s3.bucket}")
+    @Value("${aws.s3.bucket}")
     private String bucket;
 
-    @Value("${cloud.aws.s3.public-base-url}")
+    @Value("${aws.s3.base-url}")
     private String publicBaseUrl;
 
     public ProfilePresignResponse createPresignedUrl(Long userId, String fileName, String contentType) {
