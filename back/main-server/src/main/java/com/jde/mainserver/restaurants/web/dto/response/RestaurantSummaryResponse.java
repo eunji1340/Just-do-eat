@@ -66,5 +66,8 @@ public class RestaurantSummaryResponse {
 	@Schema(description = "대표 이미지 URL(첫 번째 사진)", example = "http://t1.daumcdn.net/local/kakaomapPhoto/review/3166313fc72c663dd1a368548ddaed18792cbfdb?original")
 	@JsonProperty("image")
 	private String image;
-}
 
+	@Schema(description = "현재 로그인 사용자가 이 식당을 북마크 했는지 여부 (비로그인 시 false)", example = "true")
+	@JsonProperty("bookmarked")
+	private Boolean bookmarked;
+}
