@@ -3,10 +3,13 @@ package com.jde.mainserver.onboarding.controller;
 import com.jde.mainserver.global.api.ApiResponse;
 import com.jde.mainserver.global.exception.code.GeneralSuccessCode;
 import com.jde.mainserver.onboarding.OnboardingSurveyStore;
+import com.jde.mainserver.onboarding.mbti.dto.MbtiQuestionsResponse;
+import com.jde.mainserver.onboarding.mbti.service.MbtiQueryService;
 import com.jde.mainserver.onboarding.dto.request.SubmitSurveyRequest;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
@@ -23,6 +26,7 @@ public class OnboardingController {
 
     private final OnboardingSurveyStore store;
     private final ObjectMapper om;
+    private final MbtiQueryService mbtiQueryService;
 
     /** 세션 발급: POST /api/onboarding/session (permitAll) */
     @PostMapping("/session")
@@ -81,5 +85,13 @@ public class OnboardingController {
             log.error("[/onboarding/me] unexpected", e);
             return ApiResponse.onSuccess(GeneralSuccessCode.OK, null);
         }
+    }
+
+    /** 먹BTI 문항 조회: GET /api/onboarding/mbtis (permitAll) */
+    @Operation(summary = "먹BTI 문항 조회", description = "DB의 test_question 계열 테이블에서 온보딩 테스트 문항을 조회합니다.")
+    @GetMapping("/mbtis")
+    public ApiResponse<MbtiQuestionsResponse> getMbtiQuestions() {
+        MbtiQuestionsResponse body = mbtiQueryService.getQuestions();
+        return ApiResponse.onSuccess(GeneralSuccessCode.OK, body);
     }
 }
