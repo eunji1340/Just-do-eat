@@ -264,12 +264,8 @@ export default function SearchResultPage() {
       setError(null);
 
       try {
-        // ===== 1. API 엔드포인트 설정 =====
-        let baseURL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080";
-        // 베이스 URL 끝의 슬래시 제거
-        if (baseURL.endsWith("/")) {
-          baseURL = baseURL.slice(0, -1);
-        }
+        // ===== 1. API 엔드포인트 설정 (하드코딩) =====
+        const baseURL = "http://k13a701.p.ssafy.io/api";
         console.log("🔍 [검색] 베이스 URL:", baseURL);
 
         // ===== 2. 쿼리 파라미터 생성 =====
