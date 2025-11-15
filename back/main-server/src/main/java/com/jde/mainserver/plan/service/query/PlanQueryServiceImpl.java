@@ -12,7 +12,6 @@ import com.jde.mainserver.main.repository.UserRestaurantStateRepository;
 import com.jde.mainserver.main.repository.http.ScoreEngineHttpClient;
 import com.jde.mainserver.plan.entity.Plan;
 import com.jde.mainserver.plan.entity.PlanCandidate;
-import com.jde.mainserver.plan.entity.PlanParticipant;
 import com.jde.mainserver.plan.entity.enums.PlanStatus;
 import com.jde.mainserver.plan.repository.PlanCandidateRepository;
 import com.jde.mainserver.plan.repository.PlanParticipantRepository;
@@ -361,11 +360,23 @@ public class PlanQueryServiceImpl implements PlanQueryService {
 
 			List<Restaurant> restaurants = page.getContent();
 
-			// 2. 필터링: 가격대, 비선호 카테고리, 오픈 상태 (startsAt이 있을 때만)
+			// 2. 오픈 상태 필터링을 위한 영업시간 벌크 조회 (startsAt이 있을 때만, N+1 문제 해결)
+			Map<Long, List<RestaurantHour>> hoursByRestaurant = Collections.emptyMap();
+			if (plan.getStartsAt() != null && !restaurants.isEmpty()) {
+				List<Long> restaurantIds = restaurants.stream()
+					.map(Restaurant::getId)
+					.toList();
+				List<RestaurantHour> allHours = restaurantHourRepository.findByRestaurant_IdIn(restaurantIds);
+				hoursByRestaurant = allHours.stream()
+					.collect(Collectors.groupingBy(h -> h.getRestaurant().getId()));
+			}
+
+			// 3. 필터링: 가격대, 비선호 카테고리, 오픈 상태 (startsAt이 있을 때만)
+			final Map<Long, List<RestaurantHour>> hoursMap = hoursByRestaurant;
 			filtered = restaurants.stream()
 				.filter(r -> matchesPriceFilter(r, plan.getPriceRanges()))
 				.filter(r -> matchesDislikeCategoryFilter(r, plan.getDislikeCategories()))
-				.filter(r -> matchesOpenStatusFilter(r, plan.getStartsAt()))
+				.filter(r -> matchesOpenStatusFilter(r, plan.getStartsAt(), hoursMap.get(r.getId())))
 				.limit(maxCandidates)
 				.toList();
 
@@ -547,16 +558,19 @@ public class PlanQueryServiceImpl implements PlanQueryService {
 	}
 
 	// 오픈 상태 필터 (startsAt이 있을 때만 적용)
-	private boolean matchesOpenStatusFilter(Restaurant restaurant, java.time.LocalDateTime startsAt) {
+	// hours 파라미터: 벌크 조회로 미리 가져온 영업시간 리스트 (N+1 문제 해결)
+	private boolean matchesOpenStatusFilter(Restaurant restaurant, java.time.LocalDateTime startsAt, List<RestaurantHour> hours) {
 		// startsAt이 null이면 필터링하지 않음
 		if (startsAt == null) {
 			return true;
 		}
 
+		// hours가 null이거나 비어있으면 통과 (영업시간 정보가 없으면 필터링하지 않음)
+		if (hours == null || hours.isEmpty()) {
+			return true;
+		}
+
 		try {
-			// 식당의 영업시간 조회
-			List<RestaurantHour> hours = restaurantHourRepository.findByRestaurant_Id(restaurant.getId());
-			
 			// 약속 시작 시간을 ZonedDateTime으로 변환 (Asia/Seoul 기준)
 			java.time.ZoneId zoneId = java.time.ZoneId.of("Asia/Seoul");
 			java.time.ZonedDateTime targetTime = startsAt.atZone(zoneId);
