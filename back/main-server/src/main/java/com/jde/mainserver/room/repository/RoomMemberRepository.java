@@ -1,17 +1,30 @@
 package com.jde.mainserver.room.repository;
 
+import com.jde.mainserver.member.entity.Member;
+import com.jde.mainserver.room.entity.Room;
 import com.jde.mainserver.room.entity.RoomMember;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface RoomMemberRepository extends JpaRepository<RoomMember, Long> {
 
-    Optional<RoomMember> findById(Long id);
+	/**
+	 * 특정 room에 특정 member가 속해있는지 확인 (삭제되지 않은 멤버만)
+	 */
+	boolean existsByRoomAndUserAndIsDelFalse(Room room, Member user);
 
-    // 같은 room에 같은 member가 이미 있는지 검사
-//    boolean existsByRoomAndUserAndIsDel(Room room, User user, Boolean isDel);
-//
-//    // 소프트 삭제된 멤버가 있는지 확인하고 isDel을 바꾸고 싶을 때
-//    Optional<RoomMember> findByRoomAndUser(Room room, User user);
+	/**
+	 * 특정 room에 속한 모든 멤버 조회 (삭제되지 않은 멤버만)
+	 */
+	List<RoomMember> findByRoomAndIsDelFalse(Room room);
+
+	/**
+	 * 특정 room과 member로 RoomMember 조회
+	 */
+	Optional<RoomMember> findByRoomAndUser(Room room, Member user);
+
+	Optional<RoomMember> findById(Long id);
+
 }
