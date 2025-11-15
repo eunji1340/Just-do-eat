@@ -42,36 +42,40 @@ export function useSwipeHandler({
     onMove?.(next)
   }
 
-  function handleEnd() {
-    if (!isDragging) return
-    setIsDragging(false)
+function handleEnd() {
+  if (!isDragging) return;
+  setIsDragging(false);
 
-    const dx = offset.x
-    const dy = offset.y
-    const ax = Math.abs(dx)
-    const ay = Math.abs(dy)
+  const dx = offset.x;
+  const dy = offset.y;
+  const ax = Math.abs(dx);
+  const ay = Math.abs(dy);
 
-    // 주축 우선: 가로가 더 크면 좌/우, 세로가 더 크면 위만
-    if (ax > ay) {
-      if (dx > thresholdX) return fire('right')
-      if (dx < -thresholdX) return fire('left')
-    } else {
-      if (dy < -thresholdY) return fire('up')
-    }
-
-    // 임계 미달 → 원위치
-    reset()
+  // 주축 우선: 가로가 더 크면 좌/우, 세로가 더 크면 위만
+  if (ax > ay) {
+    if (dx > thresholdX) return fire("right");
+    if (dx < -thresholdX) return fire("left");
+  } else {
+    if (dy < -thresholdY) return fire("up");
   }
 
-  function fire(dir: SwipeDir) {
-    onSwipe(dir)
-    reset() 
-  }
+  // ❌ 임계 미달 → 실패 스와이프 → 원위치 + 부모에 알림
+  reset(); // emit === true (기본값)
+}
 
-  function reset() {
-    setOffset({ x: 0, y: 0 })
-    onMove?.({ x: 0, y: 0 })
+
+function fire(dir: SwipeDir) {
+  onSwipe(dir);      // → RestaurantSwipeDeck.handleSwiped(dir)
+  reset(false);      // ✅ offset만 0으로, onMove는 호출 안 함
+}
+
+function reset(emit: boolean = true) {
+  setOffset({ x: 0, y: 0 });
+  if (emit) {
+    onMove?.({ x: 0, y: 0 });
   }
+}
+
 
   return { offset, isDragging, handleStart, handleMove, handleEnd }
 }
