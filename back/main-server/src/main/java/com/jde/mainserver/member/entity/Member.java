@@ -9,12 +9,14 @@ import com.jde.mainserver.member.entity.enums.AgeGroup;
 import com.jde.mainserver.member.entity.enums.Gender;
 import com.jde.mainserver.member.entity.enums.Role;
 import com.jde.mainserver.region.entity.Region;
+import com.jde.mainserver.room.entity.RoomMember;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.Instant;
+import java.util.List;
 
 @Entity
 @Table(name = "members")
@@ -53,6 +55,9 @@ public class Member {
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "region_id")
 	private Region region;
+
+	@OneToMany(fetch = FetchType.LAZY, mappedBy = "user", cascade = CascadeType.ALL)
+	private List<RoomMember> roomMemberList;
 
 	@CreationTimestamp
 	@Column(name = "created_at", updatable = false, nullable = false)

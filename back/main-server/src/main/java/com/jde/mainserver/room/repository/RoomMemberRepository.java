@@ -24,4 +24,7 @@ public interface RoomMemberRepository extends JpaRepository<RoomMember, Long> {
 	 * 특정 room과 member로 RoomMember 조회
 	 */
 	Optional<RoomMember> findByRoomAndUser(Room room, Member user);
+
+	Optional<RoomMember> findById(Long id);
+
 }
