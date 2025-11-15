@@ -7,7 +7,12 @@ import com.jde.mainserver.onboarding.bingo.dto.BingoItemsResponse;
 import com.jde.mainserver.onboarding.bingo.service.BingoQueryService;
 import com.jde.mainserver.onboarding.mbti.dto.MbtiQuestionsResponse;
 import com.jde.mainserver.onboarding.mbti.service.MbtiQueryService;
+import com.jde.mainserver.onboarding.dto.OnboardingTypeResult;
+import com.jde.mainserver.onboarding.service.OnboardingTypeQueryService;
 import com.jde.mainserver.onboarding.dto.request.SubmitSurveyRequest;
+import com.jde.mainserver.onboarding.dto.request.OnboardingImportRequest;
+import com.jde.mainserver.onboarding.service.MbtiComputeResult;
+import com.jde.mainserver.onboarding.service.MbtiComputeService;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -16,6 +21,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
+import org.springframework.http.HttpStatus;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -30,6 +37,8 @@ public class OnboardingController {
     private final ObjectMapper om;
     private final MbtiQueryService mbtiQueryService;
     private final BingoQueryService bingoQueryService;
+	private final OnboardingTypeQueryService onboardingTypeQueryService;
+	private final MbtiComputeService mbtiComputeService;
 
     /** 세션 발급: POST /api/onboarding/session (permitAll) */
     @PostMapping("/session")
@@ -58,6 +67,46 @@ public class OnboardingController {
         store.save(req.sessionId(), data.toString());
         return ApiResponse.onSuccess(GeneralSuccessCode.OK);
     }
+
+	/**
+	 * 온보딩 임포트: POST /onboarding/import (permitAll, RAW JSON)
+	 * - 프론트에서 온보딩 종료 시 제출한 응답을 수집/계산하고 세션에 저장
+	 * - 응답은 success:true 형태로 반환(공통 ApiResponse 사용하지 않음)
+	 */
+	@PostMapping("/import")
+	public ObjectNode importOnboarding(@RequestBody OnboardingImportRequest req) {
+		// 1) 먹BTI 계산
+		MbtiComputeResult result = mbtiComputeService.compute(req.mukbtiAnswers());
+
+		// 2) 타입 결과 조회(응답 본문 구성용)
+		OnboardingTypeResult typeResult = onboardingTypeQueryService.getByCode(result.code())
+			.orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Unknown computed type: " + result.code()));
+
+		// 3) 세션 저장: 기존 submit 구조를 따라 answers + updatedAt 저장
+		ObjectNode toSave = om.createObjectNode();
+		ObjectNode answers = om.createObjectNode();
+		answers.set("mukbtiAnswers", om.valueToTree(req.mukbtiAnswers()));
+		answers.set("bingoResponses", om.valueToTree(req.bingoResponses()));
+
+		// 계산된 결과를 저장(코드 + 가중치)
+		ObjectNode computed = om.createObjectNode();
+		computed.put("code", result.code());
+		computed.set("weights", om.valueToTree(result.weights()));
+		answers.set("mukbtiResult", computed);
+
+		toSave.set("answers", answers);
+		toSave.put("updatedAt", Instant.now().toString());
+		store.save(req.sessionId(), toSave.toString());
+
+		// 4) 응답 본문 생성(success:true 포맷)
+		ObjectNode res = om.createObjectNode();
+		res.put("success", true);
+		res.put("typeId", result.code());
+		res.set("mukbtiResult", om.valueToTree(typeResult));
+		// 태그 선호는 현재 빈 객체로 반환
+		res.set("tagPrefs", om.createObjectNode());
+		return res;
+	}
 
     /** 내 온보딩 보기: GET /api/onboarding/me (인증 필요) */
     @GetMapping("/me")
@@ -104,4 +153,13 @@ public class OnboardingController {
     public BingoItemsResponse getBingo() {
         return bingoQueryService.getItems();
     }
+
+	/** 타입 결과 조회: GET /api/onboarding/result/types/{typeId} (permitAll) */
+	@Operation(summary = "온보딩 타입 결과 조회", description = "정의된 16가지 온보딩 타입 결과를 반환합니다. 이미지 경로는 /mbtis/{code}.png 입니다.")
+	@GetMapping("/result/types/{typeId}")
+	public ApiResponse<OnboardingTypeResult> getOnboardingType(@PathVariable String typeId) {
+		return onboardingTypeQueryService.getByCode(typeId)
+			.map(result -> ApiResponse.onSuccess(GeneralSuccessCode.OK, result))
+			.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Unknown typeId: " + typeId));
+	}
 }
