@@ -7,10 +7,22 @@ from typing import List, Dict, Optional, Tuple
 import math
 
 from app.schemas.features import CandidateFeature, UserPrefFeature, TagPreference
-from app.schemas.group_score import AppointmentConstraints
 
 # 알고리즘/가중치 버전 (운영·로그용)
-ALGO_VERSION = "cbf_v1.0"
+ALGO_VERSION = "cbf_v1.2"
+
+# 가중치 상수 (개인 피드용 재밸런스)
+ALPHA_TAG = 0.55   # 태그 비중
+BETA_PREF = 0.45   # 개인 선호 비중
+PREF_SCALE = 0.20  # pref_score 스케일링 계수 (기존 0.10 → 0.20)
+
+# 콜드스타트 감쇠
+COLD_START_DAMP = 0.85  # 상호작용 없는 식당에 적용할 감쇠 계수 (-15%)
+
+# 그룹 점수 계산 파라미터
+GROUP_SOFTMIN_TAU = 0.7  # softmin 온도 파라미터 (tau ↓ : 더 min에 민감 / tau ↑ : 평균에 가까워짐)
+GROUP_MIN_THRESHOLD = -0.5  # min-clip 평균용 하한선
+GROUP_PENALTY = 0.2  # 하한선 미달 시 패널티
 
 # --- 내부 유틸 ----------------------------------------------------------------
 
@@ -27,34 +39,66 @@ def _distance_decay(distance_m: float, lambda_per_km: float = 0.6) -> float:
     km = (distance_m - 700.0) / 1000.0
     return math.exp(-lambda_per_km * km)
 
-def _sigmoid(x: float) -> float:
-    try:
-        return 1.0 / (1.0 + math.exp(-x))
-    except OverflowError:
-        return 0.0 if x < 0 else 1.0
+def _softmin(scores: List[float], tau: float = 0.7) -> float:
+    """
+    Softmin (로그-합-지수) 기반 평균
+    - 음수 입력에 안전하고, 낮은 점수(불만)에 민감하게 반응
+    - tau ↓ : 더 min에 민감 / tau ↑ : 평균에 가까워짐
+    """
+    if not scores:
+        return 0.0
+    n = len(scores)
+    # 음수 안전: exp(-s/tau)는 모든 실수 s에 대해 안전
+    return -tau * math.log(sum(math.exp(-s / tau) for s in scores) / n)
 
 def _tag_similarity(
     user_tags: Dict[int, TagPreference],
     restaurant_tags: Dict[int, TagPreference]
 ) -> float:
     """
-    Tag 매칭 점수 계산
-    - User_tag_pref와 Restaurant_tag의 공통 tag_id를 기준으로
-    - User_tag_pref.score * confidence와 Restaurant_tag.weight * confidence를 곱해 가중합 계산
+    Tag 매칭 점수 계산 (개선 버전)
+    - 개별 항 기여값 캡 적용
+    - 태그 수 정규화 적용
+    - 대역 제한 Squash 적용
     """
-    score = 0.0
+    # 매칭 태그 수 카운트
+    match_count = 0
+    score_sum = 0.0
     
     for tag_id, user_pref in user_tags.items():
         if tag_id in restaurant_tags:
             rest_pref = restaurant_tags[tag_id]
-            # 사용자 선호도 점수 (user_tag_pref.score)와 식당 태그 가중치 (restaurant_tag.weight)의 곱
-            # confidence를 곱해 확신도 높은 태그에 더 큰 가중치
-            user_val = user_pref.get_value()  # user_tag_pref.score
-            rest_val = rest_pref.get_value()  # restaurant_tag.weight
-            match_score = user_val * user_pref.confidence * rest_val * rest_pref.confidence
-            score += match_score
+            
+            # 1. 개별 항 기여값 캡
+            # user_val: [-3, +3] (이미 정책상 범위)
+            user_val = _clip(user_pref.get_value(), -3.0, 3.0)
+            
+            # rest_val: [0, 6] 로 캡 (음수 가중치 제거, 최대 6으로 제한)
+            rest_val = _clip(rest_pref.get_value(), 0.0, 6.0)
+            
+            # confidence: [0.2, 0.95] 로 바닥/천장 설정
+            user_conf = _clip(user_pref.confidence, 0.2, 0.95)
+            rest_conf = _clip(rest_pref.confidence, 0.2, 0.95)
+            
+            # 매칭 점수 계산
+            match_score = user_val * user_conf * rest_val * rest_conf
+            score_sum += match_score
+            match_count += 1
     
-    return score
+    # 매칭 태그가 없으면 0 반환
+    if match_count == 0:
+        return 0.0
+    
+    # 2. 태그 수 정규화: w_tag_sum / sqrt(k)
+    normalized_score = score_sum / math.sqrt(match_count)
+    
+    # 3. 대역 제한 Squash: A * tanh(w_tag_sum / T)
+    # A(출력 스케일): 2.2, T(온도/민감도): 3.5 (고태그 후보의 상단 독주 완화)
+    A = 2.2
+    T = 3.5
+    w_tag = A * math.tanh(normalized_score / T)
+    
+    return w_tag
 
 # --- 개인 점수 계산 ----------------------------------------------------------------
 
@@ -70,9 +114,12 @@ def score_personal(
     """
     out: List[Tuple[int, float, Optional[dict]]] = []
     
-    saved_set = set(user.saved)
     user_tags = user.tag_pref or {}
-    rest_bias = user.rest_bias or {}
+    
+    # pref_score가 있는 식당 수 카운트 (디버그용)
+    pref_score_count = sum(1 for c in candidates if c.pref_score is not None)
+    if pref_score_count > 0:
+        print(f"[DEBUG] pref_score가 있는 식당 수: {pref_score_count}/{len(candidates)}")
     
     for c in candidates:
         rid = c.restaurant_id
@@ -81,52 +128,60 @@ def score_personal(
         # 1) Tag 기반 유사도 계산 (ERD: User_tag_pref vs Restaurant_tag)
         w_tag = _tag_similarity(user_tags, restaurant_tags)
         
-        # 2) 북마크 가산 (비감쇠)
-        w_saved = 0.5 if rid in saved_set else 0.0
+        # 2) 개인 선호 점수 (pref_score) 추출
+        pref = c.pref_score
         
-        # 3) 개인 선호 점수 (pref_score) 추출
-        #    - 우선순위: 후보 제공 pref_score > 과거 호환용 rest_bias
-        pref = None
-        try:
-            pref = c.pref_score
-        except Exception:
-            pref = None
-        if pref is None:
-            pref = rest_bias.get(rid, 0.0)
-        
-        # 4) 거리 감쇠
+        # 3) 거리 감쇠
         decay = _distance_decay(c.distance_m) if c.distance_m is not None else 1.0
         
-        # base(CBF) 계산: 태그 유사도 + 북마크
-        base = w_tag + w_saved
-        
-        # pref_score 기반 점수 가산 (base가 0이어도 pref_score가 반영되도록)
-        # pref_score 범위: -10.0 ~ +10.0 → 점수 범위: -0.3 ~ +0.3으로 스케일링
+        # pref_score 기반 점수 가산
+        # pref_score 범위: -10.0 ~ +10.0 → 점수 범위: -2.0 ~ +2.0으로 스케일링
         w_pref = 0.0
-        if pref is not None and pref != 0.0:
-            # pref_score를 직접 반영 (스케일링: 10.0 → 0.3)
-            w_pref = float(pref) * 0.03
+        if pref is not None:
+            # pref_score를 직접 반영 (스케일링: 10.0 → 2.0)
+            # 0.0도 포함하여 모든 값을 반영 (음수도 포함)
+            w_pref = float(pref) * PREF_SCALE
         
-        # base 계산: 태그/북마크 점수 + pref_score
-        base = base + w_pref
+        # 4) 행동 부스트 (최근 14일 내 행동에 대한 부스트, 상한 0.25)
+        w_eng = 0.0
+        if c.engagement_boost is not None:
+            w_eng = min(float(c.engagement_boost), 0.25)  # 상한 0.25 적용
         
-        # base가 0 이하일 때 최소값 보장 (pref_score가 없거나 음수여도 기본 점수 유지)
-        if base <= 0.0:
-            # pref_score가 양수면 그 값을 사용, 아니면 기본값 0.1
-            if w_pref > 0:
-                base = w_pref
-            else:
-                base = 0.1
+        # base 계산: 가중 합 + 행동 부스트 (태그 비중 0.55, 개인 선호 비중 0.45)
+        base = ALPHA_TAG * w_tag + BETA_PREF * w_pref + w_eng
+        
+        # 완전 정보 없음일 때만 아주 작은 기본값 적용 (음수 신호는 유지)
+        if w_tag == 0.0 and w_pref == 0.0 and w_eng == 0.0:
+            base = 0.01  # 완전 정보 없음일 때만 미세한 기본값
+        
+        # 5) 콜드스타트 감쇠 (상호작용 없는 식당에 -15% 감쇠)
+        if c.has_interaction_recent is False:
+            base *= COLD_START_DAMP
         
         # 최종 점수: base * 거리감쇠
         score_val = base * decay
         
+        # pref_score가 있는 식당 디버그 출력 (최종 점수 포함)
+        if pref is not None or w_eng > 0.0 or (c.has_interaction_recent is False):
+            w_tag_contrib = ALPHA_TAG * w_tag
+            w_pref_contrib = BETA_PREF * w_pref
+            cold_damp_applied = COLD_START_DAMP if (c.has_interaction_recent is False) else 1.0
+            print(f"[DEBUG] 식당: restaurant_id={rid}, pref_score={pref}, w_pref={round(w_pref, 4)}, w_tag={round(w_tag, 4)}, w_eng={round(w_eng, 4)}, w_tag_contrib(α×w_tag)={round(w_tag_contrib, 4)}, w_pref_contrib(β×w_pref)={round(w_pref_contrib, 4)}, has_interaction={c.has_interaction_recent}, cold_damp={cold_damp_applied}, base={round(base, 4)}, distance_decay={round(decay, 4)}, final_score={round(score_val, 4)}")
+        
         dbg = None
         if debug:
+            cold_damp_applied = COLD_START_DAMP if (c.has_interaction_recent is False) else 1.0
             dbg = {
                 "w_tag": round(w_tag, 4),
-                "w_saved": round(w_saved, 4),
+                "pref_score": pref if pref is not None else None,  # 원본 pref_score 값
                 "w_pref": round(w_pref, 4),
+                "w_eng": round(w_eng, 4),  # 행동 부스트
+                "alpha_tag": ALPHA_TAG,
+                "beta_pref": BETA_PREF,
+                "w_tag_contribution": round(ALPHA_TAG * w_tag, 4),  # 태그 기여도
+                "w_pref_contribution": round(BETA_PREF * w_pref, 4),  # 선호도 기여도
+                "has_interaction_recent": c.has_interaction_recent,
+                "cold_start_damp": round(cold_damp_applied, 4),
                 "base": round(base, 4),
                 "distance_decay": round(decay, 4),
                 "final": round(score_val, 4),
@@ -138,54 +193,15 @@ def score_personal(
 
 # --- 그룹 점수 계산 ----------------------------------------------------------------
 
-def _soft_constraint_adjustment(
-    cand: CandidateFeature,
-    constraints: Optional[AppointmentConstraints],
-    debug: bool,
-) -> Tuple[float, Optional[dict]]:
-    """
-    약속 제약을 소프트 가감으로 반영
-    """
-    if not constraints:
-        return 0.0, None
-    
-    penalties = {}
-    adj = 0.0
-    
-    # 반경 초과 감점
-    try:
-        if cand.distance_m is not None and constraints.radius_m is not None:
-            over = cand.distance_m - constraints.radius_m
-            if over > 0:
-                p = -0.1 * (over / 300.0)
-                p = _clip(p, -0.6, 0.0)
-                adj += p
-                penalties["distance_over_m"] = int(over)
-    except Exception:
-        pass
-    
-    # 가격대 선호 불일치
-    try:
-        if constraints.price_bucket is not None:
-            if cand.price_bucket.value != int(constraints.price_bucket):
-                adj += -0.15
-                penalties["price_mismatch"] = 1
-    except Exception:
-        pass
-    
-    dbg = {"penalties": penalties, "soft_adj": round(adj, 4)} if debug and penalties else ({"soft_adj": round(adj, 4)} if debug and adj != 0 else None)
-    return adj, dbg
 
 def score_group(
     members: List[UserPrefFeature],
     candidates: List[CandidateFeature],
-    constraints: Optional[AppointmentConstraints],
     debug: bool = False,
 ):
     """
     그룹 점수 계산
     - 각 멤버의 개인 점수 계산 -> 후보별 평균
-    - 약속 제약은 소프트 가감으로만 반영
     반환: List[ (restaurant_id, per_user_scores{uid:score}, group_score, debug_dict) ]
     """
     results = []
@@ -197,8 +213,7 @@ def score_group(
     
     for idx, cand in enumerate(candidates):
         per_user: Dict[int, float] = {}
-        acc = 0.0
-        cnt = 0
+        scores_list: List[float] = []
         
         # 후보 idx에 해당하는 개인 점수 수집
         for uid, arr in per_member_scores:
@@ -209,20 +224,43 @@ def score_group(
                         s_i = s_j
                         break
             per_user[uid] = float(s_i)
-            acc += s_i
-            cnt += 1
+            scores_list.append(float(s_i))
         
-        group_score = acc / max(cnt, 1)
+        cnt = len(scores_list)
         
-        # 제약 소프트 가감
-        soft_adj, dbg_pen = _soft_constraint_adjustment(cand, constraints, debug)
-        group_score += soft_adj
+        # 그룹 점수 계산: Softmin + min-clip 평균 하이브리드
+        # Softmin은 낮은 점수(불만)에 민감하게 반응하며, 음수 입력에도 안전
+        if cnt > 0:
+            # 1) Softmin 계산 (불만에 민감하게 반응)
+            softmin_val = _softmin(scores_list, tau=GROUP_SOFTMIN_TAU)
+            
+            # 2) 단순 평균 및 min-clip 체크
+            simple_avg = sum(scores_list) / cnt
+            has_low_score = any(s < GROUP_MIN_THRESHOLD for s in scores_list)
+            
+            if has_low_score:
+                # 하한선 미달 유저가 있으면 패널티 적용
+                group_score = simple_avg - GROUP_PENALTY
+            else:
+                # Softmin 사용 (낮은 점수에 민감하게 반응)
+                group_score = softmin_val
+        else:
+            group_score = 0.0
         
         dbg = None
         if debug:
-            dbg = {"avg_of": cnt}
-            if dbg_pen:
-                dbg.update(dbg_pen)
+            simple_avg = sum(scores_list) / max(cnt, 1) if cnt > 0 else 0.0
+            softmin_val = _softmin(scores_list, tau=GROUP_SOFTMIN_TAU) if cnt > 0 else 0.0
+            has_low = any(s < GROUP_MIN_THRESHOLD for s in scores_list) if cnt > 0 else False
+            dbg = {
+                "member_count": cnt,
+                "simple_avg": round(simple_avg, 4),
+                "softmin": round(softmin_val, 4),
+                "softmin_tau": GROUP_SOFTMIN_TAU,
+                "has_low_score": has_low,
+                "min_score": round(min(scores_list), 4) if scores_list else None,
+                "final_group_score": round(group_score, 4),
+            }
         
         results.append((cand.restaurant_id, per_user, float(group_score), dbg))
     
