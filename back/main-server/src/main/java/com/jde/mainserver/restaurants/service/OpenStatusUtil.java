@@ -34,12 +34,23 @@ public final class OpenStatusUtil {
 	 * @param zoneId 기준 타임존 (ex. ZoneId.of("Asia/Seoul"))
 	 */
 	public static OpenStatus calcStatus(List<RestaurantHour> hours, ZoneId zoneId) {
+		return calcStatusAt(hours, zoneId, ZonedDateTime.now(zoneId));
+	}
+
+	/**
+	 * 특정 시각 기준 영업 상태 계산
+	 *
+	 * @param hours 식당의 요일별 영업시간 목록
+	 * @param zoneId 기준 타임존 (ex. ZoneId.of("Asia/Seoul"))
+	 * @param targetTime 계산 기준 시각
+	 */
+	public static OpenStatus calcStatusAt(List<RestaurantHour> hours, ZoneId zoneId, ZonedDateTime targetTime) {
 		// 영업 시간 정보 없음 -> UNKNOWN
 		if (hours == null || hours.isEmpty())
 			return OpenStatus.UNKNOWN;
 
-		// 현재 시각 (해당 타임존 기준)
-		ZonedDateTime now = ZonedDateTime.now(zoneId);
+		// 기준 시각 (해당 타임존 기준)
+		ZonedDateTime now = targetTime.withZoneSameInstant(zoneId);
 
 		// 오늘 요일 (1=월 ... 7=일)
 		int dow = now.getDayOfWeek().getValue();

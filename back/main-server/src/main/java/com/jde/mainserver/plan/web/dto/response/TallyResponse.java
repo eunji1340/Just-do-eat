@@ -1,4 +1,4 @@
-package com.jde.mainserver.plan.dto.response;
+package com.jde.mainserver.plan.web.dto.response;
 
 import java.util.List;
 

@@ -166,6 +166,16 @@ public class MainConverter {
 					candMap.put("pref_score", null);
 				}
 
+				// has_interaction_recent (콜드스타트 감쇠용)
+				candMap.put("has_interaction_recent", cand.hasInteractionRecent());
+
+				// engagement_boost (행동 부스트)
+				if (cand.engagementBoost() != null) {
+					candMap.put("engagement_boost", cand.engagementBoost());
+				} else {
+					candMap.put("engagement_boost", null);
+				}
+
 				return candMap;
 			})
 			.toList();
