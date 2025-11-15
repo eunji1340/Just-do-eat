@@ -77,6 +77,12 @@ public class GroupScoreReqeust {
 
 		@Schema(description = "개인 선호 점수(pref_score) (없으면 null 가능)", example = "0.7")
 		private Float prefScore;
+
+		@Schema(description = "최근 30일 내 상호작용 여부 (SAVE/SHARE/SELECT/VIEW) - 콜드스타트 감쇠용", example = "true")
+		private Boolean hasInteractionRecent;
+
+		@Schema(description = "최근 14일 내 행동 부스트 점수 (상한 0.25) - SAVE +0.15, SHARE +0.10, SELECT +0.20, VIEW(첫 1회) +0.03", example = "0.15")
+		private Float engagementBoost;
 	}
 
 	@Schema(description = "태그 선호도 정보")
