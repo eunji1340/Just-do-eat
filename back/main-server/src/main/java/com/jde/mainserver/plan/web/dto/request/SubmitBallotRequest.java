@@ -1,3 +1,3 @@
-package com.jde.mainserver.plan.dto.request;
+package com.jde.mainserver.plan.web.dto.request;
 
 public record SubmitBallotRequest(Long restaurantId) { }

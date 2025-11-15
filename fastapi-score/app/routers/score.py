@@ -31,7 +31,7 @@ def personal_score(req: PersonalScoreRequest) -> Dict[str, Any]:
 @router.post("/score/group", response_model=GroupScoreResponse)
 def group_score(req: GroupScoreRequest) -> Dict[str, Any]:
     t0 = perf_counter()
-    results = score_group(req.members, req.candidates, req.appointment_constraints, debug=req.debug)
+    results = score_group(req.members, req.candidates, debug=req.debug)
     elapsed = int((perf_counter() - t0) * 1000)
 
     return {
