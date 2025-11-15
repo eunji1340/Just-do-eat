@@ -101,4 +101,9 @@ public class Plan extends BaseEntity {
 	public void setStatus(PlanStatus status) {
 		this.status = status;
 	}
+
+	// 확정 식당 설정용 setter
+	public void setRestaurant(Restaurant restaurant) {
+		this.restaurant = restaurant;
+	}
 }

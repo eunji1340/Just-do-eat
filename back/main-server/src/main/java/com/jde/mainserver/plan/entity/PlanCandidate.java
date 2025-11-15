@@ -26,8 +26,6 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.math.BigDecimal;
-
 @Entity
 @Table(name = "plan_candidate")
 @Getter
@@ -47,10 +45,4 @@ public class PlanCandidate extends BaseEntity {
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "restaurant_id", nullable = false)
 	private Restaurant restaurant;
-
-	@Column(name = "score", precision = 6, scale = 3, nullable = false)
-	private BigDecimal score;
-
-	@Column(name = "rank", nullable = false)
-	private Integer rank;
 }

@@ -36,7 +36,7 @@ public interface PlanQueryService {
 	Page<PlanCandidateResponse> getCandidates(Long planId, Pageable pageable);
 
 	/**
-	 * 약속 후보 식당 피드 조회 (cursor 기반 무한 스크롤)
+	 * 약속 후보 식당 조회 (cursor 기반 무한 스크롤)
 	 *
 	 * status = OPEN이면 Redis에서 조회 (구경 모드)
 	 * status = VOTING/DECIDED면 plan_candidate에서 읽기 (결정 모드)

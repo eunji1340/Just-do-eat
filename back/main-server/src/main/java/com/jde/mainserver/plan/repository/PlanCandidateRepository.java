@@ -17,20 +17,21 @@ import java.util.List;
 
 public interface PlanCandidateRepository extends JpaRepository<PlanCandidate, Long>{
 	/**
-	 * 약속의 후보 식당을 rank 순으로 조회 (전체)
+	 * 약속의 후보 식당을 생성 순서로 조회 (전체)
+	 * 저장 순서대로 조회 (createdAt 기준)
 	 */
-	List<PlanCandidate> findByPlanOrderByRankAsc(Plan plan);
+	List<PlanCandidate> findByPlanOrderByCreatedAtAsc(Plan plan);
 
 	/**
-	 * 약속의 후보 식당을 rank 순으로 페이징 조회
+	 * 약속의 후보 식당을 생성 순서로 페이징 조회
 	 * 결정 모드에서 GET /plans/{planId}/candidates?page=0&size=8 사용
 	 */
-	Page<PlanCandidate> findByPlanOrderByRankAsc(Plan plan, Pageable pageable);
+	Page<PlanCandidate> findByPlanOrderByCreatedAtAsc(Plan plan, Pageable pageable);
 
 	/**
 	 * planId로 직접 조회 (페이징)
 	 */
-	Page<PlanCandidate> findByPlanPlanIdOrderByRankAsc(Long planId, Pageable pageable);
+	Page<PlanCandidate> findByPlanPlanIdOrderByCreatedAtAsc(Long planId, Pageable pageable);
 
 	/**
 	 * 약속의 모든 후보 식당 삭제

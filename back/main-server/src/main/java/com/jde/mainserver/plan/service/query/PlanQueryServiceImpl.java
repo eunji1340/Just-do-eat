@@ -226,8 +226,8 @@ public class PlanQueryServiceImpl implements PlanQueryService {
 		// 배치 크기: 항상 8개
 		int batchSize = BATCH_SIZE;
 
-		// DB에서 전체 후보 조회 (rank 순서대로)
-		List<PlanCandidate> allCandidates = planCandidateRepository.findByPlanOrderByRankAsc(plan);
+		// DB에서 전체 후보 조회 (저장 순서대로, createdAt 기준)
+		List<PlanCandidate> allCandidates = planCandidateRepository.findByPlanOrderByCreatedAtAsc(plan);
 
 		if (allCandidates.isEmpty()) {
 			return Map.of("items", List.<PlanCandidateResponse>of(), "next_cursor", (String)null);
@@ -495,7 +495,7 @@ public class PlanQueryServiceImpl implements PlanQueryService {
 	 * DB에서 후보 조회 (결정 모드, status = VOTING/DECIDED)
 	 */
 	private Page<PlanCandidateResponse> getCandidatesFromDatabase(Plan plan, Pageable pageable) {
-		Page<PlanCandidate> candidatePage = planCandidateRepository.findByPlanOrderByRankAsc(plan, pageable);
+		Page<PlanCandidate> candidatePage = planCandidateRepository.findByPlanOrderByCreatedAtAsc(plan, pageable);
 
 		List<Long> restaurantIds = candidatePage.getContent().stream()
 			.map(pc -> pc.getRestaurant().getId())
