@@ -46,12 +46,12 @@ public class PlanController {
 	}
 
 	@Operation(
-		summary = "약속 후보 식당 피드 조회",
+		summary = "약속 후보 식당 조회",
 		description = "cursor 기반 무한 스크롤로 약속 후보 식당을 조회합니다. 항상 8개씩 반환합니다. status=OPEN이면 Redis에서 조회하고, status=VOTING/DECIDED면 DB에서 조회합니다.",
 		security = @SecurityRequirement(name = "Json Web Token(JWT)")
 	)
-	@GetMapping("/{planId}/candidates/feed")
-	public Map<String, Object> getCandidateFeed(
+	@GetMapping("/{planId}/candidates")
+	public Map<String, Object> getCandidates(
 		@Parameter(description = "약속 ID", example = "1", required = true)
 		@PathVariable Long planId,
 		@Parameter(description = "다음 배치 커서 (null이나 \"0\"이면 첫 요청)", example = "0")

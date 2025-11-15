@@ -3,12 +3,19 @@ package com.jde.mainserver.plan.service;
 import com.jde.mainserver.plan.web.dto.request.ConfirmDecisionRequest;
 import com.jde.mainserver.plan.web.dto.request.SubmitBallotRequest;
 import com.jde.mainserver.plan.web.dto.response.TallyResponse;
+import com.jde.mainserver.plan.entity.Plan;
+import com.jde.mainserver.plan.entity.PlanCandidate;
 import com.jde.mainserver.plan.entity.PlanDecision;
 import com.jde.mainserver.plan.entity.PlanVote;
 import com.jde.mainserver.plan.entity.enums.DecisionStatus;
 import com.jde.mainserver.plan.entity.enums.DecisionToolType;
+import com.jde.mainserver.plan.entity.enums.PlanStatus;
+import com.jde.mainserver.plan.repository.PlanCandidateRepository;
 import com.jde.mainserver.plan.repository.PlanDecisionRepository;
+import com.jde.mainserver.plan.repository.PlanRepository;
 import com.jde.mainserver.plan.repository.PlanVoteRepository;
+import com.jde.mainserver.restaurants.entity.Restaurant;
+import com.jde.mainserver.restaurants.repository.RestaurantRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -24,14 +31,48 @@ public class PlanDecisionService {
 
     private final PlanDecisionRepository decisionRepository;
     private final PlanVoteRepository voteRepository;
+    private final PlanRepository planRepository;
+    private final PlanCandidateRepository planCandidateRepository;
+    private final RestaurantRepository restaurantRepository;
 
     /**
      * 결정 도구 선택
+     * - Plan.status를 VOTING으로 변경
+     * - 현재 화면에 보여지고 있는 후보 식당들을 PlanCandidate에 저장
      * - VOTE: 아직 투표를 시작하지 않았으므로 startedAt 은 null
      * - ROULETTE: 도구 선택 시점 = 룰렛 시작 시점으로 보고 startedAt 을 즉시 기록
      */
     @Transactional
-    public PlanDecision selectTool(Long planId, DecisionToolType type, Long userId) {
+    public PlanDecision selectTool(Long planId, DecisionToolType type, List<Long> candidateRestaurantIds, Long userId) {
+        // Validation
+        if (candidateRestaurantIds == null || candidateRestaurantIds.isEmpty()) {
+            throw new IllegalArgumentException("후보 식당 ID 리스트는 필수입니다");
+        }
+
+        // 1. Plan 조회 및 status를 VOTING으로 변경
+        Plan plan = planRepository.findById(planId)
+            .orElseThrow(() -> new IllegalArgumentException("Plan Not Found"));
+        
+        plan.setStatus(PlanStatus.VOTING);
+        planRepository.save(plan);
+
+        // 2. 기존 PlanCandidate 삭제 (재선택 시)
+        planCandidateRepository.deleteByPlan(plan);
+
+        // 3. 현재 화면에 보여지고 있는 후보 식당들을 PlanCandidate에 저장
+        for (Long restaurantId : candidateRestaurantIds) {
+            Restaurant restaurant = restaurantRepository.findById(restaurantId)
+                .orElseThrow(() -> new IllegalArgumentException("Restaurant Not Found: " + restaurantId));
+            
+            PlanCandidate candidate = PlanCandidate.builder()
+                .plan(plan)
+                .restaurant(restaurant)
+                .build();
+            
+            planCandidateRepository.save(candidate);
+        }
+
+        // 4. PlanDecision 생성/업데이트
         PlanDecision decision = decisionRepository.findById(planId).orElse(null);
 
         if (decision == null) {
@@ -136,12 +177,28 @@ public class PlanDecisionService {
 
     /**
      * 최종 식당 확정 (투표/룰렛/기타 도구 공통)
+     * - Plan.status를 DECIDED로 변경
+     * - Plan.restaurant에 확정 식당 저장
+     * - PlanDecision.finalRestaurantId에 확정 식당 ID 저장
+     * - PlanDecision.status를 DECIDED로 변경
      * - startedAt 이 비어 있으면 안전망으로 현재 시각을 시작 시점으로 기록
      *   (이전 데이터나 수동 확정 케이스)
      * - closedAt 은 한 번만(비어 있을 때만) 기록해서, 다른 곳에서 미리 닫아둔 시간은 보존
      */
     @Transactional
     public PlanDecision confirmFinal(Long planId, ConfirmDecisionRequest req) {
+        // 1. Plan 조회 및 업데이트
+        Plan plan = planRepository.findById(planId)
+            .orElseThrow(() -> new IllegalArgumentException("Plan Not Found"));
+        
+        Restaurant restaurant = restaurantRepository.findById(req.restaurantId())
+            .orElseThrow(() -> new IllegalArgumentException("Restaurant Not Found: " + req.restaurantId()));
+        
+        plan.setStatus(PlanStatus.DECIDED);
+        plan.setRestaurant(restaurant);
+        planRepository.save(plan);
+
+        // 2. PlanDecision 업데이트
         PlanDecision decision = decisionRepository.findById(planId)
                 .orElseThrow(() -> new NoSuchElementException("plan decision not found"));
 
@@ -157,6 +214,6 @@ public class PlanDecisionService {
         decision.setFinalRestaurantId(req.restaurantId());
         decision.setStatus(DecisionStatus.DECIDED);
 
-        return decision;
+        return decisionRepository.save(decision);
     }
 }
