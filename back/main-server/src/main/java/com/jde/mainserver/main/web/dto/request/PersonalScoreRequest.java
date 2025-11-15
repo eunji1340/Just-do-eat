@@ -46,7 +46,13 @@ public record PersonalScoreRequest(
             String priceRange,  // "LOW", "MEDIUM", "HIGH", "PREMIUM"
 
             @JsonProperty("pref_score")
-            Float prefScore
+            Float prefScore,
+
+            @JsonProperty("has_interaction_recent")
+            Boolean hasInteractionRecent,
+
+            @JsonProperty("engagement_boost")
+            Float engagementBoost
     ) {}
 
     /** 태그 선호도/가중치 (score/weight: -3.00~+3.00, confidence: 0.0~1.0) */
