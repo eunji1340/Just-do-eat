@@ -4,7 +4,6 @@ import com.jde.mainserver.member.entity.Member;
 import com.jde.mainserver.restaurants.repository.RestaurantRepository;
 import com.jde.mainserver.room.converter.RoomConverter;
 import com.jde.mainserver.room.entity.Room;
-import com.jde.mainserver.room.repository.RoomMemberRepository;
 import com.jde.mainserver.room.repository.RoomRepository;
 import com.jde.mainserver.room.web.dto.response.GetMyRoomResponse;
 import lombok.RequiredArgsConstructor;

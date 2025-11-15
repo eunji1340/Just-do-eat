@@ -31,6 +31,15 @@ public class RoomConverter {
                         .toList())
                 .build();
     }
+
+    public RoomDetailResponse toRoomDetailResponse(Room room, List<MemberInfo> roomMemberList, List<PlanInfo> planList) {
+        return RoomDetailResponse.builder()
+                .roomId(room.getRoomId())
+                .roomName(room.getRoomName())
+                .roomMemberList(roomMemberList)
+                .planList(planList)
+                .build();
+    }
     public MyRoomInfo toMyRoomInfo(Room room) {
 
         List<MemberInfo> roomMemberList = room.getRoomMemberList().stream()
@@ -49,7 +58,7 @@ public class RoomConverter {
                 .planList(planList)
                 .build();
     }
-    private MemberInfo toMemberInfo(RoomMember roomMember) {
+    public MemberInfo toMemberInfo(RoomMember roomMember) {
         Member user = roomMember.getUser(); // Member 엔티티
 
         return MemberInfo.builder()
@@ -63,15 +72,33 @@ public class RoomConverter {
 
     private PlanRestaurantImageInfo toPlanList(Plan plan) {
         Restaurant restaurant = plan.getRestaurant();
-        String firstImage;
+        String firstImage = null;
 
         if(restaurant != null && restaurant.getImage() != null && !restaurant.getImage().isEmpty()) {
-            firstImage = restaurant.getImage().get(0);
+            firstImage = restaurant.getImage().getFirst();
         }
         return PlanRestaurantImageInfo.builder()
                 .planId(plan.getPlanId())
                 .startAt(plan.getStartsAt())
-                .restaurantImageUrl(plan.getRestaurant().getImage().get(0))
+                .restaurantImageUrl(firstImage)
+                .build();
+    }
+
+    public PlanInfo toPlanInfo(Plan plan, String planManager, Long count) {
+        Restaurant restaurant = plan.getRestaurant();
+        String firstImage = null;
+
+        if(restaurant != null && restaurant.getImage() != null && !restaurant.getImage().isEmpty()) {
+            firstImage = restaurant.getImage().getFirst();
+        }
+
+        return PlanInfo.builder()
+                .planId(plan.getPlanId())
+                .planName(plan.getPlanName())
+                .startAt(plan.getStartsAt())
+                .planManager(planManager)
+                .count(count)
+                .restaurantImageUrl(firstImage)
                 .build();
     }
 }
