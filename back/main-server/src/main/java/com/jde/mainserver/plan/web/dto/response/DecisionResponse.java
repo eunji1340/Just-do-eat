@@ -1,4 +1,4 @@
-package com.jde.mainserver.plan.dto.response;
+package com.jde.mainserver.plan.web.dto.response;
 
 import com.jde.mainserver.plan.entity.PlanDecision;
 import com.jde.mainserver.plan.entity.enums.DecisionStatus;

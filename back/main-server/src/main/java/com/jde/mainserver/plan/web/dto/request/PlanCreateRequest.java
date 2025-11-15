@@ -25,6 +25,7 @@ import java.util.List;
 	description = "약속 생성 요청",
 	example = """
 		{
+			"participantIds": [2, 3, 4],
 			"planName": "강남 저녁 회식",
 			"centerLat": 37.500901,
 			"centerLon": 127.028639,
@@ -43,6 +44,9 @@ public class PlanCreateRequest {
 	@Size(max = 10)
 	private String planName;
 
+	@Schema(description = "약속 참여자 ID 목록", example = "[2, 3, 4]")
+	private List<Long> participantIds;
+
 	@Schema(description = "약속 중심 위도", example = "37.500901")
 	@NotNull
 	private Double centerLat;
@@ -51,9 +55,7 @@ public class PlanCreateRequest {
 	@NotNull
 	private Double centerLon;
 
-	@Schema(description = "검색 반경 (미터 단위)", example = "1000")
-	@NotNull
-	@Positive
+	@Schema(description = "검색 반경 (미터 단위, 기본값: 5000)", example = "1000")
 	private Integer radiusM;
 
 	@Schema(description = "약속 시작 시간 (ISO 8601)", example = "2025-12-31T19:00:00")
