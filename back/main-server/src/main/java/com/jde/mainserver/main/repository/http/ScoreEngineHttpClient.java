@@ -36,9 +36,9 @@ public class ScoreEngineHttpClient {
 
 	private static final String SCORE_ENDPOINT_PERSONAL = "/score/personal";
 	private static final String SCORE_ENDPOINT_GROUP = "/score/group";
-	private static final Duration CONNECT_TIMEOUT = Duration.ofSeconds(3);
-	private static final Duration RESPONSE_TIMEOUT = Duration.ofSeconds(10);
-	private static final int MAX_RETRIES = 2;
+	private static final Duration CONNECT_TIMEOUT = Duration.ofSeconds(5);
+	private static final Duration RESPONSE_TIMEOUT = Duration.ofSeconds(30); // 그룹 점수 계산은 시간이 더 걸릴 수 있음
+	private static final int MAX_RETRIES = 1; // 재시도 횟수 감소 (빠른 실패)
 
 	private final WebClient webClient;
 
@@ -140,8 +140,14 @@ public class ScoreEngineHttpClient {
 	 * @return 점수 계산 결과 (식당별 그룹 점수 맵)
 	 */
 	public GroupScoreResponse groupScore(GroupScoreReqeust req) {
+		long startTime = System.currentTimeMillis();
+		log.info("[FastAPI] 그룹 점수 계산 요청 시작: members={}, candidates={}", 
+			req.getMembers() != null ? req.getMembers().size() : 0,
+			req.getCandidates() != null ? req.getCandidates().size() : 0);
+		
 		try {
 			Map<String, Object> fastApiReq = convertGroupScoreToFastApiSchema(req);
+			log.debug("[FastAPI] 요청 데이터 변환 완료");
 
 			@SuppressWarnings("unchecked")
 			Map<String, Object> response = webClient.post()
@@ -149,20 +155,46 @@ public class ScoreEngineHttpClient {
 				.bodyValue(fastApiReq)
 				.retrieve()
 				.bodyToMono(Map.class)
-				.retryWhen(Retry.backoff(MAX_RETRIES, Duration.ofSeconds(1)))
+				.retryWhen(Retry.backoff(MAX_RETRIES, Duration.ofSeconds(1))
+					.filter(throwable -> {
+						log.warn("[FastAPI] 재시도 조건 확인: {}", throwable.getClass().getSimpleName());
+						return true;
+					}))
 				.timeout(RESPONSE_TIMEOUT)
+				.doOnError(error -> {
+					log.error("[FastAPI] 요청 중 에러 발생: {}", error.getClass().getSimpleName(), error);
+				})
 				.block();
 
+			long elapsed = System.currentTimeMillis() - startTime;
+			log.info("[FastAPI] 그룹 점수 계산 완료: 소요 시간={}ms", elapsed);
+
 			if (response == null) {
+				log.error("[FastAPI] 응답이 null입니다");
 				throw new RuntimeException("FastAPI 응답이 null입니다");
 			}
 
 			return convertGroupScoreResponse(response);
 
+		} catch (org.springframework.web.reactive.function.client.WebClientException e) {
+			long elapsed = System.currentTimeMillis() - startTime;
+			log.error("[FastAPI] WebClient 에러: 소요 시간={}ms, error={}, message={}", 
+				elapsed, e.getClass().getSimpleName(), e.getMessage(), e);
+			throw new RuntimeException("FastAPI 연결 실패: " + e.getMessage(), e);
 		} catch (Exception e) {
-			log.error("FastAPI 그룹 점수 계산 실패: planId={}, error={}, message={}",
-				req, e.getClass().getSimpleName(), e.getMessage(), e);
-			throw new RuntimeException("FastAPI 그룹 점수 계산 실패: " + e.getMessage(), e);
+			long elapsed = System.currentTimeMillis() - startTime;
+			// 타임아웃 관련 예외 체크 (reactor.util.retry.Retry나 timeout에서 발생할 수 있음)
+			String errorMsg = e.getMessage() != null ? e.getMessage() : "";
+			String errorClass = e.getClass().getSimpleName();
+			if (errorMsg.contains("timeout") || errorMsg.contains("Timeout") || 
+				errorClass.contains("Timeout")) {
+				log.error("[FastAPI] 타임아웃 발생: 소요 시간={}ms, 타임아웃={}초, error={}", 
+					elapsed, RESPONSE_TIMEOUT.getSeconds(), errorClass, e);
+				throw new RuntimeException("FastAPI 그룹 점수 계산 타임아웃: " + RESPONSE_TIMEOUT.getSeconds() + "초 초과", e);
+			}
+			log.error("[FastAPI] 그룹 점수 계산 실패: 소요 시간={}ms, error={}, message={}", 
+				elapsed, errorClass, errorMsg, e);
+			throw new RuntimeException("FastAPI 그룹 점수 계산 실패: " + errorMsg, e);
 		}
 	}
 
