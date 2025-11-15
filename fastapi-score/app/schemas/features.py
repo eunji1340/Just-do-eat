@@ -5,7 +5,6 @@
 
 from pydantic import BaseModel, Field
 from typing import Dict
-from .base import PriceBucket
 
 class TagPreference(BaseModel):
     """
@@ -30,8 +29,6 @@ class CandidateFeature(BaseModel):
     """
     restaurant_id: int
     distance_m: float = Field(..., description="거리(미터)")
-    is_open: bool = Field(..., description="영업 중 여부")
-    price_bucket: PriceBucket = Field(..., description="가격대")
     tag_pref: Dict[int, TagPreference] = Field(
         default_factory=dict,
         description="ERD: Restaurant_tag - {tag_id: {weight, confidence}}"
@@ -40,32 +37,23 @@ class CandidateFeature(BaseModel):
         default=None,
         description="User_Restaurant_State.pref_score 전달용 개인 선호 점수"
     )
+    has_interaction_recent: bool | None = Field(
+        default=None,
+        description="최근 30일 내 상호작용 여부 (SAVE/SHARE/SELECT/VIEW) - 콜드스타트 감쇠용"
+    )
+    engagement_boost: float | None = Field(
+        default=None,
+        description="최근 14일 내 행동 부스트 점수 (상한 0.25) - SAVE +0.15, SHARE +0.10, SELECT +0.20, VIEW(첫 1회) +0.03"
+    )
 
 class UserPrefFeature(BaseModel):
     """
     사용자 선호도
     - User_tag_pref 테이블 기반: tag_pref (Map<tag_id, TagPreference>)
-    - User_type 정보는 향후 확장 가능
     """
     user_id: int
     tag_pref: Dict[int, TagPreference] = Field(
         default_factory=dict,
         description="User_tag_pref - {tag_id: {score, confidence}}"
     )
-    saved: list[int] = Field(
-        default_factory=list,
-        description="저장한 식당 ID 목록"
-    )
-    rest_bias: Dict[int, float] = Field(
-        default_factory=dict,
-        description="식당별 편향치 {restaurant_id: -1.0~+1.0} (User_Restaurant_State.pref_score 기반)"
-    )
 
-class ContextFeature(BaseModel):
-    """
-    시간/위치 컨텍스트
-    """
-    lat: float
-    lng: float
-    dow: int = Field(..., ge=0, le=6, description="요일(0:월~6:일)")
-    hour: int = Field(..., ge=0, le=23, description="시간(0~23)")
