@@ -26,6 +26,10 @@ import com.jde.mainserver.restaurants.entity.Restaurant;
 import com.jde.mainserver.restaurants.entity.RestaurantTag;
 import com.jde.mainserver.restaurants.repository.RestaurantRepository;
 import com.jde.mainserver.restaurants.repository.RestaurantTagRepository;
+import com.jde.mainserver.restaurants.repository.RestaurantHourRepository;
+import com.jde.mainserver.restaurants.entity.RestaurantHour;
+import com.jde.mainserver.restaurants.entity.enums.OpenStatus;
+import com.jde.mainserver.restaurants.service.OpenStatusUtil;
 
 import lombok.RequiredArgsConstructor;
 
@@ -51,6 +55,7 @@ import java.util.stream.Collectors;
 public class PlanQueryServiceImpl implements PlanQueryService {
 	private static final String REDIS_KEY_PREFIX = "plan:pool:";
 	private static final Duration CACHE_TTL = Duration.ofHours(1); // 캐시 유지 시간
+	private static final int BATCH_SIZE = 8; // 배치 크기 (고정)
 
 	private final PlanRepository planRepository;
 	private final PlanParticipantRepository planParticipantRepository;
@@ -58,6 +63,7 @@ public class PlanQueryServiceImpl implements PlanQueryService {
 	private final RestaurantRepository restaurantRepository;
 	private final UserTagPrefRepository userTagPrefRepository;
 	private final RestaurantTagRepository restaurantTagRepository;
+	private final RestaurantHourRepository restaurantHourRepository;
 	private final UserRestaurantStateRepository userRestaurantStateRepository;
 	private final ScoreEngineHttpClient scoreEngineHttpClient;
 	private final RedisTemplate<String, Object> redisTemplate;
@@ -100,6 +106,174 @@ public class PlanQueryServiceImpl implements PlanQueryService {
 		return getCandidatesFromDatabase(plan, pageable);
 	}
 
+	@Override
+	public Map<String, Object> getCandidateFeed(Long planId, String cursor) {
+		Plan plan = planRepository.findById(planId)
+			.orElseThrow(() -> new IllegalArgumentException("Plan Not Found"));
+
+		// status = OPEN이면 Redis에서 조회 (구경 모드)
+		if (plan.getStatus() == PlanStatus.OPEN) {
+			return getCandidateFeedFromRedis(plan, cursor);
+		}
+
+		// status = VOTING/DECIDED면 plan_candidate에서 읽기 (결정 모드)
+		return getCandidateFeedFromDatabase(plan, cursor);
+	}
+
+	/**
+	 * Redis에서 후보 피드 조회 (구경 모드, status = OPEN)
+	 * cursor 기반 무한 스크롤 지원
+	 */
+	private Map<String, Object> getCandidateFeedFromRedis(Plan plan, String cursor) {
+		String redisKey = REDIS_KEY_PREFIX + plan.getPlanId();
+
+		// 커서 파싱: 숫자만 받음 (예: "0", "8", "18")
+		int offset = 0;
+		if (cursor == null || cursor.trim().isEmpty() || cursor.trim().equals("0")) {
+			offset = 0;
+		} else {
+			try {
+				offset = Integer.parseInt(cursor.trim());
+				if (offset < 0) {
+					offset = 0;
+				}
+			} catch (NumberFormatException e) {
+				offset = 0;
+			}
+		}
+
+		// Redis에서 캐시된 식당 ID 리스트 조회 (안전한 역직렬화)
+		List<Long> sortedRestaurantIds;
+		try {
+			Object cachedObj = redisTemplate.opsForValue().get(redisKey);
+			if (cachedObj != null) {
+				sortedRestaurantIds = deserializeRestaurantIdList(cachedObj);
+				if (sortedRestaurantIds == null || sortedRestaurantIds.isEmpty()) {
+					// 캐시가 비어있으면 재생성
+					sortedRestaurantIds = calculateAndCacheCandidates(plan, redisKey);
+				}
+			} else {
+				// 캐시가 없으면 계산 후 저장
+				sortedRestaurantIds = calculateAndCacheCandidates(plan, redisKey);
+			}
+		} catch (Exception e) {
+			// 역직렬화 실패 시 캐시 삭제 후 재생성
+			redisTemplate.delete(redisKey);
+			sortedRestaurantIds = calculateAndCacheCandidates(plan, redisKey);
+		}
+
+		// 배치 크기: 항상 8개
+		int batchSize = BATCH_SIZE;
+
+		// 배치 추출
+		int startIdx = offset;
+		int endIdx = Math.min(startIdx + batchSize, sortedRestaurantIds.size());
+
+		if (startIdx >= sortedRestaurantIds.size()) {
+			// 풀을 모두 소진했으면 빈 리스트 반환
+			return Map.of("items", List.<PlanCandidateResponse>of(), "next_cursor", (String)null);
+		}
+
+		List<Long> pagedRestaurantIds = sortedRestaurantIds.subList(startIdx, endIdx);
+
+		Point center = plan.getPlanGeom();
+		Map<Long, Restaurant> restaurantMap = restaurantRepository.findAllByIdIn(pagedRestaurantIds).stream()
+			.collect(Collectors.toMap(Restaurant::getId, r -> r));
+
+		List<PlanCandidateResponse> candidateResponses = pagedRestaurantIds.stream()
+			.map(restaurantId -> {
+				Restaurant restaurant = restaurantMap.get(restaurantId);
+				if (restaurant == null) {
+					return null;
+				}
+				return toPlanCandidateResponse(restaurant, center);
+			})
+			.filter(r -> r != null)
+			.toList();
+
+		// 다음 커서 계산
+		String nextCursor = null;
+		if (endIdx < sortedRestaurantIds.size()) {
+			nextCursor = String.valueOf(endIdx);
+		}
+
+		Map<String, Object> result = new HashMap<>();
+		result.put("items", candidateResponses);
+		result.put("next_cursor", nextCursor);
+		return result;
+	}
+
+	/**
+	 * DB에서 후보 피드 조회 (결정 모드, status = VOTING/DECIDED)
+	 * cursor 기반 무한 스크롤 지원
+	 */
+	private Map<String, Object> getCandidateFeedFromDatabase(Plan plan, String cursor) {
+		// 커서 파싱
+		int offset = 0;
+		if (cursor == null || cursor.trim().isEmpty() || cursor.trim().equals("0")) {
+			offset = 0;
+		} else {
+			try {
+				offset = Integer.parseInt(cursor.trim());
+				if (offset < 0) {
+					offset = 0;
+				}
+			} catch (NumberFormatException e) {
+				offset = 0;
+			}
+		}
+
+		// 배치 크기: 항상 8개
+		int batchSize = BATCH_SIZE;
+
+		// DB에서 전체 후보 조회 (rank 순서대로)
+		List<PlanCandidate> allCandidates = planCandidateRepository.findByPlanOrderByRankAsc(plan);
+
+		if (allCandidates.isEmpty()) {
+			return Map.of("items", List.<PlanCandidateResponse>of(), "next_cursor", (String)null);
+		}
+
+		// 배치 추출
+		int startIdx = offset;
+		int endIdx = Math.min(startIdx + batchSize, allCandidates.size());
+
+		if (startIdx >= allCandidates.size()) {
+			return Map.of("items", List.<PlanCandidateResponse>of(), "next_cursor", (String)null);
+		}
+
+		List<PlanCandidate> pagedCandidates = allCandidates.subList(startIdx, endIdx);
+
+		List<Long> restaurantIds = pagedCandidates.stream()
+			.map(pc -> pc.getRestaurant().getId())
+			.toList();
+
+		Map<Long, Restaurant> restaurantMap = restaurantRepository.findAllByIdIn(restaurantIds).stream()
+			.collect(Collectors.toMap(Restaurant::getId, r -> r));
+
+		Point center = plan.getPlanGeom();
+		List<PlanCandidateResponse> candidateResponses = pagedCandidates.stream()
+			.map(pc -> {
+				Restaurant restaurant = restaurantMap.get(pc.getRestaurant().getId());
+				if (restaurant == null) {
+					return null;
+				}
+				return toPlanCandidateResponse(restaurant, center);
+			})
+			.filter(r -> r != null)
+			.toList();
+
+		// 다음 커서 계산
+		String nextCursor = null;
+		if (endIdx < allCandidates.size()) {
+			nextCursor = String.valueOf(endIdx);
+		}
+
+		Map<String, Object> result = new HashMap<>();
+		result.put("items", candidateResponses);
+		result.put("next_cursor", nextCursor);
+		return result;
+	}
+
 	/**
 	 * 재계산하여 후보 조회 (구경 모드, status = OPEN)
 	 * Redis 캐싱을 사용하여 여러 사용자가 같은 약속을 봐도 동일한 결과를 보도록 함
@@ -107,16 +281,23 @@ public class PlanQueryServiceImpl implements PlanQueryService {
 	private Page<PlanCandidateResponse> getCandidatesByRecalculation(Plan plan, Pageable pageable) {
 		String redisKey = REDIS_KEY_PREFIX + plan.getPlanId();
 
-		// Redis에서 캐시된 식당 ID 리스트 조회
-		@SuppressWarnings("unchecked")
-		List<Long> cachedRestaurantIds = (List<Long>)redisTemplate.opsForValue().get(redisKey);
-
+		// Redis에서 캐시된 식당 ID 리스트 조회 (안전한 역직렬화)
 		List<Long> sortedRestaurantIds;
-		if (cachedRestaurantIds != null && !cachedRestaurantIds.isEmpty()) {
-			// 캐시에서 읽기
-			sortedRestaurantIds = cachedRestaurantIds;
-		} else {
-			// 캐시가 없으면 계산 후 저장
+		try {
+			Object cachedObj = redisTemplate.opsForValue().get(redisKey);
+			if (cachedObj != null) {
+				sortedRestaurantIds = deserializeRestaurantIdList(cachedObj);
+				if (sortedRestaurantIds == null || sortedRestaurantIds.isEmpty()) {
+					// 캐시가 비어있으면 재생성
+					sortedRestaurantIds = calculateAndCacheCandidates(plan, redisKey);
+				}
+			} else {
+				// 캐시가 없으면 계산 후 저장
+				sortedRestaurantIds = calculateAndCacheCandidates(plan, redisKey);
+			}
+		} catch (Exception e) {
+			// 역직렬화 실패 시 캐시 삭제 후 재생성
+			redisTemplate.delete(redisKey);
 			sortedRestaurantIds = calculateAndCacheCandidates(plan, redisKey);
 		}
 
@@ -150,6 +331,7 @@ public class PlanQueryServiceImpl implements PlanQueryService {
 
 	/**
 	 * 후보 식당 계산 후 Redis에 캐싱
+	 * 필터링 후 최소 100개가 되도록 반경을 확장합니다.
 	 * 
 	 * @return 점수순 정렬된 식당 ID 리스트
 	 */
@@ -158,22 +340,46 @@ public class PlanQueryServiceImpl implements PlanQueryService {
 		double centerLat = center.getY();
 		double centerLon = center.getX();
 
-		int radiusM = Math.max(plan.getRadiusM(), 5000);
-		int maxCandidates = 200;
+		// 반경 설정: plan.getRadiusM() 사용하되, null이면 5000M 기본값
+		int initialRadiusM = plan.getRadiusM() != null ? plan.getRadiusM() : 5000;
+		int initialMaxCandidates = 200;
+		final int MIN_CANDIDATES = 100; // 최소 목표 개수
+		final int MAX_EXPANSIONS = 2; // 최대 확장 횟수
+		final double RADIUS_MULTIPLIER = 2.0; // 반경 배수
+		final int MAX_CANDIDATES_STEP = 150; // maxCandidates 증가분
 
-		// 1. PostGIS로 반경 내 식당 조회
-		Page<Restaurant> page = restaurantRepository.findNearestWithinMeters(
-			centerLon, centerLat, (double) radiusM, PageRequest.of(0, maxCandidates)
-		);
+		int radiusM = initialRadiusM;
+		int maxCandidates = initialMaxCandidates;
+		List<Restaurant> filtered = Collections.emptyList();
 
-		List<Restaurant> restaurants = page.getContent();
+		// 반경 확장하면서 최소 100개 확보
+		for (int expansion = 0; expansion <= MAX_EXPANSIONS; expansion++) {
+			// 1. PostGIS로 반경 내 식당 조회
+			Page<Restaurant> page = restaurantRepository.findNearestWithinMeters(
+				centerLon, centerLat, (double) radiusM, PageRequest.of(0, maxCandidates)
+			);
 
-		// 2. 필터링: 가격대, 비선호 카테고리
-		List<Restaurant> filtered = restaurants.stream()
-			.filter(r -> matchesPriceFilter(r, plan.getPriceRanges()))
-			.filter(r -> matchesDislikeCategoryFilter(r, plan.getDislikeCategories()))
-			.limit(maxCandidates)
-			.toList();
+			List<Restaurant> restaurants = page.getContent();
+
+			// 2. 필터링: 가격대, 비선호 카테고리, 오픈 상태 (startsAt이 있을 때만)
+			filtered = restaurants.stream()
+				.filter(r -> matchesPriceFilter(r, plan.getPriceRanges()))
+				.filter(r -> matchesDislikeCategoryFilter(r, plan.getDislikeCategories()))
+				.filter(r -> matchesOpenStatusFilter(r, plan.getStartsAt()))
+				.limit(maxCandidates)
+				.toList();
+
+			// 필터링 후 100개 이상이면 종료
+			if (filtered.size() >= MIN_CANDIDATES) {
+				break;
+			}
+
+			// 마지막 확장이 아니면 반경과 maxCandidates 확장
+			if (expansion < MAX_EXPANSIONS) {
+				radiusM = (int)(radiusM * RADIUS_MULTIPLIER);
+				maxCandidates += MAX_CANDIDATES_STEP;
+			}
+		}
 
 		if (filtered.isEmpty()) {
 			return Collections.emptyList();
@@ -250,11 +456,15 @@ public class PlanQueryServiceImpl implements PlanQueryService {
 
 				Float prefScore = prefScoreByRestaurant.get(r.getId());
 
+				// 그룹 점수에서는 has_interaction_recent와 engagement_boost를 null로 설정
+				// (개인 점수에서만 사용)
 				return GroupScoreReqeust.CandidateFeature.builder()
 					.restaurantId(r.getId())
 					.distanceM(distanceM)
 					.tagPref(tagPref)
 					.prefScore(prefScore)
+					.hasInteractionRecent(null)
+					.engagementBoost(null)
 					.build();
 			})
 			.toList();
@@ -336,6 +546,32 @@ public class PlanQueryServiceImpl implements PlanQueryService {
 		return !dislikeCategories.contains(category);
 	}
 
+	// 오픈 상태 필터 (startsAt이 있을 때만 적용)
+	private boolean matchesOpenStatusFilter(Restaurant restaurant, java.time.LocalDateTime startsAt) {
+		// startsAt이 null이면 필터링하지 않음
+		if (startsAt == null) {
+			return true;
+		}
+
+		try {
+			// 식당의 영업시간 조회
+			List<RestaurantHour> hours = restaurantHourRepository.findByRestaurant_Id(restaurant.getId());
+			
+			// 약속 시작 시간을 ZonedDateTime으로 변환 (Asia/Seoul 기준)
+			java.time.ZoneId zoneId = java.time.ZoneId.of("Asia/Seoul");
+			java.time.ZonedDateTime targetTime = startsAt.atZone(zoneId);
+			
+			// 특정 시각 기준 영업 상태 계산
+			OpenStatus status = OpenStatusUtil.calcStatusAt(hours, zoneId, targetTime);
+			
+			// OPEN 상태인 경우만 통과
+			return status == OpenStatus.OPEN;
+		} catch (Exception e) {
+			// 영업시간 계산 실패 시 안전하게 통과 (필터링하지 않음)
+			return true;
+		}
+	}
+
 	// Restaurant -> PlanCandidateResponse 변환
 	private PlanCandidateResponse toPlanCandidateResponse(Restaurant restaurant, Point centerPoint) {
 		Integer distanceM = calculateDistanceMeters(
@@ -371,4 +607,31 @@ public class PlanQueryServiceImpl implements PlanQueryService {
 
 		return distanceM;
 	}
+
+	/**
+	 * Redis에서 역직렬화된 Object를 List<Long>으로 안전하게 변환
+	 */
+	private List<Long> deserializeRestaurantIdList(Object cachedObj) {
+		try {
+			if (cachedObj instanceof List) {
+				@SuppressWarnings("unchecked")
+				List<Object> list = (List<Object>)cachedObj;
+				return list.stream()
+					.map(obj -> {
+						if (obj instanceof Number) {
+							return ((Number)obj).longValue();
+						} else if (obj instanceof String) {
+							return Long.parseLong((String)obj);
+						}
+						return null;
+					})
+					.filter(id -> id != null)
+					.toList();
+			}
+			return null;
+		} catch (Exception e) {
+			return null;
+		}
+	}
+
 }

@@ -61,7 +61,7 @@ public class Plan extends BaseEntity {
 	@Column(name = "plan_geom", columnDefinition = "geometry(Point,4326)", nullable = false)
 	private Point planGeom;
 
-	@Column(name = "radius_m", nullable = false)
+	@Column(name = "radius_m")
 	private Integer radiusM;
 
 	// DateTime? LocalDateTime?

@@ -250,6 +250,16 @@ public class ScoreEngineHttpClient {
 					candMap.put("pref_score", null);
 				}
 
+				// has_interaction_recent (콜드스타트 감쇠용)
+				candMap.put("has_interaction_recent", cand.getHasInteractionRecent());
+
+				// engagement_boost (행동 부스트)
+				if (cand.getEngagementBoost() != null) {
+					candMap.put("engagement_boost", cand.getEngagementBoost());
+				} else {
+					candMap.put("engagement_boost", null);
+				}
+
 				return candMap;
 			})
 			.collect(Collectors.toList());

@@ -17,4 +17,5 @@ public interface PlanRepository extends JpaRepository<Plan, Long> {
 	 * 특정 방(room)에 속한 약속 리스트 조회 (최근 생선 순)
 	 */
 	List<Plan> findByRoomRoomIdOrderByCreatedAtDesc(Long roomId);
+
 }

@@ -32,6 +32,10 @@ import com.jde.mainserver.restaurants.entity.Restaurant;
 import com.jde.mainserver.restaurants.entity.RestaurantTag;
 import com.jde.mainserver.restaurants.repository.RestaurantRepository;
 import com.jde.mainserver.restaurants.repository.RestaurantTagRepository;
+import com.jde.mainserver.restaurants.repository.RestaurantHourRepository;
+import com.jde.mainserver.restaurants.entity.RestaurantHour;
+import com.jde.mainserver.restaurants.entity.enums.OpenStatus;
+import com.jde.mainserver.restaurants.service.OpenStatusUtil;
 
 import lombok.RequiredArgsConstructor;
 
@@ -41,8 +45,10 @@ import org.locationtech.jts.geom.PrecisionModel;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import java.time.Duration;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
@@ -56,6 +62,8 @@ import java.util.stream.Collectors;
 @Transactional
 public class PlanCommandServiceImpl implements PlanCommandService {
 	private static final int INITIAL_BATCH_SIZE = 8; // 약속 생성 시 반환할 개수 (미리보기용)
+	private static final String REDIS_KEY_PREFIX = "plan:pool:";
+	private static final Duration CACHE_TTL = Duration.ofHours(1); // 캐시 유지 시간
 
 	private final PlanRepository planRepository;
 	private final RoomRepository roomRepository;
@@ -65,8 +73,10 @@ public class PlanCommandServiceImpl implements PlanCommandService {
 	private final RestaurantRepository restaurantRepository;
 	private final UserTagPrefRepository userTagPrefRepository;
 	private final RestaurantTagRepository restaurantTagRepository;
+	private final RestaurantHourRepository restaurantHourRepository;
 	private final UserRestaurantStateRepository userRestaurantStateRepository;
 	private final ScoreEngineHttpClient scoreEngineHttpClient;
+	private final RedisTemplate<String, Object> redisTemplate;
 
 	private final GeometryFactory geometryFactory = new GeometryFactory(new PrecisionModel(), 4326);
 
@@ -86,10 +96,13 @@ public class PlanCommandServiceImpl implements PlanCommandService {
 			new org.locationtech.jts.geom.Coordinate(request.getCenterLon(), request.getCenterLat())
 		);
 
+		// radiusM 기본값 처리 (null이면 5000m)
+		Integer radiusM = request.getRadiusM() != null ? request.getRadiusM() : 5000;
+
 		Plan plan = Plan.builder()
 			.planName(request.getPlanName())
 			.planGeom(centerPoint)
-			.radiusM(request.getRadiusM())
+			.radiusM(radiusM)
 			.startsAt(request.getStartsAt())
 			.dislikeCategories(
 				request.getDislikeCategories() != null ? request.getDislikeCategories() : Collections.emptyList()
@@ -160,14 +173,16 @@ public class PlanCommandServiceImpl implements PlanCommandService {
 
 	/**
 	 * 약속 기준 후보 식당 조회 (반경 + 가격대 + 비선호 카테고리 필터 + FastAPI 그룹 점수 계산)
+	 * 필터링 후 최소 100개가 되도록 반경을 확장합니다.
 	 *
 	 * 처리 과정:
 	 * 1. PostGIS로 반경 내 식당 조회 (거리순 정렬, 최대 200개)
 	 * 2. 가격대와 비선호 카테고리로 필터링
-	 * 3. 참여자들의 태그 선호도 조회
-	 * 4. 후보 식당의 태그 정보 조회
-	 * 5. FastAPI로 그룹 점수 계산 요청
-	 * 6. 점수순 정렬하여 상위 8개를 PlanCandidateResponse로 변환하여 반환
+	 * 3. 필터링 후 100개 미만이면 반경 확장
+	 * 4. 참여자들의 태그 선호도 조회
+	 * 5. 후보 식당의 태그 정보 조회
+	 * 6. FastAPI로 그룹 점수 계산 요청
+	 * 7. 점수순 정렬하여 상위 8개를 PlanCandidateResponse로 변환하여 반환
 	 *
 	 * 참고: 약속 생성 시 미리보기용으로만 사용되며, DB/Redis에 저장하지 않음
 	 */
@@ -176,24 +191,47 @@ public class PlanCommandServiceImpl implements PlanCommandService {
 		double centerLat = center.getY();
 		double centerLon = center.getX();
 		
-		// 반경 설정: plan.getRadiusM() 사용하되, 최소 5000M 보장 (개인 피드와 동일)
-		int radiusM = Math.max(plan.getRadiusM(), 5000);
-		int maxCandidates = 200; // 최대 후보 수
+		// 반경 설정: plan.getRadiusM() 사용하되, null이면 5000M 기본값
+		int initialRadiusM = plan.getRadiusM() != null ? plan.getRadiusM() : 5000;
+		int initialMaxCandidates = 200;
+		final int MIN_CANDIDATES = 100; // 최소 목표 개수
+		final int MAX_EXPANSIONS = 2; // 최대 확장 횟수
+		final double RADIUS_MULTIPLIER = 2.0; // 반경 배수
+		final int MAX_CANDIDATES_STEP = 150; // maxCandidates 증가분
 
-		// 1. PostGIS로 반경 내 식당 조회 (거리순 정렬, 최대 200개)
-		Pageable pageable = PageRequest.of(0, maxCandidates);
-		Page<Restaurant> page = restaurantRepository.findNearestWithinMeters(
-			centerLon, centerLat, (double) radiusM, pageable
-		);
+		int radiusM = initialRadiusM;
+		int maxCandidates = initialMaxCandidates;
+		List<Restaurant> filtered = Collections.emptyList();
 
-		List<Restaurant> restaurants = page.getContent();
+		// 반경 확장하면서 최소 100개 확보
+		for (int expansion = 0; expansion <= MAX_EXPANSIONS; expansion++) {
+			// 1. PostGIS로 반경 내 식당 조회 (거리순 정렬)
+			Pageable pageable = PageRequest.of(0, maxCandidates);
+			Page<Restaurant> page = restaurantRepository.findNearestWithinMeters(
+				centerLon, centerLat, (double) radiusM, pageable
+			);
 
-		// 2. 필터링: 가격대, 비선호 카테고리
-		List<Restaurant> filtered = restaurants.stream()
-			.filter(r -> matchesPriceFilter(r, plan.getPriceRanges()))
-			.filter(r -> matchesDislikeCategoryFilter(r, plan.getDislikeCategories()))
-			.limit(maxCandidates) // 필터링 후 최대 200개까지
-			.toList();
+			List<Restaurant> restaurants = page.getContent();
+
+			// 2. 필터링: 가격대, 비선호 카테고리, 오픈 상태 (startsAt이 있을 때만)
+			filtered = restaurants.stream()
+				.filter(r -> matchesPriceFilter(r, plan.getPriceRanges()))
+				.filter(r -> matchesDislikeCategoryFilter(r, plan.getDislikeCategories()))
+				.filter(r -> matchesOpenStatusFilter(r, plan.getStartsAt()))
+				.limit(maxCandidates)
+				.toList();
+
+			// 필터링 후 100개 이상이면 종료
+			if (filtered.size() >= MIN_CANDIDATES) {
+				break;
+			}
+
+			// 마지막 확장이 아니면 반경과 maxCandidates 확장
+			if (expansion < MAX_EXPANSIONS) {
+				radiusM = (int)(radiusM * RADIUS_MULTIPLIER);
+				maxCandidates += MAX_CANDIDATES_STEP;
+			}
+		}
 
 		if (filtered.isEmpty()) {
 			return Collections.emptyList();
@@ -292,14 +330,19 @@ public class PlanCommandServiceImpl implements PlanCommandService {
 		GroupScoreResponse groupScoreResponse = scoreEngineHttpClient.groupScore(groupScoreRequest);
 		Map<Long, Float> scores = groupScoreResponse.getScores();
 
-		// 6. 점수순 정렬하여 상위 8개를 PlanCandidateResponse로 변환하여 반환
-		List<Map.Entry<Long, Float>> sortedEntries = scores.entrySet().stream()
+		// 6. 점수순 정렬하여 식당 ID 리스트 추출 (전체 100개, 피드 조회 시 동일한 리스트를 보여주기 위해)
+		List<Long> sortedRestaurantIds = scores.entrySet().stream()
 			.sorted((a, b) -> Float.compare(b.getValue(), a.getValue()))
-			.limit(INITIAL_BATCH_SIZE)
+			.map(Map.Entry::getKey)
 			.toList();
 
-		List<Long> topRestaurantIds = sortedEntries.stream()
-			.map(Map.Entry::getKey)
+		// 7. Redis에 저장 (피드 조회 시 동일한 리스트를 보여주기 위해)
+		String redisKey = REDIS_KEY_PREFIX + plan.getPlanId();
+		redisTemplate.opsForValue().set(redisKey, sortedRestaurantIds, CACHE_TTL);
+
+		// 8. 상위 8개만 추출하여 반환
+		List<Long> topRestaurantIds = sortedRestaurantIds.stream()
+			.limit(INITIAL_BATCH_SIZE)
 			.toList();
 
 		Map<Long, Restaurant> restaurantMap = restaurantRepository.findAllByIdIn(topRestaurantIds).stream()
@@ -342,6 +385,32 @@ public class PlanCommandServiceImpl implements PlanCommandService {
 			return true;
 		}
 		return !dislikeCategories.contains(category);
+	}
+
+	// 오픈 상태 필터 (startsAt이 있을 때만 적용)
+	private boolean matchesOpenStatusFilter(Restaurant restaurant, java.time.LocalDateTime startsAt) {
+		// startsAt이 null이면 필터링하지 않음
+		if (startsAt == null) {
+			return true;
+		}
+
+		try {
+			// 식당의 영업시간 조회
+			List<RestaurantHour> hours = restaurantHourRepository.findByRestaurant_Id(restaurant.getId());
+			
+			// 약속 시작 시간을 ZonedDateTime으로 변환 (Asia/Seoul 기준)
+			java.time.ZoneId zoneId = java.time.ZoneId.of("Asia/Seoul");
+			java.time.ZonedDateTime targetTime = startsAt.atZone(zoneId);
+			
+			// 특정 시각 기준 영업 상태 계산
+			OpenStatus status = OpenStatusUtil.calcStatusAt(hours, zoneId, targetTime);
+			
+			// OPEN 상태인 경우만 통과
+			return status == OpenStatus.OPEN;
+		} catch (Exception e) {
+			// 영업시간 계산 실패 시 안전하게 통과 (필터링하지 않음)
+			return true;
+		}
 	}
 
 	// Restaurant -> PlanCandidateResponse 변환

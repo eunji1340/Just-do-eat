@@ -55,9 +55,7 @@ public class PlanCreateRequest {
 	@NotNull
 	private Double centerLon;
 
-	@Schema(description = "검색 반경 (미터 단위)", example = "1000")
-	@NotNull
-	@Positive
+	@Schema(description = "검색 반경 (미터 단위, 기본값: 5000)", example = "1000")
 	private Integer radiusM;
 
 	@Schema(description = "약속 시작 시간 (ISO 8601)", example = "2025-12-31T19:00:00")
