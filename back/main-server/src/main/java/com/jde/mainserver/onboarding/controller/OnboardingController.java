@@ -7,6 +7,8 @@ import com.jde.mainserver.onboarding.bingo.dto.BingoItemsResponse;
 import com.jde.mainserver.onboarding.bingo.service.BingoQueryService;
 import com.jde.mainserver.onboarding.mbti.dto.MbtiQuestionsResponse;
 import com.jde.mainserver.onboarding.mbti.service.MbtiQueryService;
+import com.jde.mainserver.onboarding.dto.OnboardingTypeResult;
+import com.jde.mainserver.onboarding.service.OnboardingTypeQueryService;
 import com.jde.mainserver.onboarding.dto.request.SubmitSurveyRequest;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -16,6 +18,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
+import org.springframework.http.HttpStatus;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -30,6 +34,7 @@ public class OnboardingController {
     private final ObjectMapper om;
     private final MbtiQueryService mbtiQueryService;
     private final BingoQueryService bingoQueryService;
+	private final OnboardingTypeQueryService onboardingTypeQueryService;
 
     /** 세션 발급: POST /api/onboarding/session (permitAll) */
     @PostMapping("/session")
@@ -104,4 +109,13 @@ public class OnboardingController {
     public BingoItemsResponse getBingo() {
         return bingoQueryService.getItems();
     }
+
+	/** 타입 결과 조회: GET /api/onboarding/result/types/{typeId} (permitAll) */
+	@Operation(summary = "온보딩 타입 결과 조회", description = "정의된 16가지 온보딩 타입 결과를 반환합니다. 이미지 경로는 /mbtis/{code}.png 입니다.")
+	@GetMapping("/result/types/{typeId}")
+	public ApiResponse<OnboardingTypeResult> getOnboardingType(@PathVariable String typeId) {
+		return onboardingTypeQueryService.getByCode(typeId)
+			.map(result -> ApiResponse.onSuccess(GeneralSuccessCode.OK, result))
+			.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Unknown typeId: " + typeId));
+	}
 }

@@ -50,9 +50,6 @@ public class CreateRoomCommandServiceImpl implements CreateRoomCommandService {
 
         Room savedRoom = roomRepository.save(room);
 
-        log.info(user.getName());
-        log.info(user.getImageUrl());
-        log.info("123456789123456789");
         return roomConverter.toCreateRoomResponse(savedRoom);
     }
 }
