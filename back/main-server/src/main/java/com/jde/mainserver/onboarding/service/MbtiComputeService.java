@@ -6,6 +6,8 @@ import java.util.Map;
 
 import org.springframework.stereotype.Service;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jde.mainserver.onboarding.dto.request.MukbtiAnswer;
 import com.jde.mainserver.onboarding.mbti.repository.TestQuestionRepository;
 
@@ -22,6 +24,7 @@ import lombok.RequiredArgsConstructor;
 public class MbtiComputeService {
 
 	private final TestQuestionRepository testQuestionRepository;
+	private final ObjectMapper om;
 
 	/**
 	 * 사용자의 문항 응답을 기반으로 먹BTI 코드를 계산한다.
@@ -73,9 +76,18 @@ public class MbtiComputeService {
 		for (TestQuestionRepository.QuestionChoiceRow row : rows) {
 			String qid = "q" + row.getQId();
 			map.computeIfAbsent(qid, k -> new HashMap<>())
-				.put(row.getCCode(), row.getAxes() == null ? List.of() : List.of(row.getAxes()));
+				.put(row.getCCode(), parseAxes(row.getAxesJson()));
 		}
 		return map;
+	}
+
+	private List<String> parseAxes(String json) {
+		if (json == null || json.isBlank()) return List.of();
+		try {
+			return om.readValue(json, new TypeReference<List<String>>() {});
+		} catch (Exception e) {
+			return List.of();
+		}
 	}
 
 	private PairResult decide(Map<String, Integer> counts, String left, String right) {
