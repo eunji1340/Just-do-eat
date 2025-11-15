@@ -1,5 +1,4 @@
 // src/widgets/restaurantSwipe/RestaurantSwipeDeck.tsx
-// 목적: 덱(스택) 관리 + 전체 화면 오버레이 제어(확정 후 잠깐 유지)
 
 import * as React from "react";
 import SwipeCard from "@/features/swipe/SwipeCard";
@@ -13,16 +12,15 @@ type Props = {
   items: Restaurant[];
   onTopSwiped?: (dir: "left" | "right" | "up", item: Restaurant) => void;
   overlayHoldMs?: number;
-  // 🔥 추가: 카드가 모두 소진됐을 때 부모에게 알리는 콜백
   onDeckEmpty?: () => void;
-  // 🔥 추가: 더 로드할 게 있는지 여부 (없으면 "더 이상 카드가 없어요" 문구 노출)
   hasMore?: boolean;
 };
 
 export default function RestaurantSwipeDeck({
   items,
   onTopSwiped,
-  overlayHoldMs = 300,
+  // 🔥 기본 300 → 700ms 정도로 살짝 느리게 (체감용)
+  overlayHoldMs = 700,
   onDeckEmpty,
   hasMore = true,
 }: Props) {
@@ -38,28 +36,31 @@ export default function RestaurantSwipeDeck({
 
   function handleMove(o: Offset) {
     setOffset(o);
+    setFinalDir(null);      // 드래그 중엔 확정 오버레이 숨김
+    setOverlayVisible(true);
+  }
+
+function handleSwiped(dir: "left" | "right" | "up") {
+  const cur = items[index];
+  if (!cur) return;
+
+  // ✅ 여기서 공통으로 모달/오버레이 상태 세팅
+  setFinalDir(dir);           // 어떤 액션인지 저장 (갈게요/싫어요/보류)
+  setOverlayVisible(true);    // 모달/오버레이 보이게
+
+  onTopSwiped?.(dir, cur);    // 백엔드 액션 + 라우팅은 SwipePage에서
+
+  // 일정 시간 후 다음 카드로 넘기기
+  window.setTimeout(() => {
+    setIndex((i) => i + 1);
     setFinalDir(null);
-    setOverlayVisible(true);
-  }
+    setOffset({ x: 0, y: 0 });
+    setOverlayVisible(false);
+    requestAnimationFrame(() => setOverlayVisible(true));
+  }, overlayHoldMs);
+}
 
-  function handleSwiped(dir: "left" | "right" | "up") {
-    const cur = items[index];
-    if (!cur) return;
 
-    setFinalDir(dir);
-    setOverlayVisible(true);
-    onTopSwiped?.(dir, cur);
-
-    window.setTimeout(() => {
-      setIndex((i) => i + 1);
-      setFinalDir(null);
-      setOffset({ x: 0, y: 0 });
-      setOverlayVisible(false);
-      requestAnimationFrame(() => setOverlayVisible(true));
-    }, overlayHoldMs);
-  }
-
-  // ✅ index가 items.length 이상이 되면, 한 번만 onDeckEmpty 호출
   React.useEffect(() => {
     if (!onDeckEmpty) return;
 
@@ -70,31 +71,70 @@ export default function RestaurantSwipeDeck({
       onDeckEmpty();
     }
 
-    // 새 아이템이 추가되면 다시 스와이프 가능 → 플래그 리셋
+    // 새 카드가 추가되면 다시 열 수 있게 플래그 리셋
     if (items.length > index && emptyNotified) {
       setEmptyNotified(false);
     }
   }, [index, items.length, onDeckEmpty, emptyNotified]);
 
+  // 🔥 방향별 라벨 & 색상
+  function getConfirmInfo(dir: "left" | "right" | "up") {
+    switch (dir) {
+      case "right":
+        return { label: "갈게요", sub: "이 식당으로 결정했어요", theme: "confirm" };
+      case "left":
+        return { label: "싫어요", sub: "이 식당은 제외했어요", theme: "dislike" };
+      case "up":
+      default:
+        return { label: "보류", sub: "일단 후보에 남겨둘게요", theme: "hold" };
+    }
+  }
+
   return (
     <div className="relative h-dvh flex items-center justify-center overflow-hidden">
-      {/* 오버레이 */}
+      {/* 기존 스와이프 오버레이(모서리 띠 등) */}
       <SwipeOverlay offset={offset} finalDir={finalDir} visible={overlayVisible} />
+
+      {/* 🔥 스와이프 확정 후 전체 화면 오버레이 */}
+{finalDir && (
+  <div className="absolute inset-0 z-30 flex items-center justify-center bg-black/60">
+    {(() => {
+      const info = getConfirmInfo(finalDir);
+      const bg =
+        info.theme === "confirm"
+          ? "bg-emerald-500"
+          : info.theme === "dislike"
+          ? "bg-red-500"
+          : "bg-amber-500";
+
+      return (
+        <div className="rounded-3xl px-8 py-6 bg-white/90 shadow-2xl text-center">
+          <div
+            className={`inline-block rounded-full px-4 py-1 text-xs font-semibold text-white ${bg}`}
+          >
+            {info.label}
+          </div>
+          <h2 className="mt-3 text-2xl font-extrabold text-gray-900">
+            {info.label}
+          </h2>
+          <p className="mt-1 text-sm text-gray-600">{info.sub}</p>
+        </div>
+      );
+    })()}
+  </div>
+)}
+
 
       {/* 카드 */}
       {top ? (
         <SwipeCard data={top} onMove={handleMove} onSwiped={handleSwiped} />
       ) : (
         <div className="absolute inset-0 flex flex-col items-center justify-center text-gray-500 text-sm">
-          {hasMore ? (
-            <span>다음 추천을 불러오는 중입니다...</span>
-          ) : (
-            <span>더 이상 카드가 없어요</span>
-          )}
+          {hasMore ? <span>다음 추천을 불러오는 중입니다...</span> : <span>더 이상 카드가 없어요</span>}
         </div>
       )}
 
-      {/* 하단 스와이프 보조도구 */}
+      {/* 하단 스와이프 보조도구 (카드 있을 때만) */}
       {top && (
         <div className="pointer-events-none absolute bottom-6 left-0 right-0 flex items-center justify-center gap-4">
           <div className="pointer-events-auto flex items-center gap-4">
@@ -107,8 +147,8 @@ export default function RestaurantSwipeDeck({
             <CircularButton
               type="bookmark"
               icon={<Star />}
-              onClick={() => handleSwiped("left")}
-              aria-label="북마크 (임시로 DISLIKE와 동일 방향)"
+              onClick={() => handleSwiped("left")} // TODO: 북마크 액션 따로 분리 가능
+              aria-label="북마크"
             />
             <CircularButton
               type="next"
@@ -119,8 +159,8 @@ export default function RestaurantSwipeDeck({
             <CircularButton
               type="info"
               icon={<CircleAlert />}
-              onClick={() => handleSwiped("up")}
-              aria-label="정보 (임시로 HOLD와 동일 방향)"
+              onClick={() => handleSwiped("up")} // TODO: 상세보기 모달로 변경 가능
+              aria-label="정보"
             />
             <CircularButton
               type="confirm"

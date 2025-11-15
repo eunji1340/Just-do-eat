@@ -4,7 +4,7 @@ import * as React from "react";
 import RestaurantSwipeDeck from "@/widgets/restaurantSwipe/RestaurantSwipeDeck";
 import type { Restaurant } from "@/entities/restaurant/types";
 import http from "@/shared/api/http";
-
+import { useNavigate } from "react-router-dom";
 // ==== 백엔드 응답 타입 ====
 
 // 백엔드에서 내려주는 raw item
@@ -116,6 +116,8 @@ export default function SwipePage() {
   // 🔥 최초 fetch 여부 체크용 ref
   const didInitRef = React.useRef(false);
 
+  const navigate = useNavigate();
+  
   // ✅ 최초 1회: 초기 추천 리스트(fetch)
   React.useEffect(() => {
     if (didInitRef.current) return; // 이미 한 번 호출했으면 무시
@@ -169,11 +171,26 @@ export default function SwipePage() {
 
   async function handleTopSwiped(dir: "left" | "right" | "up", item: Restaurant) {
     const action = mapDirToAction(dir);
+    const overlayHoldMs = 700;
     try {
-      await http.post("/main/feed/swipe", {
+      await http.post("/main/feed/swipe", 
+        {
         restaurantId: item.restaurant_id,
         action,
-      });
+      },
+      {
+        headers:{
+          Authorization: "Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIyIiwiaWF0IjoxNzYzMTk3NTcyLCJleHAiOjE3NjMyMDExNzJ9.WpkZlLu4ZRSTBfBMhMbUjhbPqWqPl_CfCyTxeWHDsT0",
+        },
+      }
+    );
+
+    if (dir === "right") {
+      setTimeout(() => {
+        navigate("/");
+      }, overlayHoldMs); // 700ms 정도
+      return;
+    }
     } catch (err) {
       console.error("[SwipePage] 스와이프 액션 전송 실패:", err);
     }
