@@ -61,7 +61,7 @@ public class Plan extends BaseEntity {
 	@Column(name = "plan_geom", columnDefinition = "geometry(Point,4326)", nullable = false)
 	private Point planGeom;
 
-	@Column(name = "radius_m", nullable = false)
+	@Column(name = "radius_m")
 	private Integer radiusM;
 
 	// DateTime? LocalDateTime?
@@ -91,4 +91,19 @@ public class Plan extends BaseEntity {
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "restaurant_id")
 	private Restaurant restaurant;
+
+	// 결정 도구 설정용 setter
+	public void setDecisionTool(PlanDecisionTool decisionTool) {
+		this.decisionTool = decisionTool;
+	}
+
+	// 상태 변경용 setter
+	public void setStatus(PlanStatus status) {
+		this.status = status;
+	}
+
+	// 확정 식당 설정용 setter
+	public void setRestaurant(Restaurant restaurant) {
+		this.restaurant = restaurant;
+	}
 }
