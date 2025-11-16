@@ -19,7 +19,7 @@ import lombok.Setter;
 	description = "스와이프 액션 요청",
 	example = """
 		{
-		  "restaurantId": 1001,
+		  "restaurantId": 379,
 		  "action": "SELECT"
 		}
 		"""

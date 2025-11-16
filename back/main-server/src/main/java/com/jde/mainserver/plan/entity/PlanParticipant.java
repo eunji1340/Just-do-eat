@@ -42,7 +42,7 @@ public class PlanParticipant {
     private Plan plan;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
+    @JoinColumn(name = "user_id", nullable = false)
     private Member user;
 
     @Enumerated(EnumType.STRING)

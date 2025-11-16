@@ -19,7 +19,6 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import javax.swing.text.html.Option;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -31,6 +30,10 @@ public interface RestaurantRepository extends JpaRepository<Restaurant, Long>, J
 	/** 여러 ID로 일괄 조회 (피드/추천용) - hours 포함 */
 	@EntityGraph(attributePaths = {"hours"})
 	List<Restaurant> findAllByIdIn(Collection<Long> ids);
+	
+	/** 여러 ID로 일괄 조회 (약속 생성용) - hours 제외 (성능 최적화) */
+	@Query("SELECT r FROM Restaurant r WHERE r.id IN :ids")
+	List<Restaurant> findAllByIdInWithoutHours(@Param("ids") Collection<Long> ids);
 
 	/** 반경 내 + 거리순 정렬 (페이징) */
 	@Query(
