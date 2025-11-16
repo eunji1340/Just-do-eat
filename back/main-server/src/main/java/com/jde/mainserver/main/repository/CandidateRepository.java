@@ -23,6 +23,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -208,13 +210,20 @@ public class CandidateRepository {
 			// 개인 선호 점수 (UserRestaurantState.pref_score)
 			Float prefScore = extractPrefScore(stateMap.get(r.getId()));
 
+			// 상호작용 및 행동 부스트 계산
+			UserRestaurantState state = stateMap.get(r.getId());
+			Boolean hasInteractionRecent = calculateHasInteractionRecent(state);
+			Float engagementBoost = calculateEngagementBoost(state);
+
 			return new PersonalScoreRequest.Candidate(
 				r.getId(),
 				tagPref,
 				distanceM,
 				isOpen,
 				priceRange,
-				prefScore
+				prefScore,
+				hasInteractionRecent,
+				engagementBoost
 			);
 		}).toList();
 	}
@@ -286,6 +295,86 @@ public class CandidateRepository {
 			return null;
 		}
 		return state.getPrefScore().floatValue();
+	}
+
+	/**
+	 * 최근 30일 내 상호작용 여부 계산
+	 * SAVE/SHARE/SELECT/VIEW 중 하나라도 최근 30일 내에 발생했으면 true
+	 */
+	private Boolean calculateHasInteractionRecent(UserRestaurantState state) {
+		if (state == null) {
+			return false;
+		}
+
+		Instant now = Instant.now();
+		Instant thirtyDaysAgo = now.minus(Duration.ofDays(30));
+
+		// updated_at이 최근 30일 내인지 확인
+		if (state.getUpdatedAt() != null && state.getUpdatedAt().isAfter(thirtyDaysAgo)) {
+			// 상호작용이 실제로 있었는지 확인
+			boolean hasInteraction = Boolean.TRUE.equals(state.getIsSaved())
+				|| state.getShareCount() > 0
+				|| state.getViewCount() > 0
+				|| state.getLastSwipe() != null;
+
+			if (hasInteraction) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * 최근 14일 내 행동 부스트 점수 계산
+	 * - SAVE: +0.15
+	 * - SHARE: +0.10
+	 * - SELECT: +0.20
+	 * - VIEW(첫 1회): +0.03
+	 * - 합산 상한: 0.25
+	 */
+	private Float calculateEngagementBoost(UserRestaurantState state) {
+		if (state == null) {
+			return null;
+		}
+
+		Instant now = Instant.now();
+		Instant fourteenDaysAgo = now.minus(Duration.ofDays(14));
+
+		double boost = 0.0;
+
+		// SAVE: is_saved = true이고 최근 14일 내 업데이트
+		if (Boolean.TRUE.equals(state.getIsSaved())
+			&& state.getUpdatedAt() != null
+			&& state.getUpdatedAt().isAfter(fourteenDaysAgo)) {
+			boost += 0.15;
+		}
+
+		// SHARE: share_count > 0이고 최근 14일 내 업데이트
+		if (state.getShareCount() > 0
+			&& state.getUpdatedAt() != null
+			&& state.getUpdatedAt().isAfter(fourteenDaysAgo)) {
+			boost += 0.10;
+		}
+
+		// SELECT: last_swipe = SELECT이고 last_swipe_at이 최근 14일 내
+		if (state.getLastSwipe() == com.jde.mainserver.main.entity.enums.SwipeAction.SELECT
+			&& state.getLastSwipeAt() != null
+			&& state.getLastSwipeAt().isAfter(fourteenDaysAgo)) {
+			boost += 0.20;
+		}
+
+		// VIEW: view_count == 1이고 최근 14일 내 업데이트 (첫 1회만)
+		if (state.getViewCount() == 1
+			&& state.getUpdatedAt() != null
+			&& state.getUpdatedAt().isAfter(fourteenDaysAgo)) {
+			boost += 0.03;
+		}
+
+		// 상한 0.25 적용
+		boost = Math.min(boost, 0.25);
+
+		return boost > 0.0 ? (float)boost : null;
 	}
 
 	/**

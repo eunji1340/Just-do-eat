@@ -69,6 +69,17 @@ public class MainCommandServiceImpl implements MainCommandService {
 			throw new MainException(MainErrorCode.NOT_FOUND_RESTAURANT);
 		}
 
+		// 현재 상태 조회 (최근성 가중치 계산용)
+		var stateKey = new UserRestaurantState.Key(userId, restaurantId);
+		var existingState = stateRepository.findById(stateKey).orElse(null);
+		boolean isRecentSelect = false;
+		if (existingState != null 
+			&& existingState.getLastSwipe() == SwipeAction.SELECT 
+			&& existingState.getLastSwipeAt() != null) {
+			Instant sevenDaysAgo = now.minus(Duration.ofDays(7));
+			isRecentSelect = existingState.getLastSwipeAt().isAfter(sevenDaysAgo);
+		}
+
 		// 1) 이벤트 저장 (append-only)
 		UserRestaurantEvent event = UserRestaurantEvent.builder()
 			.userId(userId)
@@ -85,12 +96,16 @@ public class MainCommandServiceImpl implements MainCommandService {
 		Instant cooldownUntil = null;
 		if (action == SwipeAction.SELECT) {
 			prefDelta = new BigDecimal("0.800");
+			// 최근 7일 내 SELECT에는 +10% 가중치 적용
+			if (isRecentSelect) {
+				prefDelta = prefDelta.multiply(new BigDecimal("1.1"));
+			}
 		} else if (action == SwipeAction.DISLIKE) {
 			prefDelta = new BigDecimal("-1.000");
 			// DISLIKE 시 쿨다운 종료 시각 설정 (7일 후)
 			cooldownUntil = now.plus(Duration.ofDays(7));
 		} else { // HOLD
-			prefDelta = new BigDecimal("-0.100");
+			prefDelta = new BigDecimal("-0.05");
 		}
 
 		// 신규 생성 시 초기값은 증분과 동일하게 부여
@@ -118,27 +133,28 @@ public class MainCommandServiceImpl implements MainCommandService {
 			tagDeltaConf = new BigDecimal("0.30");
 		} else if (action == SwipeAction.DISLIKE) {
 			tagDeltaScore = new BigDecimal("-0.20");
-			tagDeltaConf = new BigDecimal("0.30");
+			tagDeltaConf = new BigDecimal("0.20");
 		} else { // HOLD
-			tagDeltaScore = new BigDecimal("-0.02");
-			tagDeltaConf = new BigDecimal("0.05");
+			tagDeltaScore = BigDecimal.ZERO;
+			tagDeltaConf = BigDecimal.ZERO;
 		}
 
 		// 1/sqrt(1+n) 완충은 DB 집계 필요하므로 MVP에선 균등 분배로 단순화
 		for (var rt : tagRows) {
+			// 신규 생성 시 초기값은 증분과 동일하게 부여 (INSERT 시 initScore/initConf 사용)
+			// 업데이트 시에는 deltaScore/deltaConf를 더함
 			userTagPrefRepository.upsertIncrement(
 				userId,
 				rt.getTagId(),
-				BigDecimal.ZERO,
-				BigDecimal.ZERO,
-				tagDeltaScore,
-				tagDeltaConf
+				tagDeltaScore,  // initScore: 신규 생성 시 초기값
+				tagDeltaConf,   // initConf: 신규 생성 시 초기값
+				tagDeltaScore,  // deltaScore: 업데이트 시 증분
+				tagDeltaConf    // deltaConf: 업데이트 시 증분
 			);
 		}
 
 		// 개인 선호 점수 조회
 		Double prefScore = null;
-		var stateKey = new UserRestaurantState.Key(userId, restaurantId);
 		var state = stateRepository.findById(stateKey).orElse(null);
 		if (state != null && state.getPrefScore() != null) {
 			prefScore = state.getPrefScore().doubleValue();
@@ -197,7 +213,7 @@ public class MainCommandServiceImpl implements MainCommandService {
 		if (isSaved) {
 			prefDelta = new BigDecimal("0.500");
 		} else {
-			prefDelta = currentIsSaved ? new BigDecimal("-0.500") : BigDecimal.ZERO;
+			prefDelta = currentIsSaved ? new BigDecimal("-0.3") : BigDecimal.ZERO;
 		}
 
 		// 신규 생성 시 초기값은 증분과 동일하게 부여
@@ -234,13 +250,15 @@ public class MainCommandServiceImpl implements MainCommandService {
 			}
 
 			for (var rt : tagRows) {
+				// 신규 생성 시 초기값은 증분과 동일하게 부여 (INSERT 시 initScore/initConf 사용)
+				// 업데이트 시에는 deltaScore/deltaConf를 더함
 				userTagPrefRepository.upsertIncrement(
 					userId,
 					rt.getTagId(),
-					BigDecimal.ZERO,
-					BigDecimal.ZERO,
-					tagDeltaScore,
-					tagDeltaConf
+					tagDeltaScore,  // initScore: 신규 생성 시 초기값
+					tagDeltaConf,   // initConf: 신규 생성 시 초기값
+					tagDeltaScore,  // deltaScore: 업데이트 시 증분
+					tagDeltaConf    // deltaConf: 업데이트 시 증분
 				);
 			}
 		}
@@ -282,13 +300,15 @@ public class MainCommandServiceImpl implements MainCommandService {
 			BigDecimal tagDeltaConf = prefDelta.multiply(new BigDecimal("0.3"));
 
 			for (var rt : tagRows) {
+				// 신규 생성 시 초기값은 증분과 동일하게 부여 (INSERT 시 initScore/initConf 사용)
+				// 업데이트 시에는 deltaScore/deltaConf를 더함
 				userTagPrefRepository.upsertIncrement(
 					userId,
 					rt.getTagId(),
-					BigDecimal.ZERO,
-					BigDecimal.ZERO,
-					tagDeltaScore,
-					tagDeltaConf
+					tagDeltaScore,  // initScore: 신규 생성 시 초기값
+					tagDeltaConf,   // initConf: 신규 생성 시 초기값
+					tagDeltaScore,  // deltaScore: 업데이트 시 증분
+					tagDeltaConf    // deltaConf: 업데이트 시 증분
 				);
 			}
 		}
@@ -312,7 +332,7 @@ public class MainCommandServiceImpl implements MainCommandService {
 		BigDecimal prefDelta;
 
 		if (currentShareCount == 0) {
-			prefDelta = new BigDecimal("0.6");
+			prefDelta = new BigDecimal("0.3");
 		} else if (currentShareCount >= 1 && currentShareCount <= 2) {
 			prefDelta = new BigDecimal("0.1");
 		} else {
@@ -330,13 +350,15 @@ public class MainCommandServiceImpl implements MainCommandService {
 			BigDecimal tagDeltaConf = prefDelta.multiply(new BigDecimal("0.6"));
 
 			for (var rt : tagRows) {
+				// 신규 생성 시 초기값은 증분과 동일하게 부여 (INSERT 시 initScore/initConf 사용)
+				// 업데이트 시에는 deltaScore/deltaConf를 더함
 				userTagPrefRepository.upsertIncrement(
 					userId,
 					rt.getTagId(),
-					BigDecimal.ZERO,
-					BigDecimal.ZERO,
-					tagDeltaScore,
-					tagDeltaConf
+					tagDeltaScore,  // initScore: 신규 생성 시 초기값
+					tagDeltaConf,   // initConf: 신규 생성 시 초기값
+					tagDeltaScore,  // deltaScore: 업데이트 시 증분
+					tagDeltaConf    // deltaConf: 업데이트 시 증분
 				);
 			}
 		}
@@ -413,13 +435,15 @@ public class MainCommandServiceImpl implements MainCommandService {
 			|| tagDeltaConf.compareTo(BigDecimal.ZERO) != 0) {
 			var tagRows = restaurantTagRepository.findByRestaurantId(restaurantId);
 			for (var rt : tagRows) {
+				// 신규 생성 시 초기값은 증분과 동일하게 부여 (INSERT 시 initScore/initConf 사용)
+				// 업데이트 시에는 deltaScore/deltaConf를 더함
 				userTagPrefRepository.upsertIncrement(
 					userId,
 					rt.getTagId(),
-					BigDecimal.ZERO,
-					BigDecimal.ZERO,
-					tagDeltaScore,
-					tagDeltaConf
+					tagDeltaScore,  // initScore: 신규 생성 시 초기값
+					tagDeltaConf,   // initConf: 신규 생성 시 초기값
+					tagDeltaScore,  // deltaScore: 업데이트 시 증분
+					tagDeltaConf    // deltaConf: 업데이트 시 증분
 				);
 			}
 		}

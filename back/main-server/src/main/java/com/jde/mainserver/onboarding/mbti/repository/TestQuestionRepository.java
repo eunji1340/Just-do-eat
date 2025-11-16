@@ -16,7 +16,7 @@ public interface TestQuestionRepository extends JpaRepository<TestQuestion, Long
 		String getQText();
 		String getCCode();
 		String getCText();
-		String[] getAxes();
+		String getAxesJson();
 	}
 
 	@Query(value = """
@@ -25,7 +25,7 @@ public interface TestQuestionRepository extends JpaRepository<TestQuestion, Long
 			q.text AS qText,
 			c.code AS cCode,
 			c.text AS cText,
-			COALESCE(array_agg(a.axis) FILTER (WHERE a.axis IS NOT NULL), ARRAY[]::text[]) AS axes
+			to_json(COALESCE(array_agg(a.axis) FILTER (WHERE a.axis IS NOT NULL), ARRAY[]::text[])) AS axesJson
 		FROM test_question q
 		JOIN test_choice c ON c.question_id = q.id
 		LEFT JOIN test_choice_axis a ON a.choice_id = c.id

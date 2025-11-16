@@ -23,4 +23,7 @@ public interface RestaurantTagRepository extends JpaRepository<RestaurantTag, Re
 
     /** 다건 식당의 태그들 */
     List<RestaurantTag> findByRestaurantIdIn(Collection<Long> restaurantIds);
+
+    /** 특정 태그를 가진 식당들의 RestaurantTag 조회 */
+    List<RestaurantTag> findByTagId(Long tagId);
 }
