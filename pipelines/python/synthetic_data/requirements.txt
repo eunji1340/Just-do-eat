@@ -1,0 +1,11 @@
+# Synthetic Data Generator Requirements
+# fastapi-score의 requirements.txt와 동일한 패키지들
+
+# Core dependencies
+pandas>=2.0.0
+numpy>=1.24.0
+pydantic>=2.12.0
+
+# Optional: DB 연결 시 필요
+# psycopg2-binary>=2.9.0
+
