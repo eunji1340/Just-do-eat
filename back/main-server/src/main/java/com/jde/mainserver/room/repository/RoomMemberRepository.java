@@ -29,6 +29,8 @@ public interface RoomMemberRepository extends JpaRepository<RoomMember, Long> {
     default List<RoomMember> activeUserInfo(Long roomId) {
         return findActiveMembersWithUserByRoomId(roomId);
     }
+
+    Optional<RoomMember> findByRoom_RoomIdAndUser_UserId(Long roomId, Long userId);
     // 같은 room에 같은 member가 이미 있는지 검사
 //    boolean existsByRoomAndUserAndIsDel(Room room, User user, Boolean isDel);
 //
