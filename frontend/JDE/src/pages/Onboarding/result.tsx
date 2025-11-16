@@ -59,18 +59,46 @@ export default function OnboardingResultPage() {
   }, [targetTypeId]);
 
   const handleShare = async () => {
-    if (!targetTypeId || sharing) return;
+    if (!targetTypeId || sharing || !resultDetail) return;
     
     setSharing(true);
+    
+    // 공유할 URL 생성
+    const shareUrl = `${window.location.origin}/onboarding/result?typeId=${targetTypeId}`;
+    const shareText = `나의 먹BTI 유형은 ${resultDetail.label} (${resultDetail.code})입니다!\n${resultDetail.nickname}\n\n${shareUrl}`;
+    
     try {
-      await customAxios({
-        method: 'POST',
-        url: '/onboarding/share',
-        data: { typeId: targetTypeId },
-        meta: { authRequired: false }
-      });
+      // Web Share API 지원 여부 확인
+      if (navigator.share) {
+        await navigator.share({
+          title: '내 먹BTI 결과',
+          text: shareText,
+          url: shareUrl
+        });
+      } else {
+        // 폴백: 클립보드에 URL 복사
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          await navigator.clipboard.writeText(shareUrl);
+          alert('링크가 클립보드에 복사되었습니다!');
+        } else {
+          // 클립보드 API도 지원하지 않는 경우
+          alert(`공유 링크: ${shareUrl}`);
+        }
+      }
     } catch (err) {
-      console.error('공유하기 요청 실패:', err);
+      // AbortError는 사용자가 공유를 취소한 경우이므로 무시
+      if (err instanceof Error && err.name !== 'AbortError') {
+        console.error('공유 실패:', err);
+        // 에러 발생 시에도 클립보드 복사 시도
+        try {
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            await navigator.clipboard.writeText(shareUrl);
+            alert('링크가 클립보드에 복사되었습니다!');
+          }
+        } catch (clipboardErr) {
+          alert(`공유 링크: ${shareUrl}`);
+        }
+      }
     } finally {
       setSharing(false);
     }
@@ -133,7 +161,7 @@ export default function OnboardingResultPage() {
               />
             </div>
           )}
-          <p className="m-0 text-sm text-[var(--color-muted)] mb-3">{resultDetail.nickname}</p>
+          <p className="m-0 text-sm text-[var(--color-fg)] mb-3">{resultDetail.nickname}</p>
           <p className="m-0 text-[var(--color-fg)]">{resultDetail.description}</p>
         </section>
 
