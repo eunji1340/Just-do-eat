@@ -30,6 +30,8 @@ public class AuthCommandService {
 
     // 온보딩 이관 저장소
     private final OnboardingSurveyStore onboardingSurveyStore;
+    // 온보딩 기반 태그 선호 초기화기
+    private final com.jde.mainserver.onboarding.service.OnboardingTagPrefInitializer onboardingTagPrefInitializer;
 
     // ⭐ 기본 지역 조회용
     private final RegionRepository regionRepository;
@@ -69,7 +71,12 @@ public class AuthCommandService {
 
         String sid = req.getSessionId();
         if (sid != null && !sid.isBlank()) {
+            // 세션 이관 + user_tag_pref 초기화(온보딩 결과 반영)
             onboardingSurveyStore.migrateSessionToUser(sid, member.getUserId());
+            onboardingTagPrefInitializer.applyFromStore(member.getUserId(), null);
+        } else {
+            // 세션 ID가 없더라도 혹시 유저 키로 저장된 온보딩이 있으면 적용
+            onboardingTagPrefInitializer.applyFromStore(member.getUserId(), null);
         }
     }
 
