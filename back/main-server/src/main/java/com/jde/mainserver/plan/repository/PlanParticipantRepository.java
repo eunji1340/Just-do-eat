@@ -27,4 +27,8 @@ public interface PlanParticipantRepository extends JpaRepository<PlanParticipant
 
 	Optional<PlanParticipant> findByPlan_PlanIdAndPlanRole(Long planId, PlanRole role);
 	Long countByPlan_PlanId(Long planId);
+
+	boolean existsByPlan_PlanIdAndUser_UserId(Long planId, Long userId);
+
 }
+
