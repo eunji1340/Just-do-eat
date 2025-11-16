@@ -11,6 +11,7 @@ import com.jde.mainserver.plan.entity.Plan;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface PlanRepository extends JpaRepository<Plan, Long> {
 	/**
@@ -18,4 +19,5 @@ public interface PlanRepository extends JpaRepository<Plan, Long> {
 	 */
 	List<Plan> findByRoomRoomIdOrderByCreatedAtDesc(Long roomId);
 
+	Optional<Plan> findByPlanId(Long planId);
 }
