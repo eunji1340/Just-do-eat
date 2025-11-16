@@ -276,16 +276,26 @@ export const handlers = [
     });
   }),
 
-  // 6) 온보딩 결과 공유: POST http://localhost:8080/onboarding/share
-  http.post('http://localhost:8080/onboarding/share', async ({ request }) => {
-    const body = (await request.json()) as { typeId?: string };
-    await delay(200);
+  // === 약속 상세 ===
+  http.get('http://localhost:8080/plans/:planId', async ({ params, request }) => {
+    await delay(400);
 
-    return HttpResponse.json({
-      success: true,
-      shareUrl: `https://example.com/share/${body.typeId}`,
-      message: '카카오톡으로 공유되었습니다.',
-    });
+    const url = new URL(request.url);
+    if (url.searchParams.get('variant') === 'error') {
+      return HttpResponse.json(
+        { message: '약속 상세를 불러오지 못했습니다.' },
+        { status: 500 },
+      );
+    }
+
+    const planId = params.planId as string;
+    const planDetail = resolvePlanDetailSample(planId);
+
+    if (url.searchParams.get('variant') === 'empty') {
+      planDetail.recommended = [];
+    }
+
+    return HttpResponse.json(planDetail);
   }),
 
   // === 인증 관련 API ===
