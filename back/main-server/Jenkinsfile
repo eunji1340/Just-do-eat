@@ -23,6 +23,8 @@ pipeline {
       steps {
         sh '''
           cd /var/jenkins_home/workspace/back/back
+	  docker compose -f docker-compose.yml --env-file .env down || true
+
           docker compose -f docker-compose.yml --env-file .env up -d --build
         '''
       }
