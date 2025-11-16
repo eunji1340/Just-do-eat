@@ -10,7 +10,8 @@ import org.springframework.http.HttpStatus;
 @AllArgsConstructor
 public enum RoomErrorCode implements BaseErrorCode {
 
-    NOT_FOUND_ROOM(HttpStatus.NOT_FOUND, "REST400", "잘못된 요청입니다.");
+    NOT_FOUND_ROOM(HttpStatus.NOT_FOUND, "REST400", "잘못된 요청입니다."),
+    EXPIRED_TOKEN(HttpStatus.NOT_FOUND, "REST400", "유효하지 않은 토큰입니다.");
 
     private final HttpStatus status;
     private final String code;

@@ -101,4 +101,17 @@ public class RoomConverter {
                 .restaurantImageUrl(firstImage)
                 .build();
     }
+
+    public CreateInviteLinkResponse toCreateInviteLinkResponse(String inviteLink) {
+        return CreateInviteLinkResponse.builder()
+                .inviteLink(inviteLink)
+                .build();
+    }
+
+    public JoinRoomResponse toJoinRoomResponse(Long roomId, JoinStatus joinStatus) {
+        return JoinRoomResponse.builder()
+                .roomId(roomId)
+                .joinStatus(joinStatus)
+                .build();
+    }
 }

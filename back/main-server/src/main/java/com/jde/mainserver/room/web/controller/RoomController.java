@@ -2,16 +2,14 @@ package com.jde.mainserver.room.web.controller;
 
 import com.jde.mainserver.global.annotation.AuthUser;
 import com.jde.mainserver.global.api.ApiResponse;
-import com.jde.mainserver.global.exception.CustomException;
-import com.jde.mainserver.global.exception.code.GeneralErrorCode;
 import com.jde.mainserver.member.entity.Member;
+import com.jde.mainserver.room.service.command.CreateInviteLinkCommandService;
 import com.jde.mainserver.room.service.command.CreateRoomCommandService;
+import com.jde.mainserver.room.service.command.JoinRoomCommandService;
 import com.jde.mainserver.room.service.query.GetMyRoomQueryService;
 import com.jde.mainserver.room.service.query.RoomDetailQueryService;
 import com.jde.mainserver.room.web.dto.request.CreateRoomRequest;
-import com.jde.mainserver.room.web.dto.response.CreateRoomResponse;
-import com.jde.mainserver.room.web.dto.response.GetMyRoomResponse;
-import com.jde.mainserver.room.web.dto.response.RoomDetailResponse;
+import com.jde.mainserver.room.web.dto.response.*;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -31,6 +29,8 @@ public class RoomController {
     private final CreateRoomCommandService createRoomCommandService; // 명령(쓰기) 서비스 주입
     private final GetMyRoomQueryService getMyRoomQueryService;
     private final RoomDetailQueryService roomDetailQueryService;
+    private final CreateInviteLinkCommandService createInviteLinkCommandService;
+    private final JoinRoomCommandService joinRoomCommandService;
 
     @PostMapping
     @Operation(summary = "모임 생성", description = "새로운 모임을 생성합니다.")
@@ -51,6 +51,20 @@ public class RoomController {
     public ApiResponse<RoomDetailResponse> roomDetail(@AuthUser Member user, @PathVariable Long roomId) {
         RoomDetailResponse roomDetailResponse = roomDetailQueryService.roomDetail(user, roomId);
         return ApiResponse.onSuccess(roomDetailResponse);
+    }
+
+    @PostMapping("/{roomId}/invite")
+    @Operation(summary = "모임 초대 링크 생성", description = "특정 모임에 대한 초대 링크를 생성합니다.")
+    public ApiResponse<CreateInviteLinkResponse> createInviteLink(@AuthUser Member user, @PathVariable Long roomId){
+        CreateInviteLinkResponse inviteLinkResponse = createInviteLinkCommandService.createInvite(user, roomId);
+        return ApiResponse.onSuccess(inviteLinkResponse);
+    }
+
+    @PostMapping("/join")
+    @Operation(summary = "초대 링크를 통해서 모임 가입", description = "특정 모임에 초대 링크를 통해서 모임 가입")
+    public ApiResponse<JoinRoomResponse> joinRoom(@RequestParam String token, @AuthUser Member user) {
+        JoinRoomResponse joinRoomResponse = joinRoomCommandService.joinRoom(token, user);
+        return ApiResponse.onSuccess(joinRoomResponse);
     }
 }
 
