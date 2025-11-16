@@ -10,7 +10,8 @@ import org.springframework.http.HttpStatus;
 @AllArgsConstructor
 public enum RoomMemberErrorCode implements BaseErrorCode {
 
-    NOT_FOUND_USER(HttpStatus.BAD_REQUEST, "REST400", "잘못된 요청입니다.");
+    NOT_FOUND_USER(HttpStatus.BAD_REQUEST, "REST400", "잘못된 요청입니다."),
+    NOT_MEMBER(HttpStatus.BAD_REQUEST, "REST400", "멤버가 아닙니다.");
 
     private final HttpStatus status;
     private final String code;

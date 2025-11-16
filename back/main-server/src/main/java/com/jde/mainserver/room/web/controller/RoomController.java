@@ -6,6 +6,7 @@ import com.jde.mainserver.member.entity.Member;
 import com.jde.mainserver.room.service.command.CreateInviteLinkCommandService;
 import com.jde.mainserver.room.service.command.CreateRoomCommandService;
 import com.jde.mainserver.room.service.command.JoinRoomCommandService;
+import com.jde.mainserver.room.service.command.LeftRoomCommandService;
 import com.jde.mainserver.room.service.query.GetMyRoomQueryService;
 import com.jde.mainserver.room.service.query.RoomDetailQueryService;
 import com.jde.mainserver.room.web.dto.request.CreateRoomRequest;
@@ -31,6 +32,7 @@ public class RoomController {
     private final RoomDetailQueryService roomDetailQueryService;
     private final CreateInviteLinkCommandService createInviteLinkCommandService;
     private final JoinRoomCommandService joinRoomCommandService;
+    private final LeftRoomCommandService leftRoomCommandService;
 
     @PostMapping
     @Operation(summary = "모임 생성", description = "새로운 모임을 생성합니다.")
@@ -65,6 +67,13 @@ public class RoomController {
     public ApiResponse<JoinRoomResponse> joinRoom(@RequestParam String token, @AuthUser Member user) {
         JoinRoomResponse joinRoomResponse = joinRoomCommandService.joinRoom(token, user);
         return ApiResponse.onSuccess(joinRoomResponse);
+    }
+
+    @DeleteMapping("/{roomId}")
+    @Operation(summary = "멤버가 모임에서 나가는 API", description = "모임이 0명이 되면 모임도 같이 삭제")
+    public ApiResponse<LeftRoomResponse> leftRoom(@AuthUser Member user, @PathVariable Long roomId) {
+        LeftRoomResponse leftRoomResponse = leftRoomCommandService.leftRoom(user, roomId);
+        return ApiResponse.onSuccess(leftRoomResponse);
     }
 }
 

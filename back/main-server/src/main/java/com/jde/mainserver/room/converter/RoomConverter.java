@@ -114,4 +114,11 @@ public class RoomConverter {
                 .joinStatus(joinStatus)
                 .build();
     }
+
+    public LeftRoomResponse toLeftRoomResponse(Long roomId) {
+        return LeftRoomResponse.builder()
+                .roomId(roomId)
+                .status("LEFT")
+                .build();
+    }
 }
