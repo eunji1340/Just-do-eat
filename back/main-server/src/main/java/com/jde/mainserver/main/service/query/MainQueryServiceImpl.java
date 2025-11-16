@@ -337,7 +337,8 @@ public class MainQueryServiceImpl implements MainQueryService {
 
 		// 점수 계산
 		var req = PersonalScoreRequest.of(userId, userTagPref, candidates);
-		var res = scoreEngineHttpClient.score(req);
+		// ML 모델 사용 (기본값: ml_v1)
+		var res = scoreEngineHttpClient.score(req, "ml_v1");
 
 		// 점수순 정렬
 		var sortedItems = res.items().stream()
@@ -913,7 +914,8 @@ public class MainQueryServiceImpl implements MainQueryService {
 			));
 		var candidates = candidateRepository.getCandidates(userId, ctx);
 		var req = PersonalScoreRequest.of(userId, userTagPref, candidates);
-		var res = scoreEngineHttpClient.score(req);
+		// ML 모델 사용 (기본값: ml_v1)
+		var res = scoreEngineHttpClient.score(req, "ml_v1");
 
 		// 점수 높은 순으로 정렬 (내림차순)
 		var sortedItems = res.items().stream()

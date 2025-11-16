@@ -169,9 +169,55 @@ RESTAURANT_TAG_CSV = None
 - ✅ 타입 정리: has_interaction_recent → 0/1
 - ✅ 클래스 밸런스 확인: Positive 비율 5%~40% 권장
 
+## ML 모델 학습
+
+### 1. 데이터 생성
+```bash
+python generate_ml_dataset.py
+```
+
+### 2. 모델 학습
+```bash
+python train_ml_model.py
+```
+
+### 3. 모델을 FastAPI로 복사
+```bash
+python copy_model_to_fastapi.py
+```
+
+또는 환경변수로 모델 경로 지정:
+```bash
+export ML_MODEL_PATH=/path/to/lgbm_ml_v1.pkl
+```
+
+## FastAPI 통합
+
+### 환경변수 설정
+- `ML_MODEL_PATH`: ML 모델 파일 경로 (선택사항, 기본: `fastapi-score/models/lgbm_ml_v1.pkl`)
+- `ML_ALPHA`: 규칙 점수 가중치 (기본: 0.7)
+
+### API 사용
+```bash
+# 규칙 엔진 사용 (기본)
+POST /score/personal?algo=cbf_v1.2
+
+# ML 결합 사용
+POST /score/personal?algo=ml_v1
+```
+
 ## 의존성
 
+### 데이터 생성용
 - pandas
 - numpy
-- fastapi-score의 schemas 및 services (상대 경로로 import)
+- pydantic
+- pyarrow (Parquet 저장용)
+
+### 모델 학습용
+- lightgbm
+- scikit-learn
+
+### FastAPI용
+- fastapi-score의 requirements.txt 참조
 

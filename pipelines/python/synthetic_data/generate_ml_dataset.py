@@ -903,9 +903,9 @@ def step5_generate_training_dataset(
     # ==================== 라벨 생성 ====================
     print(f"[Step 5-2] 이진 라벨 생성 중...")
     
-    # y=1: action_count_select>0 또는 pref_score≥5
+    # y=1: action_count_select>0
     # y=0: 그 외 (무반응은 0으로 처리)
-    df["y"] = ((df["action_count_select"] > 0) | (df["pref_score"] >= 5.0)).astype(int)
+    df["y"] = (df["action_count_select"] > 0).astype(int)
     
     # 클래스 밸런스 확인
     pos_ratio = df["y"].mean()
@@ -934,6 +934,29 @@ def step5_generate_training_dataset(
         df_val = df.iloc[n_train:n_train+n_val].copy()
         df_test = df.iloc[n_train+n_val:].copy()
         
+        # 검증 세트에 positive 샘플이 있는지 확인
+        val_pos_ratio = df_val["y"].mean() if "y" in df_val.columns else 0.0
+        if val_pos_ratio == 0.0:
+            print(f"  - [WARN] 검증 세트에 positive 샘플이 없습니다! Stratified split으로 재분할합니다.")
+            # Stratified split 사용 (클래스 비율 유지)
+            from sklearn.model_selection import train_test_split
+            
+            # Train/Val+Test 분할 (70% / 30%)
+            df_train, df_temp = train_test_split(
+                df, 
+                test_size=0.3, 
+                stratify=df["y"], 
+                random_state=42
+            )
+            # Val/Test 분할 (15% / 15%)
+            df_val, df_test = train_test_split(
+                df_temp,
+                test_size=0.5,
+                stratify=df_temp["y"],
+                random_state=42
+            )
+            print(f"  - [OK] Stratified split 완료")
+        
         # 사용자 누수 확인 (같은 user_id가 여러 세트에 있는지)
         train_users = set(df_train["user_id"].unique())
         val_users = set(df_val["user_id"].unique())
@@ -949,16 +972,25 @@ def step5_generate_training_dataset(
         else:
             print(f"  - [OK] 사용자 누수 없음")
         
-        print(f"  - Train: {len(df_train)}개 행 ({len(df_train)/n_total:.1%})")
-        print(f"  - Val: {len(df_val)}개 행 ({len(df_val)/n_total:.1%})")
-        print(f"  - Test: {len(df_test)}개 행 ({len(df_test)/n_total:.1%})")
+        # 분할 후 클래스 밸런스 확인
+        train_pos_ratio = df_train["y"].mean() if "y" in df_train.columns else 0.0
+        val_pos_ratio = df_val["y"].mean() if "y" in df_val.columns else 0.0
+        test_pos_ratio = df_test["y"].mean() if "y" in df_test.columns else 0.0
         
-        # 분할된 데이터셋 저장
+        print(f"  - Train: {len(df_train)}개 행 ({len(df_train)/n_total:.1%}), Positive: {train_pos_ratio:.2%}")
+        print(f"  - Val: {len(df_val)}개 행 ({len(df_val)/n_total:.1%}), Positive: {val_pos_ratio:.2%}")
+        print(f"  - Test: {len(df_test)}개 행 ({len(df_test)/n_total:.1%}), Positive: {test_pos_ratio:.2%}")
+        
+        # 분할된 데이터셋 저장 (CSV + Parquet)
         df_train.to_csv(OUTPUT_DIR / "ml_training_dataset_train.csv", index=False, encoding="utf-8-sig")
         df_val.to_csv(OUTPUT_DIR / "ml_training_dataset_val.csv", index=False, encoding="utf-8-sig")
         df_test.to_csv(OUTPUT_DIR / "ml_training_dataset_test.csv", index=False, encoding="utf-8-sig")
         
-        print(f"  - 저장 완료: train/val/test CSV 파일")
+        # Parquet 저장 (더 빠른 로딩)
+        df_train.to_parquet(OUTPUT_DIR / "train.parquet", index=False, engine="pyarrow")
+        df_val.to_parquet(OUTPUT_DIR / "valid.parquet", index=False, engine="pyarrow")
+        
+        print(f"  - 저장 완료: train/val/test CSV + train/valid Parquet 파일")
     else:
         print(f"  - [WARN] timestamp 정보 없음, 분할 건너뜀")
         df_train = df
@@ -972,10 +1004,13 @@ def step5_generate_training_dataset(
     else:
         df_final = df
     
-    # CSV 저장
+    # CSV + Parquet 저장
     df_final.to_csv(OUTPUT_TRAINING_DATASET, index=False, encoding="utf-8-sig")
+    df_final.to_parquet(OUTPUT_DIR / "dataset_v1.parquet", index=False, engine="pyarrow")
     
-    print(f"[Step 5] 완료: {len(df_final)}개 행 생성 → {OUTPUT_TRAINING_DATASET}")
+    print(f"[Step 5] 완료: {len(df_final)}개 행 생성")
+    print(f"  - CSV: {OUTPUT_TRAINING_DATASET}")
+    print(f"  - Parquet: {OUTPUT_DIR / 'dataset_v1.parquet'}")
     print(f"  - 총 컬럼 수: {len(df_final.columns)}")
     print(f"  - Score 범위: [{df_final['score'].min():.4f}, {df_final['score'].max():.4f}]")
     print(f"  - 주요 피처:")
