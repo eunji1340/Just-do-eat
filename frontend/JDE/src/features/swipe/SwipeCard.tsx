@@ -48,7 +48,7 @@ export default function SwipeCard({ data, onMove, onSwiped }: Props) {
               <div className="flex items-center justify-between text-sm text-gray-500">
                 <span>{data.category ?? '카테고리'}</span>
                 <span>
-                  구글 별점 <b className="text-gray-800">{(data.rating ?? 0).toFixed(1)}</b>
+                  카카오 별점 <b className="text-gray-800">{(data.rating ?? 0).toFixed(1)}</b>
                 </span>
               </div>
 
@@ -74,7 +74,7 @@ export default function SwipeCard({ data, onMove, onSwiped }: Props) {
                 </div>
                 <div className="flex items-start gap-2">
                   <MapPin className="w-4 h-4 mt-0.5 text-gray-500" />
-                  <span className="leading-5">강남역에서 {formatDistance(data.distance_m)}</span>
+                  <span className="leading-5">역삼역에서 {formatDistance(data.distance_m)}</span>
                 </div>
               </div>
             </div>
