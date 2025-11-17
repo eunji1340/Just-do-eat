@@ -23,16 +23,16 @@ import { rankingMockData, categoryMockData } from "../model/mockData";
  * 카테고리별 아이콘 매핑
  */
 const categoryIconMap: Record<string, LucideIcon> = {
-  korean: Soup,        // 한식
-  chinese: UtensilsCrossed,  // 중식
-  japanese: Fish,      // 일식
-  western: Wine,       // 양식
-  snack: Salad,        // 분식
-  chicken: Drumstick,  // 치킨
-  pizza: Pizza,        // 피자
-  cafe: Coffee,        // 카페
-  meat: Beef,          // 고기
-  seafood: Fish,       // 해산물
+  korean: Soup, // 한식
+  chinese: UtensilsCrossed, // 중식
+  japanese: Fish, // 일식
+  western: Wine, // 양식
+  snack: Salad, // 분식
+  chicken: Drumstick, // 치킨
+  pizza: Pizza, // 피자
+  cafe: Coffee, // 카페
+  meat: Beef, // 고기
+  seafood: Fish, // 해산물
 };
 
 interface RecommendationSectionProps {
@@ -45,7 +45,9 @@ interface RecommendationSectionProps {
  * - 상권 인기식당 Top10
  * - 음식 종류별 Best
  */
-export default function RecommendationSection({ districtName = "역삼역" }: RecommendationSectionProps) {
+export default function RecommendationSection({
+  districtName = "역삼역",
+}: RecommendationSectionProps) {
   const navigate = useNavigate();
 
   /**
@@ -76,9 +78,9 @@ export default function RecommendationSection({ districtName = "역삼역" }: Re
       {/* 1. 상권 인기식당 Top10 */}
       <section>
         {/* 섹션 헤더 */}
-        <div className="flex items-center gap-3 mb-5">
-          <TrendingUp className="w-8 h-8 text-primary" />
-          <h2 className="text-2xl font-extrabold">{districtName} 인기 식당 Top10</h2>
+        <div className="flex items-center gap-3 mb-3">
+          <TrendingUp className="w-6 h-6 text-primary" />
+          <h2 className="text-lg font-bold">{districtName} 인기 식당 Top10</h2>
         </div>
 
         {/* 가로 스크롤 카드 리스트 */}
@@ -96,9 +98,9 @@ export default function RecommendationSection({ districtName = "역삼역" }: Re
       {/* 2. 음식 종류별 Best */}
       <section>
         {/* 섹션 헤더 */}
-        <div className="flex items-center gap-3 mb-5">
-          <UtensilsCrossed className="w-8 h-8 text-primary" />
-          <h2 className="text-2xl font-extrabold">골라먹는 {districtName}  맛집</h2>
+        <div className="flex items-center gap-3 mb-3">
+          <UtensilsCrossed className="w-6 h-6 text-primary" />
+          <h2 className="text-lg font-bold">골라먹는 {districtName} 맛집</h2>
         </div>
 
         {/* 그리드 레이아웃 - 배민 스타일 카테고리 선택 */}
