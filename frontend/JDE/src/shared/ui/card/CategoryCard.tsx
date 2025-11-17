@@ -22,7 +22,10 @@ interface CategoryCardProps extends React.HTMLAttributes<HTMLDivElement> {
  * - 클릭 시 스와이프 피드로 이동 (해당 카테고리 필터)
  */
 export const CategoryCard = React.forwardRef<HTMLDivElement, CategoryCardProps>(
-  ({ id, categoryName, icon: Icon, imageUrl, className, onClick, ...props }, ref) => {
+  (
+    { id, categoryName, icon: Icon, imageUrl, className, onClick, ...props },
+    ref
+  ) => {
     return (
       <div
         ref={ref}
@@ -43,18 +46,21 @@ export const CategoryCard = React.forwardRef<HTMLDivElement, CategoryCardProps>(
         {/* 원형 아이콘/이미지 */}
         <div className="p-3 rounded-full overflow-hidden bg-muted shadow-md flex items-center justify-center">
           {Icon ? (
-            <Icon className="w-12 h-12 text-[var(--color-primary)]" strokeWidth={2} />
+            <Icon
+              className="w-6 h-6 text-[var(--color-primary)]"
+              strokeWidth={2}
+            />
           ) : imageUrl ? (
             <img
               src={imageUrl}
               alt={categoryName}
-              className="w-12 h-12 object-cover"
+              className="w-6 h-6 object-cover"
             />
           ) : null}
         </div>
 
         {/* 카테고리명 */}
-        <p className="text-sm font-medium text-card-foreground text-center">
+        <p className="text-xs font-medium text-card-foreground text-center">
           {categoryName}
         </p>
       </div>
