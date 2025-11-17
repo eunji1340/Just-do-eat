@@ -16,8 +16,8 @@ public class CorsConfig {
         config.setAllowCredentials(true);
         config.setAllowedOrigins(List.of(
                 "http://localhost:5173",
-                "http://k13a701.p.ssafy.io",
-                "https://k13a701.p.ssafy.io"
+                "https://www.justdoeat.ai.kr",
+                "https://justdoeat.ai.kr"
         ));
         config.setAllowedMethods(List.of("*"));
         config.setAllowedHeaders(List.of("*"));
