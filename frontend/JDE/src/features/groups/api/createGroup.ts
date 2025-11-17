@@ -1,29 +1,28 @@
-// 목적: 그룹 생성 API POST 요청 (단일 책임: 네트워크 호출만)
-// 사용: UI/폼에서는 이 함수만 호출하여 생성 수행
-
 // src/features/groups/api/createGroup.ts
 
 import http from "@/shared/api/http";
 
 export type CreateGroupPayload = { roomName: string };
-export type CreateGroupResult = { id: number };
 
-// TODO: 로그인 완료시 인터셉터로 변경
+// 백엔드가 주는 키에 맞춰서 타입도 roomId로 맞춰줍니다.
+export type CreateGroupResult = { roomId: number };
+
 export async function createGroup(
   payload: CreateGroupPayload
 ): Promise<CreateGroupResult> {
   try {
-    const res = await http.post(
-      "/rooms",
-      payload,
-      {
-        headers: {
-          Authorization: `Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIyIiwiaWF0IjoxNzYzMzU4OTEzLCJleHAiOjE3NjMzNjI1MTN9.xlz-cyZ0ifYLF6sbw7IVeFxz1sMy8XWoRMauqk2axCk`, // 🔥 여기!!
-        },
-      }
-    );
+    const res = await http.post("/rooms", payload);
 
-    return { id: res.data.id };
+    // 응답 래핑 구조: { status, code, message, data: { roomId } }
+    const roomId =
+      res.data?.data?.roomId ??
+      res.data?.roomId; // 혹시 구조가 다르면 이쪽에서라도 잡히게
+
+    if (!roomId && roomId !== 0) {
+      throw new Error("생성된 모임 ID를 찾을 수 없습니다.");
+    }
+
+    return { roomId };
   } catch (error: any) {
     const msg =
       error?.response?.data?.detail ||
