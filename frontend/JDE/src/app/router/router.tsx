@@ -18,6 +18,8 @@ import SearchStartPage from "@/pages/search/SearchStartPage";
 import SearchResultPage from "@/pages/search/SearchResultPage";
 import PlanDetailPage from "@/pages/plan/PlanDetailPage";
 import FavoritesPage from "@/pages/favorites/FavoritesPage";
+import InvitePage from "@/pages/groups/InvitePage";
+
 
 const router = createBrowserRouter([
   {
@@ -108,6 +110,14 @@ const router = createBrowserRouter([
       </AppLayout>
     ),
   },
+  {
+    path: "/invite",
+    element: (
+      <AppLayout>
+        <InvitePage />
+      </AppLayout>
+    )
+  }
 ]);
 
 export default function AppRouter() {
