@@ -47,7 +47,7 @@ export default function MukbtiFlow({ onDone }: MukbtiFlowProps) {
       meta: { authRequired: false }
     })
       .then((response: any) => {
-        const data: MukbtiQuestionsResponse = response.data;
+        const data: MukbtiQuestionsResponse = response.data.data;
         setQuestions(data.items || []);
         setLoading(false);
       })

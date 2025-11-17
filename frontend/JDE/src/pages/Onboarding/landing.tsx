@@ -9,7 +9,7 @@ export default function OnboardingLanding() {
       {/* 서비스 소개 */}
       <div className="text-center">
         <h1 className="text-4xl mb-4 font-bold text-[var(--color-fg)]">🍽️ JUST DO EAT</h1>
-        <p className="text-lg text-[var(--color-muted)] leading-relaxed">
+        <p className="text-lg text-[var(--color-fg)] leading-relaxed">
           나만의 음식 취향을 발견하고<br />
           맞춤형 맛집을 추천받아보세요!
         </p>
@@ -33,7 +33,7 @@ export default function OnboardingLanding() {
 
         <button
           onClick={() => nav('/login')}
-          className="py-4 px-8 text-base rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-muted)] cursor-pointer hover:bg-[var(--color-border)] transition-colors"
+          className="py-4 px-8 text-base rounded-xl border-2 border-[var(--color-muted-foreground)] bg-[var(--color-surface)] font-bold text-[var(--color-fg)] cursor-pointer hover:bg-[var(--color-border)] transition-colors"
         >
           로그인
         </button>
