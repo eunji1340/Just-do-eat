@@ -18,6 +18,7 @@ import SearchStartPage from "@/pages/search/SearchStartPage";
 import SearchResultPage from "@/pages/search/SearchResultPage";
 import PlanDetailPage from "@/pages/plan/PlanDetailPage";
 import FavoritesPage from "@/pages/favorites/FavoritesPage";
+import MyPage from "@/pages/my/MyPage";
 
 const router = createBrowserRouter([
   {
@@ -105,6 +106,14 @@ const router = createBrowserRouter([
     element: (
       <AppLayout>
         <FavoritesPage />
+      </AppLayout>
+    ),
+  },
+  {
+    path: "/my",
+    element: (
+      <AppLayout>
+        <MyPage />
       </AppLayout>
     ),
   },
