@@ -61,9 +61,9 @@ export default function BingoBoard({ items, value, onChange }: Props) {
           );
         })}
       </div>
-      <small className="text-[var(--color-muted)] text-center">
+      {/* <small className="text-[var(--color-muted)] text-center">
         클릭할 때마다: SKIP → LIKE(초록) → DISLIKE(빨강) → SKIP
-      </small>
+      </small> */}
     </div>
   );
 }

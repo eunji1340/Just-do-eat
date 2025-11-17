@@ -15,7 +15,9 @@ interface SignupFormProps {
     ageGroup: AgeGroup;
     gender: Gender;
   };
+  previewUrl: string | null;
   handleChange: (field: string, value: string) => void;
+  handleImageSelect: (file: File | null) => void;
   submitting: boolean;
   error: string | null;
   handleSubmit: (e: FormEvent) => void;
@@ -24,7 +26,9 @@ interface SignupFormProps {
 
 export default function SignupForm({
   formData,
+  previewUrl,
   handleChange,
+  handleImageSelect,
   submitting,
   error,
   handleSubmit,
@@ -70,6 +74,37 @@ export default function SignupForm({
             placeholder="비밀번호 재입력"
             className="p-3 rounded-lg border border-[var(--color-border)] bg-[var(--color-bg)] text-[var(--color-fg)] text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
           />
+        </div>
+
+        <div className="grid gap-2">
+          <label htmlFor="profileImage" className="font-bold text-sm text-[var(--color-fg)]">
+            프로필 이미지
+          </label>
+          <input
+            id="profileImage"
+            type="file"
+            accept="image/*"
+            onChange={(event) => handleImageSelect(event.target.files?.[0] ?? null)}
+            className="p-3 rounded-lg border border-[var(--color-border)] bg-[var(--color-bg)] text-[var(--color-fg)] text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
+          />
+          {previewUrl || formData.imageUrl ? (
+            <div className="flex items-center gap-3">
+              <img
+                src={previewUrl ?? formData.imageUrl ?? ''}
+                alt="프로필 미리보기"
+                className="w-16 h-16 rounded-full object-cover border border-[var(--color-border)]"
+              />
+              <button
+                type="button"
+                onClick={() => handleImageSelect(null)}
+                className="text-sm text-[var(--color-primary)] hover:underline"
+              >
+                이미지 제거
+              </button>
+            </div>
+          ) : (
+            <span className="text-xs text-[var(--color-muted-fg)]">선택된 이미지가 없습니다.</span>
+          )}
         </div>
 
         <div className="grid gap-2">
