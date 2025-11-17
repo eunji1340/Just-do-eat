@@ -79,7 +79,7 @@ public class Plan extends BaseEntity {
 	@JoinColumn(name = "restaurant_id")
 	private Restaurant restaurant;
 
-	@OneToMany(mappedBy = "plan", fetch = FetchType.LAZY)
+	@OneToMany(mappedBy = "plan", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
 	private List<PlanParticipant> planParticipantList;
 
 	// 결정 도구 설정용 setter

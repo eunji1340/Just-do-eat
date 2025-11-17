@@ -10,7 +10,8 @@ import org.springframework.http.HttpStatus;
 @AllArgsConstructor
 public enum PlanParticipantErrorCode implements BaseErrorCode {
 
-    NOT_FOUND_USER(HttpStatus.NOT_FOUND, "PLANPARTICIPANT400", "잘못된 요청입니다.");
+    NOT_FOUND_USER(HttpStatus.NOT_FOUND, "PLANPARTICIPANT400", "잘못된 요청입니다."),
+    NOT_MANAGER(HttpStatus.NOT_FOUND, "PLANPARTICIPANT400", "잘못된 요청입니다.");
 
     private final HttpStatus status;
     private final String code;

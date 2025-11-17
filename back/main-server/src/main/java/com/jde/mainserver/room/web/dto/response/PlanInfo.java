@@ -18,5 +18,7 @@ public class PlanInfo {
     private LocalDateTime startAt;
     private String planManager;
     private Long count;
+    private Long restaurantId;
+    private String restaurantName;
     private String restaurantImageUrl;
 }
