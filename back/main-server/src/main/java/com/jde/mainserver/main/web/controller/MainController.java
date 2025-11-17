@@ -164,11 +164,11 @@ public class MainController {
 		summary = "카테고리별 위치 기반 인기 식당 조회",
 		description = "사용자 기준 위치 주변 식당을 즐겨찾기 수 기준으로 정렬해 cursor 기반으로 10개씩 제공. FeedResponse 형식으로 상세 정보 제공. 기본 반경 700m에서 시작하여 후보가 부족하면 자동으로 확장됩니다. 비로그인 유저는 기본 지역(region_id=1) 사용."
 	)
-	@GetMapping("/restaurants/popular/category/{category}")
+	@GetMapping("/restaurants/popular/category")
 	public FeedResponse getPopularRestaurantsByCategory(
 		@AuthUser Long userId,
 		@Parameter(description = "카테고리 (한식, 중식, 일식, 양식, 분식, 치킨, 패스트푸드, 디저트, 샐러드, 아시아/퓨전, 뷔페/패밀리, 술집)", example = "한식")
-		@PathVariable String category,
+		@RequestParam String category,
 		@Parameter(description = "다음 배치 커서 (null이나 0이면 첫 요청)", example = "0")
 		@RequestParam(required = false) String cursor
 	) {
