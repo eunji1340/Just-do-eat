@@ -9,6 +9,8 @@ RUN npm run build  # Vite 기본 outDir = dist
 # ---------- runtime ----------
 FROM nginx:1.25-alpine
 WORKDIR /usr/share/nginx/html
+RUN rm -rf ./etc/nginx/conf.d/default.conf
+
 RUN rm -rf ./*
 
 COPY --from=builder /app/dist .         
