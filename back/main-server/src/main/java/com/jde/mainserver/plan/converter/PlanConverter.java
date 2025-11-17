@@ -34,6 +34,7 @@ public class PlanConverter {
                 .roomId(room.getRoomId())
                 .roomName(room.getRoomName())
                 .planId(plan.getPlanId())
+                .planName(plan.getPlanName())
                 .planPlace(planPlace)
                 .startAt(startAt)
                 .planManager(planManager)
