@@ -6,6 +6,7 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm install
 
+COPY .env
 # 2️⃣ 실제 소스 복사 후 빌드
 COPY . .
 RUN npm run build
