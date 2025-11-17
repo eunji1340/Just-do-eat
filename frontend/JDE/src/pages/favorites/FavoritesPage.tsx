@@ -173,10 +173,8 @@ function mapBookmarkResponseToRestaurant(
 export default function FavoritesPage() {
   const navigate = useNavigate();
 
-  // 로그인 여부 확인 (임시 토큰 또는 localStorage의 accessToken)
-  const tempAccessToken =
-    "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxIiwiaWF0IjoxNzYzMzU2OTYxLCJleHAiOjE3NjMzNjA1NjF9.qgYeoPksV3ao9ZbAvJbFzX4L14uKHxqc3UrmWjd3q28";
-  const accessToken = localStorage.getItem("accessToken") || tempAccessToken;
+  // 로그인 여부 확인 (localStorage의 accessToken)
+  const accessToken = localStorage.getItem("accessToken");
   const isLoggedIn = !!accessToken; // 토큰이 있으면 로그인 상태
 
   // 즐겨찾기 목록 상태
