@@ -33,7 +33,7 @@ export const TopNavBar = (props: TopNavBarAllProps) => {
 
     return (
       <header className={containerClass}>
-        <Logo size="md" />
+        <Logo size="md" className="h-10 flex items-center" />
 
         <div className="ml-auto flex items-center">
           <button

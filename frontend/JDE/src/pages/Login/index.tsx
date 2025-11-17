@@ -38,7 +38,8 @@ export default function LoginPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     const result = await submit(e);
     if (result && result.accessToken) {
-      // 로그인 성공 후 사용자 정보 불러오기
+      // 로그인 성공 후 사용자 정보 불러오기 (선택적)
+      // 실패해도 메인 페이지로 이동
       try {
         const response = await customAxios<AxiosResponse<UserMeResponse>>({
           method: 'GET',
@@ -47,27 +48,24 @@ export default function LoginPage() {
         
         const userData = response.data?.data;
 
-        if (!userData) {
-          console.error('사용자 정보를 불러올 수 없습니다.');
-          nav('/');
-          return;
+        if (userData) {
+          setUser({
+            userId: userData.userId,
+            name: userData.name,
+            imageUrl: userData.imageUrl,
+            ageGroup: userData.ageGroup,
+            gender: userData.gender,
+            role: userData.role,
+          });
         }
-
-        setUser({
-          userId: userData.userId,
-          name: userData.name,
-          imageUrl: userData.imageUrl,
-          ageGroup: userData.ageGroup,
-          gender: userData.gender,
-          role: userData.role,
-        });
-        nav('/');
       } catch (error) {
         const axiosError = error as AxiosError<{ message?: string }>;
         console.error('사용자 정보 불러오기 실패:', axiosError);
-        // 실패해도 메인 페이지로 이동
-        nav('/');
+        // 사용자 정보 불러오기 실패는 무시하고 메인 페이지로 이동
       }
+      
+      // 로그인 성공 후 메인 페이지로 리다이렉트
+      nav('/', { replace: true });
     }
   };
 
