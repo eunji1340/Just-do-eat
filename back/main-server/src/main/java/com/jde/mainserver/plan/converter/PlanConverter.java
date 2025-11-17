@@ -2,6 +2,7 @@ package com.jde.mainserver.plan.converter;
 
 import com.jde.mainserver.global.api.KakaoLocalService;
 import com.jde.mainserver.plan.entity.Plan;
+import com.jde.mainserver.plan.web.dto.response.DeletePlanResponse;
 import com.jde.mainserver.plan.web.dto.response.PlanDetailResponse;
 import com.jde.mainserver.plan.web.dto.response.PlanParticipantInfo;
 import com.jde.mainserver.room.entity.Room;
@@ -32,6 +33,7 @@ public class PlanConverter {
         return PlanDetailResponse.builder()
                 .roomId(room.getRoomId())
                 .roomName(room.getRoomName())
+                .planId(plan.getPlanId())
                 .planPlace(planPlace)
                 .startAt(startAt)
                 .planManager(planManager)
@@ -40,6 +42,12 @@ public class PlanConverter {
                 .priceRange(plan.getPriceRanges())
                 .dislikeCategoryList(plan.getDislikeCategories())
                 .planParticipantList(planParticipantList)
+                .build();
+    }
+
+    public DeletePlanResponse toDeletePlanResponse(Long roomId) {
+        return DeletePlanResponse.builder()
+                .roomId(roomId)
                 .build();
     }
 }
