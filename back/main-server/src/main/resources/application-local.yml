@@ -69,4 +69,5 @@ aws:
     access-key: ${AWS_CREDENTIALS_ACCESS_KEY:}
     secret-key: ${AWS_CREDENTIALS_SECRET_KEY:}
 
-
+custom:
+  front-base-url: ${FRONT_BASE_URL}

@@ -48,7 +48,7 @@ public class Room extends BaseEntity {
     @OneToMany(fetch = FetchType.EAGER, mappedBy = "room", cascade = CascadeType.ALL)
     private List<RoomMember> roomMemberList;
 
-    @OneToMany(fetch = FetchType.EAGER, mappedBy = "room")
+    @OneToMany(fetch = FetchType.EAGER, mappedBy = "room", cascade = CascadeType.ALL)
     private List<Plan> planList;
 
     // 편의 method로 양방향 일관성 유지
