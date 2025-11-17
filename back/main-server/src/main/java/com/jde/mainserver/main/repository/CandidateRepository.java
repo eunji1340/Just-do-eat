@@ -22,12 +22,14 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
+import lombok.extern.slf4j.Slf4j;
 
 import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Component
 public class CandidateRepository {
 
@@ -105,6 +107,12 @@ public class CandidateRepository {
 		// 4. 벌크 로딩: 영업시간, 태그
 		Map<Long, List<RestaurantHour>> hoursMap = loadRestaurantHours(restaurantIds);
 		Map<Long, List<RestaurantTag>> tagsByRestaurant = loadRestaurantTags(restaurantIds);
+		
+		// 태그 로딩 확인 (문제가 있을 때만 경고)
+		long restaurantsWithTags = tagsByRestaurant.values().stream().filter(tags -> !tags.isEmpty()).count();
+		if (restaurantsWithTags == 0 && !restaurantIds.isEmpty()) {
+			log.warn("[CandidateRepository] 태그가 있는 식당이 없음: restaurantIds={}", restaurantIds.size());
+		}
 
 		// 5. Candidate 변환
 		return convertToCandidates(restaurants, stateMap, hoursMap, tagsByRestaurant, userLat, userLng);
@@ -175,9 +183,11 @@ public class CandidateRepository {
 	 * 식당별 태그 벌크 로딩
 	 */
 	private Map<Long, List<RestaurantTag>> loadRestaurantTags(List<Long> restaurantIds) {
-		return restaurantTagRepository
-			.findByRestaurantIdIn(restaurantIds)
-			.stream()
+		if (restaurantIds.isEmpty()) {
+			return Collections.emptyMap();
+		}
+		List<RestaurantTag> allTags = restaurantTagRepository.findByRestaurantIdIn(restaurantIds);
+		return allTags.stream()
 			.collect(Collectors.groupingBy(RestaurantTag::getRestaurantId));
 	}
 
@@ -192,6 +202,7 @@ public class CandidateRepository {
 		Double userLat,
 		Double userLng
 	) {
+		final boolean[] isFirst = {true};
 		return restaurants.stream().map(r -> {
 			// 거리 계산 (사용자 위치가 있는 경우)
 			Float distanceM = calculateDistance(userLat, userLng, r.getGeom());
@@ -203,9 +214,17 @@ public class CandidateRepository {
 			String priceRange = r.getPriceRange() != null ? r.getPriceRange().name() : null;
 
 			// 태그 선호도 맵 (restaurant_tag.weight, confidence 사용)
-			Map<Long, PersonalScoreRequest.TagPreference> tagPref = buildTagPreferenceMap(
-				tagsByRestaurant.getOrDefault(r.getId(), Collections.emptyList())
-			);
+			List<RestaurantTag> restaurantTags = tagsByRestaurant.getOrDefault(r.getId(), Collections.emptyList());
+			Map<Long, PersonalScoreRequest.TagPreference> tagPref = buildTagPreferenceMap(restaurantTags);
+			
+			// 첫 번째 후보 확인 (문제가 있을 때만 로깅)
+			if (isFirst[0]) {
+				isFirst[0] = false;
+				// 태그가 없으면 DEBUG 레벨로만 로깅
+				if (restaurantTags.isEmpty()) {
+					log.debug("[CandidateRepository] 첫 번째 후보 태그 없음: restaurant_id={}", r.getId());
+				}
+			}
 
 			// 개인 선호 점수 (UserRestaurantState.pref_score)
 			Float prefScore = extractPrefScore(stateMap.get(r.getId()));
@@ -277,6 +296,9 @@ public class CandidateRepository {
 	private Map<Long, PersonalScoreRequest.TagPreference> buildTagPreferenceMap(
 		List<RestaurantTag> restaurantTags
 	) {
+		if (restaurantTags == null || restaurantTags.isEmpty()) {
+			return Collections.emptyMap();
+		}
 		return restaurantTags.stream()
 			.collect(Collectors.toMap(
 				RestaurantTag::getTagId,
