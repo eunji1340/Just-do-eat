@@ -43,7 +43,7 @@ export default function OnboardingLanding() {
           </div>
           <p className="text-lg font-semibold sm:text-xl text-[var(--color-fg)] leading-relaxed px-4">
             <br />
-            나만의 음식 취향을 발견하고
+            당신의 취향
             <br />
             맞춤형 맛집을 추천받아보세요!
           </p>

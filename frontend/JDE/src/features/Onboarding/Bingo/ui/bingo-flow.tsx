@@ -137,7 +137,7 @@ export default function BingoFlow({ onComplete }: BingoFlowProps) {
       <div className="flex-1 flex flex-col p-6 max-w-2xl mx-auto w-full overflow-auto">
         {/* 헤더 */}
         <div className="text-center mb-3">
-          <h2 className="m-0 mb-2 text-3xl font-bold text-[var(--color-fg)]">
+          <h2 className="m-0 mb-2 text-3xl font-extrabold text-[var(--color-fg)]">
             취향 빙고
           </h2>
           <p className="text-[var(--color-muted-fg)] text-base leading-relaxed">
@@ -193,7 +193,7 @@ export default function BingoFlow({ onComplete }: BingoFlowProps) {
         </div>
 
         {/* 통계 */}
-        <div className="flex gap-2 mb-3">
+        <div className="flex gap-2">
           <div className="flex-1 bg-red-50 rounded-xl p-2 text-center border border-red-200">
             <p className="text-lg font-bold text-red-600 m-0">{likeCount}</p>
             <p className="text-xs text-red-700 m-0 mt-0.5">좋아요</p>

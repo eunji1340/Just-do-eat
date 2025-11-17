@@ -18,10 +18,10 @@ export default function AuthLayout({
       className={`min-h-screen flex ${
         // h-screen을 min-h-screen으로 변경
         alignTop ? "items-start" : "items-center"
-      } justify-center bg-[var(--color-bg)] overflow-y-auto`} // overflow-y-auto 추가
+      } justify-center bg-[var(--color-bg)] overflow-y-auto pb-8`} // overflow-y-auto 추가
     >
       <div
-        className="max-w-xl mx-auto p-5 grid gap-5 w-full min-w-0 overflow-visible"
+        className="max-w-xl mx-auto px-5 grid gap-5 w-full min-w-0 overflow-visible"
         style={
           alignTop
             ? {

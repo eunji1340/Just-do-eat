@@ -88,7 +88,7 @@ export default function SignupPage() {
 
       <AuthLayout
         footer={
-          <div className="mt-6 pt-6 border-t border-[var(--color-border)] text-center">
+          <div className="pt-6 border-t border-[var(--color-border)] text-center">
             <p className="text-base text-[var(--color-fg)] font-semibold mb-2">
               이미 계정이 있으신가요?{" "}
               <a
