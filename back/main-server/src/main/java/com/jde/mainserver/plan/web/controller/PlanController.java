@@ -8,10 +8,14 @@
 package com.jde.mainserver.plan.web.controller;
 
 import com.jde.mainserver.global.annotation.AuthUser;
+import com.jde.mainserver.global.api.ApiResponse;
+import com.jde.mainserver.member.entity.Member;
 import com.jde.mainserver.plan.service.command.PlanCommandService;
+import com.jde.mainserver.plan.service.query.PlanDetailQueryService;
 import com.jde.mainserver.plan.service.query.PlanQueryService;
 import com.jde.mainserver.plan.web.dto.request.PlanCreateRequest;
 import com.jde.mainserver.plan.web.dto.response.PlanCreateResponse;
+import com.jde.mainserver.plan.web.dto.response.PlanDetailResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -27,9 +31,10 @@ import java.util.Map;
 @RequestMapping("/plans")
 @RequiredArgsConstructor
 public class PlanController {
+
 	private final PlanCommandService planCommandService;
 	private final PlanQueryService planQueryService;
-
+	private final PlanDetailQueryService planDetailQueryService;
 	@Operation(
 		summary = "약속 생성",
 		description = "모임 방(room) 안에 새로운 약속을 생성합니다. JWT 기반 인증이 필요하며, 생성자는 해당 방의 멤버여야 합니다.",
@@ -58,5 +63,12 @@ public class PlanController {
 		@RequestParam(required = false) String cursor
 	) {
 		return planQueryService.getCandidateFeed(planId, cursor);
+	}
+
+	@GetMapping("/{planId}")
+	@Operation(summary = "약속 상세 API", description = "약속 상세 정보를 조회합니다. 약속 후보는 제외되어 있습니다.", security = @SecurityRequirement(name = "Json Web Token(JWT)"))
+	public ApiResponse<PlanDetailResponse> planDetail(@AuthUser Member user, @PathVariable Long planId) {
+		PlanDetailResponse planDetailResponse = planDetailQueryService.planDetail(user, planId);
+		return ApiResponse.onSuccess(planDetailResponse);
 	}
 }

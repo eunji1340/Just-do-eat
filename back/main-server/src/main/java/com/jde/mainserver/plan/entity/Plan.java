@@ -8,20 +8,7 @@ import com.jde.mainserver.plan.entity.enums.PlanStatus;
 import com.jde.mainserver.restaurants.entity.Restaurant;
 
 // JPA (Jakarta Persistence)  관련, 엔티티와 DB 매핑할 때 사용하는 어노테이션
-import jakarta.persistence.CollectionTable;
-import jakarta.persistence.Column; // 필드를 DB 칼럼과 매핑하면서 세부 옵션 지정 (길이, not null ...)
-import jakarta.persistence.ElementCollection;
-import jakarta.persistence.Entity; // "DB 테이블과 매핑되는 JPA 엔티티임"
-import jakarta.persistence.Enumerated; // ENUM 사용
-import jakarta.persistence.EnumType;
-import jakarta.persistence.GeneratedValue; // PK 값을 자동 생성 (auto increment, sequence 등)
-import jakarta.persistence.GenerationType; // Identity, sequence, auto 등 PK 생성 전략 설정
-import jakarta.persistence.Id; // 엔티티 기본 키 (PK) 필드 표시
-import jakarta.persistence.Table; // 매핑될 DB 테이블 이름 지정
-
-import jakarta.persistence.FetchType;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
+import jakarta.persistence.*;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -91,6 +78,9 @@ public class Plan extends BaseEntity {
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "restaurant_id")
 	private Restaurant restaurant;
+
+	@OneToMany(mappedBy = "plan", fetch = FetchType.LAZY)
+	private List<PlanParticipant> planParticipantList;
 
 	// 결정 도구 설정용 setter
 	public void setDecisionTool(PlanDecisionTool decisionTool) {
