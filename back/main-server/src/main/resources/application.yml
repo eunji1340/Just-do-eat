@@ -64,7 +64,7 @@ jwt:
 
 springdoc:
   swagger-ui:
-    path: /api/v3/api-docs
+    url: "https://www.justdoeat.ai.kr/api/v3/api-docs"
 
 custom:
   front-base-url: ${FRONT_BASE_URL}
