@@ -3,6 +3,7 @@ package com.jde.mainserver.room.repository;
 import com.jde.mainserver.member.entity.Member;
 import com.jde.mainserver.room.entity.Room;
 import com.jde.mainserver.room.entity.RoomMember;
+import org.apache.catalina.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
@@ -47,6 +48,8 @@ public interface RoomMemberRepository extends JpaRepository<RoomMember, Long> {
     }
 
     Optional<RoomMember> findByRoom_RoomIdAndUser_UserId(Long roomId, Long userId);
+
+	List<RoomMember> findByUserAndIsDel(Member user, boolean status);
 
 	Long countByRoom_RoomIdAndIsDelFalse(Long roomId);
     // 같은 room에 같은 member가 이미 있는지 검사

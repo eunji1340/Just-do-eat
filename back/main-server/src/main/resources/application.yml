@@ -68,3 +68,5 @@ springdoc:
 
 custom:
   front-base-url: ${FRONT_BASE_URL}
+  kakao-api-key: ${KAKAO_API_KEY}
+
