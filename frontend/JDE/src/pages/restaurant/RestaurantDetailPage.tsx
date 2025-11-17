@@ -311,9 +311,6 @@ export default function RestaurantDetailPage() {
   // 지번 주소 표시 토글 상태
   const [showLotAddress, setShowLotAddress] = useState(false);
 
-  // 지도 표시 상태
-  const [mapLoaded, setMapLoaded] = useState(false);
-
   // 식당 상세 API 호출
   useEffect(() => {
     if (!restaurantId) {
@@ -520,8 +517,6 @@ export default function RestaurantDetailPage() {
             content: `<div style="padding:5px;font-size:12px;font-weight:bold;">${restaurant.name}</div>`,
           });
           infowindow.open(map, marker);
-
-          setMapLoaded(true);
         }
       });
     };
@@ -802,7 +797,6 @@ export default function RestaurantDetailPage() {
               <div className="bg-white px-6 pt-6 space-y-4 border-t-16 border-neutral-100">
                 {/* 섹션 헤더 */}
                 <div className="flex items-center gap-2">
-                  <MapPin className="w-5 h-5 text-gray-700" />
                   <h2 className="text-lg font-bold text-gray-900">위치</h2>
                 </div>
 

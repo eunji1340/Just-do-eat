@@ -12,7 +12,6 @@ import {
   Wine,
   Pizza,
   Coffee,
-  Beef,
   Salad,
   Drumstick,
 } from "lucide-react";
@@ -116,7 +115,9 @@ export default function RecommendationSection({
   const navigate = useNavigate();
 
   // 인기 식당 상태
-  const [popularRestaurants, setPopularRestaurants] = useState<RankingCardData[]>([]);
+  const [popularRestaurants, setPopularRestaurants] = useState<
+    RankingCardData[]
+  >([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -175,7 +176,10 @@ export default function RecommendationSection({
         if (axios.isAxiosError(err)) {
           if (err.code === "ERR_NETWORK") {
             errorMessage = "네트워크 연결을 확인해주세요";
-          } else if (err.code === "ECONNABORTED" || err.message.includes("timeout")) {
+          } else if (
+            err.code === "ECONNABORTED" ||
+            err.message.includes("timeout")
+          ) {
             errorMessage = "요청 시간이 초과되었습니다";
           } else if (err.response) {
             const status = err.response.status;
