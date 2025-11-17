@@ -86,9 +86,13 @@ public class RoomConverter {
 
     public PlanInfo toPlanInfo(Plan plan, String planManager, Long count) {
         Restaurant restaurant = plan.getRestaurant();
+        Long restaurantId = null;
+        String restaurantName = null;
         String firstImage = null;
 
         if(restaurant != null && restaurant.getImage() != null && !restaurant.getImage().isEmpty()) {
+            restaurantId = restaurant.getId();
+            restaurantName = restaurant.getName();
             firstImage = restaurant.getImage().getFirst();
         }
 
@@ -98,6 +102,8 @@ public class RoomConverter {
                 .startAt(plan.getStartsAt())
                 .planManager(planManager)
                 .count(count)
+                .restaurantId(restaurantId)
+                .restaurantName(restaurantName)
                 .restaurantImageUrl(firstImage)
                 .build();
     }
