@@ -545,7 +545,7 @@ export default function SearchResultPage() {
                       key={`${restaurant.restaurant_id}-${index}`}
                       restaurant={restaurant}
                       onClick={() =>
-                        console.log(`클릭: ${restaurant.restaurant_id}`)
+                        navigate(`/restaurants/${restaurant.restaurant_id}`)
                       }
                     />
                   ))}
