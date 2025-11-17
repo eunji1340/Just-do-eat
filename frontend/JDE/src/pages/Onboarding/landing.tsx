@@ -5,7 +5,7 @@ export default function OnboardingLanding() {
   const nav = useNavigate();
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen p-5 gap-8 max-w-xl mx-auto bg-[var(--color-bg)]">
+    <div className="flex flex-col items-center justify-center fixed inset-0 p-5 gap-8 max-w-xl mx-auto bg-[var(--color-bg)]">
       {/* 서비스 소개 */}
       <div className="text-center">
         <h1 className="text-4xl mb-4 font-bold text-[var(--color-fg)]">🍽️ JUST DO EAT</h1>
@@ -26,14 +26,14 @@ export default function OnboardingLanding() {
 
         <button
           onClick={() => nav('/signup')}
-          className="py-4 px-8 text-lg rounded-xl border-2 border-[var(--color-primary)] bg-[var(--color-bg)] text-[var(--color-fg)] cursor-pointer font-bold hover:bg-[var(--color-surface)] transition-colors"
+          className="py-4 px-8 text-lg rounded-xl border-2 border-[var(--color-primary)] bg-[var(--color-surface)] text-[var(--color-fg)] cursor-pointer font-bold hover:bg-[var(--color-bg)] transition-colors"
         >
           회원가입
         </button>
 
         <button
           onClick={() => nav('/login')}
-          className="py-4 px-8 text-base rounded-xl border-2 border-[var(--color-muted-foreground)] bg-[var(--color-surface)] font-bold text-[var(--color-fg)] cursor-pointer hover:bg-[var(--color-border)] transition-colors"
+          className="py-4 px-8 text-base rounded-xl border-2 border-[var(--color-muted-foreground)] bg-[var(--color-bg)] font-bold text-[var(--color-fg)] cursor-pointer hover:bg-[var(--color-surface)] transition-colors"
         >
           로그인
         </button>
