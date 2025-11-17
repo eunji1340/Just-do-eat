@@ -15,7 +15,9 @@ import com.jde.mainserver.restaurants.entity.RestaurantHour;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class MainConverter {
 
 	/**
@@ -139,6 +141,8 @@ public class MainConverter {
 		user.put("tag_pref", tagPref);
 
 		// candidates 변환
+		final boolean[] isFirstCandidate = {true};
+		final boolean[] foundFirstWithTags = {false};
 		List<Map<String, Object>> candidates = req.candidates().stream()
 			.map(cand -> {
 				Map<String, Object> candMap = new HashMap<>();
@@ -147,14 +151,29 @@ public class MainConverter {
 				candMap.put("distance_m", cand.distanceM() != null ? cand.distanceM() : 0.0f);
 
 				// 식당 태그 정보: Map<Long, TagPreference> -> Map<Integer, Map<String, Float>>
+				// 주의: Candidate의 TagPreference는 weight를 score 필드에 저장함 (buildTagPreferenceMap 참고)
 				Map<Integer, Map<String, Float>> candTagPref = new HashMap<>();
-				if (cand.tagPref() != null) {
+				if (cand.tagPref() != null && !cand.tagPref().isEmpty()) {
 					cand.tagPref().forEach((tagId, pref) -> {
 						Map<String, Float> prefMap = new HashMap<>();
+						// 식당 태그는 weight를 사용 (CandidateRepository에서 weight를 score 필드에 저장함)
 						prefMap.put("weight", pref.score() != null ? pref.score() : 0.0f);
 						prefMap.put("confidence", pref.confidence() != null ? pref.confidence() : 0.0f);
 						candTagPref.put(tagId.intValue(), prefMap);
 					});
+					// 첫 번째 후보 확인 (문제가 있을 때만 로깅)
+					if (isFirstCandidate[0]) {
+						isFirstCandidate[0] = false;
+						foundFirstWithTags[0] = true;
+					} else if (!foundFirstWithTags[0]) {
+						foundFirstWithTags[0] = true;
+					}
+				} else {
+					// 첫 번째 후보에 태그가 없으면 DEBUG 레벨로만 로깅
+					if (isFirstCandidate[0]) {
+						log.debug("[MainConverter] 첫 번째 후보 태그 없음: restaurant_id={}", cand.restaurantId());
+						isFirstCandidate[0] = false;
+					}
 				}
 				candMap.put("tag_pref", candTagPref);
 
