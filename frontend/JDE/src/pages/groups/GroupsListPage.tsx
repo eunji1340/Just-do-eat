@@ -59,7 +59,7 @@ export default function GroupsListPage() {
 
   return (
     <>
-      <TopNavBar variant="default" onSearchClick={() => navigate("/search")} />
+      <TopNavBar variant="default" onSearchClick={() => navigate("/search/start")} />
 
       {isLoading ? (
         <div className="flex flex-col items-center justify-center gap-3 p-8 py-40 text-center">

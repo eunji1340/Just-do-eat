@@ -2,4 +2,3 @@
 // 목적: feedback/model 모듈 exports
 
 export * from "./types";
-export * from "./mockData";

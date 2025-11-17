@@ -37,7 +37,8 @@ const getRankBadgeStyle = (rank: number) => {
   }
 };
 
-interface RankingCardProps extends Omit<React.HTMLAttributes<HTMLDivElement>, 'id'> {
+interface RankingCardProps
+  extends Omit<React.HTMLAttributes<HTMLDivElement>, "id"> {
   /** 식당 ID */
   id: string | number;
   /** 순위 (1~10) */
@@ -96,17 +97,20 @@ export const RankingCard = React.forwardRef<HTMLDivElement, RankingCardProps>(
         {...props}
       >
         {/* 이미지 + 순위 배지 */}
-        <div className="relative w-40 h-40">
+        <div className="relative w-32 h-32">
           {/* 식당 이미지 또는 Placeholder */}
           {showPlaceholder ? (
-            <div className="w-40 h-40 bg-muted rounded-lg flex items-center justify-center">
-              <ImageOff className="w-12 h-12 text-muted-foreground" strokeWidth={1.5} />
+            <div className="w-32 h-32 bg-muted rounded-lg flex items-center justify-center">
+              <ImageOff
+                className="w-8 h-8 text-muted-foreground"
+                strokeWidth={1.5}
+              />
             </div>
           ) : (
             <img
               src={imageUrl}
               alt={restaurantName}
-              className="w-40 h-40 object-cover rounded-lg"
+              className="w-32 h-32 object-cover rounded-lg"
               onError={() => setImageError(true)}
             />
           )}
@@ -114,12 +118,14 @@ export const RankingCard = React.forwardRef<HTMLDivElement, RankingCardProps>(
           {/* 순위 배지 (좌상단) */}
           <div
             className={cn(
-              "absolute top-2 left-2 text-xs font-bold px-2 py-1 rounded-md shadow-md flex items-center gap-1",
+              "absolute top-2 left-2 text-xs font-bold px-2 py-1 rounded-2xl shadow-md flex items-center gap-1",
               badgeStyle.bgColor,
               badgeStyle.textColor
             )}
           >
-            {badgeStyle.showMedal && <Medal className="w-3.5 h-3.5" strokeWidth={2.5} />}
+            {badgeStyle.showMedal && (
+              <Medal className="w-3.5 h-3.5" strokeWidth={2.5} />
+            )}
             {rank}등
           </div>
         </div>
@@ -127,14 +133,12 @@ export const RankingCard = React.forwardRef<HTMLDivElement, RankingCardProps>(
         {/* 식당 정보 (중앙 정렬) */}
         <div className="flex flex-col items-center text-center gap-0.5">
           {/* 식당명 */}
-          <p className="text-lg font-semibold text-card-foreground line-clamp-1">
+          <p className="text-md font-semibold text-card-foreground line-clamp-1">
             {restaurantName}
           </p>
 
           {/* 카테고리 */}
-          <p className="text-xs font-light text-muted-foreground">
-            {category}
-          </p>
+          <p className="text-xs font-light text-muted-foreground">{category}</p>
         </div>
       </div>
     );

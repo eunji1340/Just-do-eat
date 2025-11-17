@@ -47,7 +47,7 @@ export default function MukbtiFlow({ onDone }: MukbtiFlowProps) {
       meta: { authRequired: false }
     })
       .then((response: any) => {
-        const data: MukbtiQuestionsResponse = response.data;
+        const data: MukbtiQuestionsResponse = response.data.data;
         setQuestions(data.items || []);
         setLoading(false);
       })
@@ -126,14 +126,14 @@ export default function MukbtiFlow({ onDone }: MukbtiFlowProps) {
       {/* 중앙 질문 영역 (연한 회색 박스 내에 질문 번호와 함께 표시) */}
       <div className="flex-1 flex items-center justify-center overflow-auto">
         <div className="w-full p-6 rounded-xl bg-[var(--color-surface)]">
-          <h2 className="m-0 text-2xl font-semibold text-left text-[var(--color-fg)]">
+          <h2 className="m-0 text-2xl font-semibold text-left text-[var(--color-fg)] break-keep">
             Q{currentIndex + 1}.<br />{current.text}
           </h2>
         </div>
       </div>
 
       {/* 하단 고정 선택지 (간격 확대 및 텍스트 가운데 정렬) */}
-      <div className="mt-5 grid gap-4 pb-10">
+      <div className="mt-5 grid gap-4">
         {current.choices.map((c) => (
           <button
             key={c.id}
