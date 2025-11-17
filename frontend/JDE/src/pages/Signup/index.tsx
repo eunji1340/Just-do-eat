@@ -11,11 +11,13 @@ export default function SignupPage() {
   const [signupSuccess, setSignupSuccess] = React.useState(false);
   const {
     formData,
+    previewUrl,
     handleChange,
+    handleImageSelect,
     submitting,
     error,
     handleSubmit: submit,
-    setUserIdCheckResult,
+    setNameCheckResult,
   } = useSignup();
 
   React.useEffect(() => {
@@ -64,11 +66,13 @@ export default function SignupPage() {
     >
       <SignupForm
         formData={formData}
+        previewUrl={previewUrl}
         handleChange={handleChange}
+        handleImageSelect={handleImageSelect}
         submitting={submitting}
         error={error}
         handleSubmit={handleSubmit}
-        setUserIdCheckResult={setUserIdCheckResult}
+        setNameCheckResult={setNameCheckResult}
       />
     </AuthLayout>
   );

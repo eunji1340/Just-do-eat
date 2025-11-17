@@ -23,7 +23,7 @@ export const dummyGroup: Group[] = [
         ]
     },
     {
-        id: 3,
+        id: 77,
         title: '역삼만지회',
         recentDate: '25.10.27',
         tags: ['중식', '자주 만나는 사이'],
@@ -33,7 +33,7 @@ export const dummyGroup: Group[] = [
         ]
     },
     {
-        id: 3,
+        id: 15,
         title: '역삼만지회',
         recentDate: '25.10.27',
         tags: ['중식', '자주 만나는 사이'],

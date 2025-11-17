@@ -55,6 +55,7 @@ export default function OnboardingPage() {
         data: {
           mukbtiAnswers,
           bingoResponses,
+          ...(onboardingSessionId ? { sessionId: onboardingSessionId } : {}),
         },
         meta: { authRequired: false }
       }) as any;

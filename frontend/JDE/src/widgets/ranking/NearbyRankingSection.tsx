@@ -4,7 +4,6 @@
 
 import * as React from "react";
 import type { Restaurant } from "../../entities/restaurant/types";
-import { DUMMY_RESTAURANTS } from "../../entities/restaurant/dummy";
 
 type Props = {
   items?: Restaurant[];
@@ -15,7 +14,7 @@ export default function NearbyRankingSection({
   items,
   title = "근처 인기 식당 Top 10",
 }: Props) {
-  const data = (items ?? DUMMY_RESTAURANTS).slice(0, 10);
+  const data = (items ?? []).slice(0, 10);
 
   const rowRef = React.useRef<HTMLDivElement | null>(null);
   const [atStart, setAtStart] = React.useState(true);
