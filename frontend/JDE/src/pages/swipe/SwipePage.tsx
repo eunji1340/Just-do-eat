@@ -177,11 +177,6 @@ export default function SwipePage() {
         {
         restaurantId: item.restaurant_id,
         action,
-      },
-      {
-        headers:{
-          Authorization: "Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIyIiwiaWF0IjoxNzYzMTk3NTcyLCJleHAiOjE3NjMyMDExNzJ9.WpkZlLu4ZRSTBfBMhMbUjhbPqWqPl_CfCyTxeWHDsT0",
-        },
       }
     );
 
