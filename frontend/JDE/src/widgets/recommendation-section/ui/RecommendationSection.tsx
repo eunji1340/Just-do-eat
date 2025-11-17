@@ -86,16 +86,18 @@ function mapPopularResponseToRankingCard(
  * 카테고리별 아이콘 매핑
  */
 const categoryIconMap: Record<string, LucideIcon> = {
-  korean: Soup, // 한식
-  chinese: UtensilsCrossed, // 중식
-  japanese: Fish, // 일식
-  western: Wine, // 양식
-  snack: Salad, // 분식
-  chicken: Drumstick, // 치킨
-  pizza: Pizza, // 피자
-  cafe: Coffee, // 카페
-  meat: Beef, // 고기
-  seafood: Fish, // 해산물
+  한식: Soup,
+  중식: UtensilsCrossed,
+  일식: Fish,
+  양식: Wine,
+  분식: Salad,
+  치킨: Drumstick,
+  패스트푸드: Pizza,
+  디저트: Coffee,
+  샐러드: Salad,
+  "아시아/퓨전": Fish,
+  "뷔페/패밀리": UtensilsCrossed,
+  술집: Wine,
 };
 
 interface RecommendationSectionProps {
@@ -205,15 +207,15 @@ export default function RecommendationSection({
 
   /**
    * 카테고리 클릭 핸들러
-   * 스와이프 페이지로 이동하며 필터 정보 전달
+   * 스와이프 페이지로 이동하며 카테고리명(한글) 전달
    */
-  const handleCategoryClick = (categoryId: string, categoryName: string) => {
+  const handleCategoryClick = (categoryName: string) => {
+    console.log("🍽️ [카테고리 클릭]", categoryName);
     navigate("/swipe", {
       state: {
         type: "category",
-        categoryId,
-        categoryName,
-        location: "역삼역", // TODO: 실제 선택된 상권으로 변경
+        categoryName, // 한글 카테고리명 전달 (예: "한식", "중식")
+        districtName, // 선택된 상권명 전달
       },
     });
   };
@@ -285,10 +287,8 @@ export default function RecommendationSection({
               key={category.id}
               id={category.id}
               categoryName={category.categoryName}
-              icon={categoryIconMap[category.id]}
-              onClick={() =>
-                handleCategoryClick(category.id, category.categoryName)
-              }
+              icon={categoryIconMap[category.categoryName]}
+              onClick={() => handleCategoryClick(category.categoryName)}
             />
           ))}
         </div>
