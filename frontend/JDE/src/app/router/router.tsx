@@ -18,6 +18,7 @@ import SearchStartPage from "@/pages/search/SearchStartPage";
 import SearchResultPage from "@/pages/search/SearchResultPage";
 import PlanDetailPage from "@/pages/plan/PlanDetailPage";
 import FavoritesPage from "@/pages/favorites/FavoritesPage";
+import RestaurantDetailPage from "@/pages/restaurant/RestaurantDetailPage";
 
 const router = createBrowserRouter([
   {
@@ -107,6 +108,10 @@ const router = createBrowserRouter([
         <FavoritesPage />
       </AppLayout>
     ),
+  },
+  {
+    path: "/restaurants/:restaurantId",
+    element: <RestaurantDetailPage />,
   },
 ]);
 
