@@ -24,7 +24,10 @@ export default function MainPage() {
   return (
     <>
       {/* 상단 네비바 */}
-      <TopNavBar variant="default" onSearchClick={() => navigate("/search")} />
+      <TopNavBar
+        variant="default"
+        onSearchClick={() => navigate("/search/start")}
+      />
 
       {/* 메인 콘텐츠 */}
       <div className="md:py-10 space-y-4">
