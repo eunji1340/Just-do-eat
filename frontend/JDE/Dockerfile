@@ -4,7 +4,6 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm ci
 
-COPY .env .env.production
 COPY . .
 RUN npm run build  # Vite 기본 outDir = dist
 
