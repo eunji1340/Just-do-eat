@@ -17,9 +17,12 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.context.annotation.Import;
+import org.springframework.test.context.TestPropertySource;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jde.mainserver.global.annotation.resolver.AuthUserArgumentResolver;
+import com.jde.mainserver.global.url.StaticUrlResolver;
 import com.jde.mainserver.onboarding.OnboardingSurveyStore;
 import com.jde.mainserver.onboarding.dto.OnboardingTypeMatch;
 import com.jde.mainserver.onboarding.dto.OnboardingTypeResult;
@@ -29,12 +32,15 @@ import com.jde.mainserver.onboarding.dto.request.OnboardingImportRequest;
 import com.jde.mainserver.onboarding.service.MbtiComputeResult;
 import com.jde.mainserver.onboarding.service.MbtiComputeService;
 import com.jde.mainserver.onboarding.service.OnboardingTypeQueryService;
+import com.jde.mainserver.onboarding.service.OnboardingTagPrefInitializer;
 import com.jde.mainserver.onboarding.mbti.service.MbtiQueryService;
 import com.jde.mainserver.onboarding.bingo.service.BingoQueryService;
 import org.springframework.data.jpa.mapping.JpaMetamodelMappingContext;
 
 @WebMvcTest(controllers = OnboardingController.class)
 @AutoConfigureMockMvc(addFilters = false)
+@Import(StaticUrlResolver.class)
+@TestPropertySource(properties = "custom.front-base-url=http://localhost")
 class OnboardingImportControllerTest {
 
 	@Autowired
@@ -63,6 +69,9 @@ class OnboardingImportControllerTest {
 
 	@MockBean
 	JpaMetamodelMappingContext jpaMetamodelMappingContext;
+
+	@MockBean
+	OnboardingTagPrefInitializer onboardingTagPrefInitializer;
 
 	@Test
 	@DisplayName("POST /onboarding/import returns success:true and type payload")
