@@ -54,7 +54,8 @@ const REFRESH_ENABLED = false;
  * - withCredentials: 쿠키 자동 전송
  */
 const axiosInstance: AxiosInstance = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || "http://localhost:8080",
+  baseURL:
+    import.meta.env.VITE_API_BASE_URL || "http://k13a701.p.ssafy.io/api",
   timeout: 30000, // 30초로 증가
   withCredentials: true,
 });
