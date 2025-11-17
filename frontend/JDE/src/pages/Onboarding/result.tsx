@@ -48,7 +48,7 @@ export default function OnboardingResultPage() {
       meta: { authRequired: false }
     })
       .then((response: any) => {
-        setResultDetail(response.data);
+        setResultDetail(response.data.data);
         setLoading(false);
       })
       .catch((err: any) => {
