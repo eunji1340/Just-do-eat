@@ -7,6 +7,8 @@
 
 package com.jde.mainserver.plan.repository;
 
+import com.jde.mainserver.member.entity.Member;
+import com.jde.mainserver.plan.entity.Plan;
 import com.jde.mainserver.plan.entity.PlanParticipant;
 import com.jde.mainserver.plan.entity.enums.PlanRole;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -29,6 +31,8 @@ public interface PlanParticipantRepository extends JpaRepository<PlanParticipant
 	Long countByPlan_PlanId(Long planId);
 
 	boolean existsByPlan_PlanIdAndUser_UserId(Long planId, Long userId);
+
+	Optional<PlanParticipant> findByPlanAndPlanRole(Plan plan, PlanRole role);
 
 }
 

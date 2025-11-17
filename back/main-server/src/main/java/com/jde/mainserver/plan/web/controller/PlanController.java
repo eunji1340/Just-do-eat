@@ -10,10 +10,12 @@ package com.jde.mainserver.plan.web.controller;
 import com.jde.mainserver.global.annotation.AuthUser;
 import com.jde.mainserver.global.api.ApiResponse;
 import com.jde.mainserver.member.entity.Member;
+import com.jde.mainserver.plan.service.command.DeletePlanCommandService;
 import com.jde.mainserver.plan.service.command.PlanCommandService;
 import com.jde.mainserver.plan.service.query.PlanDetailQueryService;
 import com.jde.mainserver.plan.service.query.PlanQueryService;
 import com.jde.mainserver.plan.web.dto.request.PlanCreateRequest;
+import com.jde.mainserver.plan.web.dto.response.DeletePlanResponse;
 import com.jde.mainserver.plan.web.dto.response.PlanCreateResponse;
 import com.jde.mainserver.plan.web.dto.response.PlanDetailResponse;
 import io.swagger.v3.oas.annotations.Operation;
@@ -35,6 +37,7 @@ public class PlanController {
 	private final PlanCommandService planCommandService;
 	private final PlanQueryService planQueryService;
 	private final PlanDetailQueryService planDetailQueryService;
+	private final DeletePlanCommandService deletePlanCommandService;
 	@Operation(
 		summary = "약속 생성",
 		description = "모임 방(room) 안에 새로운 약속을 생성합니다. JWT 기반 인증이 필요하며, 생성자는 해당 방의 멤버여야 합니다.",
@@ -71,4 +74,12 @@ public class PlanController {
 		PlanDetailResponse planDetailResponse = planDetailQueryService.planDetail(user, planId);
 		return ApiResponse.onSuccess(planDetailResponse);
 	}
+
+	@DeleteMapping("/{planId}")
+	@Operation(summary = "약속 삭제 API", description = "생성된 약속을 삭제합니다, 약속장만 가능합니다.", security = @SecurityRequirement(name = "Json Web Token(JWT)"))
+	public ApiResponse<DeletePlanResponse> deletePlan(@AuthUser Member user, @PathVariable Long planId) {
+		DeletePlanResponse deletePlanResponse = deletePlanCommandService.deletePlan(user, planId);
+		return ApiResponse.onSuccess(deletePlanResponse);
+	}
+
 }
