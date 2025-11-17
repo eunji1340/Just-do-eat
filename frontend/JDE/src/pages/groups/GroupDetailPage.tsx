@@ -30,9 +30,9 @@ export default function GroupDetailPage()
     <>
       <TopNavBar variant="default" onSearchClick={undefined} />
       <main className="px-4 pb-36 pt-3">
-        <h1 className="text-center text-2xl font-extrabold tracking-tight">{data.title}</h1>
+        <h1 className="text-center text-2xl font-extrabold tracking-tight">{data.roomName}</h1>
         <MemberSectionCard
-          members={data.members}
+          members={data.roomMemberList}
           // onInvite={() => navigate(`/groups/${groupId}/invite`)}
           // todo : 초청 버튼
           onInvite={()=>{
@@ -42,7 +42,7 @@ export default function GroupDetailPage()
 
         {/* 이전 약속 섹션 */}
         <PastAppointmentsSectionCard
-          items={data.pastAppointments}
+          items={data.planList}
           onSeeAll={() => navigate(`/groups/${groupId}/appointments`)}
         />
       </main>

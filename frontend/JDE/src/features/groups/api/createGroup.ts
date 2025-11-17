@@ -18,7 +18,7 @@ export async function createGroup(
       payload,
       {
         headers: {
-          Authorization: `Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIyIiwiaWF0IjoxNzYzMDk3MTI4LCJleHAiOjE3NjMxMDA3Mjh9.6DLykE9ZuNbM8BurVoWGarva1Hlw_zJpJBeIX4VI5ao`, // 🔥 여기!!
+          Authorization: `Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIyIiwiaWF0IjoxNzYzMzU4OTEzLCJleHAiOjE3NjMzNjI1MTN9.xlz-cyZ0ifYLF6sbw7IVeFxz1sMy8XWoRMauqk2axCk`, // 🔥 여기!!
         },
       }
     );
