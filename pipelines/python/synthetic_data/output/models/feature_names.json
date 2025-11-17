@@ -1,0 +1,18 @@
+[
+  "user_num_tags",
+  "user_tag_avg_score",
+  "user_tag_avg_confidence",
+  "restaurant_num_tags",
+  "restaurant_tag_avg_weight",
+  "restaurant_tag_avg_confidence",
+  "restaurant_tag_weight_std",
+  "tag_similarity_dot",
+  "tag_similarity_cosine",
+  "distance_m",
+  "distance_m_log",
+  "has_interaction_recent",
+  "action_count_save",
+  "action_count_share",
+  "action_count_view",
+  "action_count_total"
+]
