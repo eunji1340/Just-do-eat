@@ -18,6 +18,7 @@ public class PlanDetailResponse {
     private Long roomId;
     private String roomName;
     private Long planId;
+    private String planName;
     private String planPlace;
     private String startAt;
     private String planManager;
