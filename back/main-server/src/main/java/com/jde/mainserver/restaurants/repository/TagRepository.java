@@ -24,4 +24,10 @@ public interface TagRepository extends JpaRepository<Tag, Long> {
 
 	/** 타입으로 조회 */
 	List<Tag> findByType(TagType type);
+
+	/**
+	 * 타입 + 이름으로 단건 조회.
+	 * - 온보딩 매핑 시 (type, name)으로 tag_id를 찾기 위해 사용
+	 */
+	Optional<Tag> findByTypeAndName(TagType type, String name);
 }

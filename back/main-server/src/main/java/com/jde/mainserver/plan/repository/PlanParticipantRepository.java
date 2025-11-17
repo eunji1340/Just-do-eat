@@ -8,6 +8,7 @@
 package com.jde.mainserver.plan.repository;
 
 import com.jde.mainserver.plan.entity.PlanParticipant;
+import com.jde.mainserver.plan.entity.enums.PlanRole;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
@@ -23,4 +24,7 @@ public interface PlanParticipantRepository extends JpaRepository<PlanParticipant
 	 * 특정 약속에 특정 멤버가 참여 중인지 조회
 	 */
 	Optional<PlanParticipant> findByPlanPlanIdAndUserUserId(Long planId, Long memberId);
+
+	Optional<PlanParticipant> findByPlan_PlanIdAndPlanRole(Long planId, PlanRole role);
+	Long countByPlan_PlanId(Long planId);
 }
