@@ -15,10 +15,10 @@ spring:
     show-sql: true
 
 
-  flyway:
-    enabled: true
-    baseline-on-migrate: true
-    locations: classpath:db/migration
+#  flyway:
+#    enabled: true
+#    baseline-on-migrate: true
+#    locations: classpath:db/migration
 
   data:
     redis:
