@@ -19,6 +19,8 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import com.jde.mainserver.global.url.StaticUrlResolver;
+import com.jde.mainserver.onboarding.dto.OnboardingTypeMatch;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
@@ -26,6 +28,7 @@ import org.springframework.http.HttpStatus;
 
 import java.time.Instant;
 import java.util.UUID;
+import jakarta.servlet.http.HttpServletRequest;
 
 @Slf4j
 @RestController
@@ -40,6 +43,7 @@ public class OnboardingController {
 	private final OnboardingTypeQueryService onboardingTypeQueryService;
 	private final MbtiComputeService mbtiComputeService;
 	private final com.jde.mainserver.onboarding.service.OnboardingTagPrefInitializer onboardingTagPrefInitializer;
+	private final StaticUrlResolver staticUrlResolver;
 
     /** 세션 발급: POST /api/onboarding/session (permitAll) */
     @PostMapping("/session")
@@ -75,13 +79,14 @@ public class OnboardingController {
 	 * - 응답은 success:true 형태로 반환(공통 ApiResponse 사용하지 않음)
 	 */
 	@PostMapping("/import")
-	public ObjectNode importOnboarding(@RequestBody OnboardingImportRequest req) {
+	public ObjectNode importOnboarding(@RequestBody OnboardingImportRequest req, HttpServletRequest request) {
 		// 1) 먹BTI 계산
 		MbtiComputeResult result = mbtiComputeService.compute(req.mukbtiAnswers());
 
 		// 2) 타입 결과 조회(응답 본문 구성용)
 		OnboardingTypeResult typeResult = onboardingTypeQueryService.getByCode(result.code())
 			.orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Unknown computed type: " + result.code()));
+		OnboardingTypeResult absolute = toAbsoluteImageUrls(typeResult, request);
 
 		// 3) 세션 저장: 기존 submit 구조를 따라 answers + updatedAt 저장
 		ObjectNode toSave = om.createObjectNode();
@@ -103,7 +108,7 @@ public class OnboardingController {
 		ObjectNode res = om.createObjectNode();
 		res.put("success", true);
 		res.put("typeId", result.code());
-		res.set("mukbtiResult", om.valueToTree(typeResult));
+		res.set("mukbtiResult", om.valueToTree(absolute));
 		// 태그 선호는 현재 빈 객체로 반환
 		res.set("tagPrefs", om.createObjectNode());
 		return res;
@@ -158,9 +163,9 @@ public class OnboardingController {
 	/** 타입 결과 조회: GET /api/onboarding/result/types/{typeId} (permitAll) */
 	@Operation(summary = "온보딩 타입 결과 조회", description = "정의된 16가지 온보딩 타입 결과를 반환합니다. 이미지 경로는 /mbtis/{code}.png 입니다.")
 	@GetMapping("/result/types/{typeId}")
-	public ApiResponse<OnboardingTypeResult> getOnboardingType(@PathVariable String typeId) {
+	public ApiResponse<OnboardingTypeResult> getOnboardingType(@PathVariable String typeId, HttpServletRequest request) {
 		return onboardingTypeQueryService.getByCode(typeId)
-			.map(result -> ApiResponse.onSuccess(GeneralSuccessCode.OK, result))
+			.map(result -> ApiResponse.onSuccess(GeneralSuccessCode.OK, toAbsoluteImageUrls(result, request)))
 			.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Unknown typeId: " + typeId));
 	}
 
@@ -179,5 +184,32 @@ public class OnboardingController {
 
 		onboardingTagPrefInitializer.applyFromStore(memberId, null);
 		return ApiResponse.onSuccess(GeneralSuccessCode.OK);
+	}
+
+	/**
+	 * Convert relative image paths (e.g. '/mbtis/MPST.png') into absolute URLs
+	 * using either FRONT_BASE_URL or the current request host.
+	 */
+	private OnboardingTypeResult toAbsoluteImageUrls(OnboardingTypeResult r, HttpServletRequest req) {
+		return new OnboardingTypeResult(
+			r.code(),
+			r.label(),
+			r.nickname(),
+			r.keywords(),
+			r.description(),
+			r.goodMatch().stream()
+				.map(m -> new OnboardingTypeMatch(
+					m.type(),
+					m.label(),
+					staticUrlResolver.toAbsolute(m.imagePath(), req)
+				)).toList(),
+			r.badMatch().stream()
+				.map(m -> new OnboardingTypeMatch(
+					m.type(),
+					m.label(),
+					staticUrlResolver.toAbsolute(m.imagePath(), req)
+				)).toList(),
+			staticUrlResolver.toAbsolute(r.imagePath(), req)
+		);
 	}
 }

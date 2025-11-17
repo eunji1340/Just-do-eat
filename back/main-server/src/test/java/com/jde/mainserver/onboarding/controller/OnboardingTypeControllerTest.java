@@ -7,6 +7,7 @@ import com.jde.mainserver.onboarding.dto.OnboardingTypeMatch;
 import com.jde.mainserver.onboarding.dto.OnboardingTypeResult;
 import com.jde.mainserver.onboarding.mbti.service.MbtiQueryService;
 import com.jde.mainserver.onboarding.service.OnboardingTypeQueryService;
+import com.jde.mainserver.onboarding.service.OnboardingTagPrefInitializer;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +16,10 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.jpa.mapping.JpaMetamodelMappingContext;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.context.annotation.Import;
+import org.springframework.test.context.TestPropertySource;
+
+import com.jde.mainserver.global.url.StaticUrlResolver;
 
 import java.util.List;
 import java.util.Optional;
@@ -26,6 +31,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @WebMvcTest(controllers = OnboardingController.class)
 @AutoConfigureMockMvc(addFilters = false)
+@Import(StaticUrlResolver.class)
+@TestPropertySource(properties = "custom.front-base-url=http://localhost")
 class OnboardingTypeControllerTest {
 
 	@Autowired
@@ -48,6 +55,12 @@ class OnboardingTypeControllerTest {
 
 	@MockBean
 	JpaMetamodelMappingContext jpaMetamodelMappingContext;
+
+	@MockBean
+	OnboardingTagPrefInitializer onboardingTagPrefInitializer;
+
+	@MockBean
+	com.jde.mainserver.onboarding.service.MbtiComputeService mbtiComputeService;
 
 	private OnboardingTypeResult sample() {
 		return new OnboardingTypeResult(
@@ -75,10 +88,10 @@ class OnboardingTypeControllerTest {
 				.andExpect(jsonPath("$.data.nickname").value("현실파 점심헌터"))
 				.andExpect(jsonPath("$.data.keywords[0]").value("가성비"))
 				.andExpect(jsonPath("$.data.goodMatch[0].type").value("NPSD"))
-				.andExpect(jsonPath("$.data.goodMatch[0].imagePath").value("/mbtis/NPSD.png"))
+				.andExpect(jsonPath("$.data.goodMatch[0].imagePath").value("http://localhost/mbtis/NPSD.png"))
 				.andExpect(jsonPath("$.data.badMatch[0].type").value("MQAD"))
-				.andExpect(jsonPath("$.data.badMatch[0].imagePath").value("/mbtis/MQAD.png"))
-				.andExpect(jsonPath("$.data.imagePath").value("/mbtis/MPST.png"));
+				.andExpect(jsonPath("$.data.badMatch[0].imagePath").value("http://localhost/mbtis/MQAD.png"))
+				.andExpect(jsonPath("$.data.imagePath").value("http://localhost/mbtis/MPST.png"));
 	}
 
 	@Test
