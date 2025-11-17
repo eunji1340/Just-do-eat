@@ -1,9 +1,28 @@
 import { useNavigate } from 'react-router-dom';
+import type { AxiosError, AxiosResponse } from 'axios';
 import AuthLayout from '@/widgets/auth/AuthLayout';
 import LoginForm from '@/features/auth/ui/LoginForm';
 import { useLogin } from '@/features/auth/model/useLogin';
 import { useUserStore } from '@/entities/user/model/user-store';
 import customAxios from '@/shared/api/http';
+
+type UserMeResponse = {
+  status: string;
+  code: string;
+  message: string;
+  data?: {
+    userId: number;
+    name: string;
+    imageUrl: string;
+    role: string;
+    ageGroup: string;
+    gender: string;
+    createdAt: string;
+    updatedAt: string;
+    regionId: number | null;
+    regionName: string | null;
+  };
+};
 
 export default function LoginPage() {
   const nav = useNavigate();
@@ -19,25 +38,34 @@ export default function LoginPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     const result = await submit(e);
     if (result && result.accessToken) {
-      // 로그인 성공 후 사용자 정보 불러오기
+      // 로그인 성공 후 사용자 정보 불러오기 (선택적)
+      // 실패해도 메인 페이지로 이동
       try {
-        const response = await customAxios({
+        const response = await customAxios<AxiosResponse<UserMeResponse>>({
           method: 'GET',
           url: '/users/me',
-        }) as any;
+        });
         
-        if (response.data?.result) {
-          setUser(response.data.result);
-          nav('/');
-        } else {
-          console.error('사용자 정보를 불러올 수 없습니다.');
-          nav('/');
+        const userData = response.data?.data;
+
+        if (userData) {
+          setUser({
+            userId: userData.userId,
+            name: userData.name,
+            imageUrl: userData.imageUrl,
+            ageGroup: userData.ageGroup,
+            gender: userData.gender,
+            role: userData.role,
+          });
         }
       } catch (error) {
-        console.error('사용자 정보 불러오기 실패:', error);
-        // 실패해도 메인 페이지로 이동
-        nav('/');
+        const axiosError = error as AxiosError<{ message?: string }>;
+        console.error('사용자 정보 불러오기 실패:', axiosError);
+        // 사용자 정보 불러오기 실패는 무시하고 메인 페이지로 이동
       }
+      
+      // 로그인 성공 후 메인 페이지로 리다이렉트
+      nav('/', { replace: true });
     }
   };
 

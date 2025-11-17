@@ -19,7 +19,7 @@
 /* ===== 라이트 모드 ===== */
 :root {
   /* 배경 색상 */
-  --color-bg: oklch(97% 0 0); /* body 배경색 (neutral-100) */
+  --color-body: oklch(97% 0 0); /* body 배경색 (neutral-100) */
   --color-surface: oklch(100% 0 0); /* 섹션/패널 배경 (흰색) */
   --color-card: oklch(100% 0 0); /* 카드 배경색 (흰색) */
 
@@ -62,7 +62,9 @@
 
 @theme {
   /* Brand - 브랜드 주요 색상 (오렌지) */
-  --color-primary: oklch(75% 0.183 55.934); /* 주요 CTA, 포인트 컬러 (orange-400) */
+  --color-primary: oklch(
+    75% 0.183 55.934
+  ); /* 주요 CTA, 포인트 컬러 (orange-400) */
   --color-primary-fg: oklch(100% 0 0); /* primary 위의 텍스트 (흰색) */
   --color-secondary: oklch(55.6% 0 0); /* 보조 컬러 (neutral-500) */
   --color-info: oklch(62.3% 0.214 259.815); /* 정보 컬러 (blue-500) */
@@ -97,6 +99,10 @@
    ======================================================================================== */
 
 /* 배경 클래스 */
+.bg-body {
+  background-color: var(--color-body);
+}
+
 .bg-surface {
   background-color: var(--color-surface);
 }

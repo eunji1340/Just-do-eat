@@ -12,7 +12,12 @@ import OnboardingResult from "../../pages/Onboarding/result";
 import SignupPage from "../../pages/Signup";
 import LoginPage from "../../pages/Login";
 import GroupsListPage from "@/pages/groups/GroupsListPage";
+import GroupDetailPage from "@/pages/groups/GroupDetailPage";
 import RoulettePage from "@/pages/roulette/RoulettePage";
+import SearchStartPage from "@/pages/search/SearchStartPage";
+import SearchResultPage from "@/pages/search/SearchResultPage";
+import PlanDetailPage from "@/pages/plan/PlanDetailPage";
+import FavoritesPage from "@/pages/favorites/FavoritesPage";
 
 const router = createBrowserRouter([
   {
@@ -60,10 +65,46 @@ const router = createBrowserRouter([
     ),
   },
   {
+    path: "/groups/:groupId",
+    element: (
+      <AppLayout>
+        <GroupDetailPage />
+      </AppLayout>
+    ),
+  },
+  {
     path: "/roulette",
     element: (
       <AppLayout>
         <RoulettePage />
+      </AppLayout>
+    ),
+  },
+  {
+    path: "/plans/:planId",
+    element: (
+      <AppLayout>
+        <PlanDetailPage />
+      </AppLayout>
+    ),
+  },
+  {
+    path: "/search/start",
+    element: <SearchStartPage />,
+  },
+  {
+    path: "/search",
+    element: (
+      <AppLayout>
+        <SearchResultPage />
+      </AppLayout>
+    ),
+  },
+  {
+    path: "/favorites",
+    element: (
+      <AppLayout>
+        <FavoritesPage />
       </AppLayout>
     ),
   },
