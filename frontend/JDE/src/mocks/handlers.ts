@@ -191,6 +191,49 @@ const handleSignup = async ({ request }: { request: Request }) => {
   });
 };
 
+// 프로필 이미지 presigned URL 발급 핸들러 함수 (공통)
+const handleProfilePresign = async ({ request }: { request: Request }) => {
+  await delay(300);
+  
+  const body = (await request.json()) as {
+    fileName?: string;
+    contentType?: string;
+  };
+
+  if (!body.fileName || !body.contentType) {
+    return HttpResponse.json(
+      {
+        status: 'BAD_REQUEST',
+        code: 'VALIDATION_ERROR',
+        message: '파일명과 Content-Type은 필수입니다.',
+        data: null,
+      },
+      { status: 400 }
+    );
+  }
+
+  // Mock presigned URL 생성
+  // 실제로는 S3 presigned URL이지만, 개발 환경에서는 mock URL 사용
+  const fileExtension = body.fileName.split('.').pop() || 'jpg';
+  const mockFileId = crypto.randomUUID();
+  const mockUploadUrl = `https://justdoeat-jde.s3.amazonaws.com/u/mock/${mockFileId}.${fileExtension}?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=mock&X-Amz-Date=${new Date().toISOString().replace(/[-:]/g, '').split('.')[0]}Z&X-Amz-Expires=300&X-Amz-SignedHeaders=host&X-Amz-Signature=mock`;
+  const mockPublicUrl = `https://justdoeat-jde.s3.amazonaws.com/u/mock/${mockFileId}.${fileExtension}`;
+
+  return HttpResponse.json({
+    status: 'OK',
+    code: '200',
+    message: '요청 성공',
+    data: {
+      uploadUrl: mockUploadUrl,
+      publicUrl: mockPublicUrl,
+      headers: {
+        'Content-Type': body.contentType,
+      },
+      expiresIn: 300,
+    },
+  });
+};
+
 // ----------------------------------------------------
 // 핸들러 (customAxios 방식만 사용)
 // ----------------------------------------------------
@@ -282,16 +325,26 @@ export const handlers = [
     });
   }),
 
-  // 6) 온보딩 결과 공유: POST http://localhost:8080/onboarding/share
-  http.post('http://localhost:8080/onboarding/share', async ({ request }) => {
-    const body = (await request.json()) as { typeId?: string };
-    await delay(200);
+  // === 약속 상세 ===
+  http.get('http://localhost:8080/plans/:planId', async ({ params, request }) => {
+    await delay(400);
 
-    return HttpResponse.json({
-      success: true,
-      shareUrl: `https://example.com/share/${body.typeId}`,
-      message: '카카오톡으로 공유되었습니다.',
-    });
+    const url = new URL(request.url);
+    if (url.searchParams.get('variant') === 'error') {
+      return HttpResponse.json(
+        { message: '약속 상세를 불러오지 못했습니다.' },
+        { status: 500 },
+      );
+    }
+
+    const planId = params.planId as string;
+    const planDetail = resolvePlanDetailSample(planId);
+
+    if (url.searchParams.get('variant') === 'empty') {
+      planDetail.recommended = [];
+    }
+
+    return HttpResponse.json(planDetail);
   }),
 
   // === 약속 상세 ===
@@ -433,4 +486,7 @@ export const handlers = [
       result: null,
     });
   }),
+
+  // 12) 프로필 이미지 presigned URL 발급: POST http://localhost:8080/files/profile/presign
+  http.post('http://localhost:8080/files/profile/presign', handleProfilePresign),
 ];

@@ -23,11 +23,11 @@ export default function PersonalizedEntryButton() {
 
             {/* 텍스트 영역 */}
             <div className="flex flex-col justify-center">
-              <p className="text-lg font-large text-primary">
+              <p className="text-md font-large text-primary mb-3">
                 고민은 그만, <br />
                 먹으러 가자!
               </p>
-              <h2 className="text-3xl font-black text-neutral-950">
+              <h2 className="text-xl font-black text-neutral-950">
                 JUST DO EAT
               </h2>
             </div>
@@ -37,7 +37,7 @@ export default function PersonalizedEntryButton() {
         {/* 하단: 버튼 */}
         <CardFooter className="p-0 w-full">
           <div className="w-full bg-primary px-8 py-4 flex items-center justify-between hover:bg-s2 transition-colors rounded-b-xl">
-            <span className="text-xl text-white font-semibold">
+            <span className="text-lg text-white font-semibold">
               취향 저격 맛집 리스트
             </span>
             <ArrowRight className="w-6 h-6 text-white" strokeWidth={3} />
