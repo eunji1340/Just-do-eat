@@ -107,7 +107,7 @@ export default function BingoFlow({ onComplete }: BingoFlowProps) {
   return (
     <div className="fixed inset-0 flex flex-col p-5 max-w-xl mx-auto bg-[var(--color-bg)] overflow-hidden">
       <h2 className="m-0 mb-2 text-center text-xl font-semibold text-[var(--color-fg)]">호불호 빙고 (5×5)</h2>
-      <p className="m-0 mb-4 text-[var(--color-muted)] text-center">
+      <p className="m-0 mb-4 text-[var(--color-fg)] text-center">
         각 칸을 클릭해 선호도를 선택하세요: SKIP → LIKE → DISLIKE
       </p>
       
