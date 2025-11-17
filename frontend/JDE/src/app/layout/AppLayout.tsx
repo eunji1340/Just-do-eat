@@ -21,18 +21,19 @@ export default function AppLayout({ children }: Props) {
     const { pathname } = location;
 
     // 정확히 일치하는 경로들
-    const exactPaths = ["/", "/meetings", "/favorites", "/my"];
+    const exactPaths = ["/", "/favorites", "/my", "/groups", "/search"];
     if (exactPaths.includes(pathname)) {
       return true;
     }
 
     // 패턴 매칭이 필요한 경로들
-    // 모임 상세: /meetings/:id
-    // 약속 상세: /appointments/:id 또는 /meetings/:meetingId/appointments/:id
+    // 모임 상세: /groups/:id
+    // 약속 상세: /groups/appointments/:id 또는 /meetings/:meetingId/appointments/:id, /plans/:planId
     const showPatterns = [
-      /^\/meetings\/[^/]+$/, // 모임 상세
-      /^\/meetings\/[^/]+\/appointments\/[^/]+$/, // 약속 상세 (모임 하위)
+      /^\/groups\/[^/]+$/, // 모임 상세
+      /^\/groups\/[^/]+\/appointments\/[^/]+$/, // 약속 상세 (모임 하위)
       /^\/appointments\/[^/]+$/, // 약속 상세 (독립)
+      /^\/plans\/[^/]+$/, // 약속 상세 (단일 라우트)
     ];
 
     return showPatterns.some((pattern) => pattern.test(pathname));
@@ -42,10 +43,11 @@ export default function AppLayout({ children }: Props) {
   const showNavBar = shouldShowBottomNavBar();
 
   return (
-    <div className="min-h-screen flex justify-center">
+    <div className="min-h-screen flex justify-center bg-body">
       {/* 메인 콘텐츠 컨테이너: 모바일 전체 너비, sm 이상에서 max-w-[640px] */}
       <main
-        className={`w-full min-w-[320px] sm:max-w-[640px] shadow-sm ${
+        id="app-content-root"
+        className={`bg-body w-full min-w-[320px] sm:max-w-[640px] bg-white shadow-sm ${
           showNavBar ? "pb-[86px]" : ""
         }`}
       >

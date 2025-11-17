@@ -1,4 +1,5 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
+import type { AxiosError, AxiosResponse } from 'axios';
 import { useUserStore } from '@/entities/user/model/user-store';
 import customAxios from '@/shared/api/http';
 
@@ -9,7 +10,7 @@ export function useSignup() {
   const { onboardingSessionId } = useUserStore();
   
   const [formData, setFormData] = useState({
-    userId: '',
+    name: '',
     password: '',
     passwordConfirm: '',
     imageUrl: null as string | null,
@@ -21,7 +22,7 @@ export function useSignup() {
   const previewUrlRef = useRef<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [userIdCheck, setUserIdCheck] = useState<{
+  const [nameCheck, setNameCheck] = useState<{
     checking: boolean;
     available: boolean | null;
     message: string;
@@ -35,13 +36,13 @@ export function useSignup() {
   const handleChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
     
-    if (field === 'userId') {
-      setUserIdCheck({ checking: false, available: null, message: '' });
+    if (field === 'name') {
+      setNameCheck({ checking: false, available: null, message: '' });
     }
   };
 
-  const setUserIdCheckResult = useCallback((result: { checking: boolean; available: boolean | null; message: string }) => {
-    setUserIdCheck(result);
+  const setNameCheckResult = useCallback((result: { checking: boolean; available: boolean | null; message: string }) => {
+    setNameCheck(result);
   }, []);
 
   const handleImageSelect = useCallback(async (file: File | null) => {
@@ -141,13 +142,13 @@ export function useSignup() {
       return false;
     }
 
-    if (userIdCheck.available === false) {
+    if (nameCheck.available === false) {
       setError('사용할 수 없는 아이디입니다.');
       setSubmitting(false);
       return false;
     }
 
-    if (userIdCheck.checking) {
+    if (nameCheck.checking) {
       setError('아이디 중복 확인 중입니다. 잠시 후 다시 시도해주세요.');
       setSubmitting(false);
       return false;
@@ -155,14 +156,14 @@ export function useSignup() {
 
     try {
       const payload: {
-        userId: string;
+        name: string;
         password: string;
         imageUrl: string | null;
         ageGroup: string;
         gender: string;
         sessionId?: string;
       } = {
-        userId: formData.userId,
+        name: formData.name,
         password: formData.password,
         imageUrl: formData.imageUrl,
         ageGroup: formData.ageGroup,
@@ -173,20 +174,22 @@ export function useSignup() {
         payload.sessionId = onboardingSessionId;
       }
 
-      const response = await customAxios({
+      const response = await customAxios<AxiosResponse<{ status: string; message?: string }>>({
         method: 'POST',
         url: '/auth/signup',
         data: payload,
         meta: { authRequired: false }
-      }) as any;
+      });
 
       if (response?.data?.status === 'CREATED') {
         return true;
       } else {
         throw new Error(response?.data?.message || '회원가입에 실패했습니다.');
       }
-    } catch (e: any) {
-      const errorMessage = e.response?.data?.message || e.message || '회원가입 중 오류가 발생했습니다.';
+    } catch (error) {
+      const axiosError = error as AxiosError<{ message?: string }>;
+      const errorMessage =
+        axiosError.response?.data?.message ?? axiosError.message ?? '회원가입 중 오류가 발생했습니다.';
       setError(errorMessage);
       return false;
     } finally {
@@ -202,7 +205,7 @@ export function useSignup() {
     submitting,
     error,
     handleSubmit,
-    setUserIdCheckResult,
+    setNameCheckResult,
   };
 }
 
