@@ -23,7 +23,7 @@ const REFRESH_ENABLED = false;
 /** axios 기본 인스턴스 */
 const axiosInstance: AxiosInstance = axios.create({
   baseURL:
-    import.meta.env.VITE_API_BASE_URL || "http://localhost:8080",
+    import.meta.env.VITE_API_BASE_URL || "http://k13a701.p.ssafy.io/api",
   timeout: 5000,
   withCredentials: true,
 });

@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import { useUserStore } from '@/entities/user/model/user-store';
 import customAxios from '@/shared/api/http';
 
@@ -17,6 +17,8 @@ export function useSignup() {
     gender: 'MALE' as Gender,
   });
   
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const previewUrlRef = useRef<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [userIdCheck, setUserIdCheck] = useState<{
@@ -24,6 +26,11 @@ export function useSignup() {
     available: boolean | null;
     message: string;
   }>({ checking: false, available: null, message: '' });
+
+  // previewUrl 변경 시 ref 동기화
+  useEffect(() => {
+    previewUrlRef.current = previewUrl;
+  }, [previewUrl]);
 
   const handleChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -35,6 +42,86 @@ export function useSignup() {
 
   const setUserIdCheckResult = useCallback((result: { checking: boolean; available: boolean | null; message: string }) => {
     setUserIdCheck(result);
+  }, []);
+
+  const handleImageSelect = useCallback(async (file: File | null) => {
+    // 이미지 제거
+    if (file === null) {
+      const currentPreviewUrl = previewUrlRef.current;
+      if (currentPreviewUrl) {
+        URL.revokeObjectURL(currentPreviewUrl);
+      }
+      setPreviewUrl(null);
+      setFormData(prev => ({ ...prev, imageUrl: null }));
+      return;
+    }
+
+    // 로컬 미리보기 세팅
+    const blobUrl = URL.createObjectURL(file);
+    setPreviewUrl(blobUrl);
+
+    try {
+      // 1. presigned URL 요청
+      const presignResponse = await customAxios({
+        method: 'POST',
+        url: '/files/profile/presign',
+        data: {
+          fileName: file.name,
+          contentType: file.type,
+        },
+        meta: { authRequired: false }
+      }) as any;
+
+      if (presignResponse?.data?.status !== 'OK' || !presignResponse?.data?.data) {
+        throw new Error('Presigned URL 발급에 실패했습니다.');
+      }
+
+      const { uploadUrl, publicUrl, headers } = presignResponse.data.data;
+
+      // 2. S3에 파일 업로드
+      // 개발 환경(MSW 사용 시)에서는 실제 S3 업로드를 건너뛰고 publicUrl만 사용
+      const isDevelopment = import.meta.env.DEV;
+      
+      if (!isDevelopment) {
+        // 프로덕션 환경에서만 실제 S3 업로드
+        const uploadResponse = await fetch(uploadUrl, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': file.type,
+            ...(headers || {}),
+          },
+          body: file,
+        });
+
+        if (!uploadResponse.ok) {
+          throw new Error('이미지 업로드에 실패했습니다.');
+        }
+      }
+
+      // 3. 성공 시 publicUrl 저장
+      setFormData(prev => ({ ...prev, imageUrl: publicUrl }));
+      
+      // previewUrl을 publicUrl로 치환 (선택사항)
+      const currentPreviewUrl = previewUrlRef.current;
+      if (currentPreviewUrl && currentPreviewUrl.startsWith('blob:')) {
+        URL.revokeObjectURL(currentPreviewUrl);
+      }
+      setPreviewUrl(publicUrl);
+
+    } catch (error: any) {
+      console.error('이미지 업로드 오류:', error);
+      
+      // 에러 발생 시 상태 초기화
+      const currentPreviewUrl = previewUrlRef.current;
+      if (currentPreviewUrl && currentPreviewUrl.startsWith('blob:')) {
+        URL.revokeObjectURL(currentPreviewUrl);
+      }
+      setPreviewUrl(null);
+      setFormData(prev => ({ ...prev, imageUrl: null }));
+      
+      const errorMessage = error.response?.data?.message || error.message || '이미지 업로드에 실패했습니다.';
+      alert(errorMessage);
+    }
   }, []);
 
   const handleSubmit = async (e: React.FormEvent): Promise<boolean> => {
@@ -109,7 +196,9 @@ export function useSignup() {
 
   return {
     formData,
+    previewUrl,
     handleChange,
+    handleImageSelect,
     submitting,
     error,
     handleSubmit,
