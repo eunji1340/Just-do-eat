@@ -60,15 +60,22 @@ public class ScoreEngineHttpClient {
 	 * FastAPI 점수 엔진에 점수 계산 요청
 	 *
 	 * @param req 개인화 점수 계산 요청 (유저/후보 식당/태그 등 정보 포함)
+	 * @param algo 알고리즘 버전 ("cbf_v1.2" 또는 "ml_v1", 기본값: "ml_v1")
 	 * @return 점수 계산 결과 (식당별 점수 + 디버그 메타 정보)
 	 */
-	public PersonalScoreResponse score(PersonalScoreRequest req) {
+	public PersonalScoreResponse score(PersonalScoreRequest req, String algo) {
 		try {
 			Map<String, Object> fastApiReq = MainConverter.convertToFastApiSchema(req);
+			
+			// algo 파라미터 추가 (기본값: ml_v1)
+			String algoParam = algo != null ? algo : "ml_v1";
 
 			@SuppressWarnings("unchecked")
 			Map<String, Object> response = webClient.post()
-				.uri(SCORE_ENDPOINT_PERSONAL)
+				.uri(uriBuilder -> uriBuilder
+					.path(SCORE_ENDPOINT_PERSONAL)
+					.queryParam("algo", algoParam)
+					.build())
 				.bodyValue(fastApiReq)
 				.retrieve()
 				.bodyToMono(Map.class)
