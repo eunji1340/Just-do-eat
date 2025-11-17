@@ -8,7 +8,7 @@ type Gender = 'MALE' | 'FEMALE' | 'OTHER';
 
 interface SignupFormProps {
   formData: {
-    userId: string;
+    name: string;
     password: string;
     passwordConfirm: string;
     imageUrl: string | null;
@@ -21,7 +21,7 @@ interface SignupFormProps {
   submitting: boolean;
   error: string | null;
   handleSubmit: (e: FormEvent) => void;
-  setUserIdCheckResult: (result: { checking: boolean; available: boolean | null; message: string }) => void;
+  setNameCheckResult: (result: { checking: boolean; available: boolean | null; message: string }) => void;
 }
 
 export default function SignupForm({
@@ -32,7 +32,7 @@ export default function SignupForm({
   submitting,
   error,
   handleSubmit,
-  setUserIdCheckResult,
+  setNameCheckResult,
 }: SignupFormProps) {
 
   return (
@@ -41,9 +41,9 @@ export default function SignupForm({
 
       <form onSubmit={handleSubmit} className="grid gap-4">
         <UserIdCheckInput
-          userId={formData.userId}
-          onChange={(value) => handleChange('userId', value)}
-          onCheckResult={setUserIdCheckResult}
+          userId={formData.name}
+          onChange={(value) => handleChange('name', value)}
+          onCheckResult={setNameCheckResult}
         />
 
         <div className="grid gap-2">

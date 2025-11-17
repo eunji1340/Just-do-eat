@@ -17,7 +17,7 @@ export default function SignupPage() {
     submitting,
     error,
     handleSubmit: submit,
-    setUserIdCheckResult,
+    setNameCheckResult,
   } = useSignup();
 
   React.useEffect(() => {
@@ -72,7 +72,7 @@ export default function SignupPage() {
         submitting={submitting}
         error={error}
         handleSubmit={handleSubmit}
-        setUserIdCheckResult={setUserIdCheckResult}
+        setNameCheckResult={setNameCheckResult}
       />
     </AuthLayout>
   );

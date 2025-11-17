@@ -6,13 +6,13 @@ import BannerLayout from "./BannerLayout";
 import VisitStep from "./VisitStep";
 import RatingStep from "./RatingStep";
 import PlanStep from "./PlanStep";
-import { getMockPendingFeedback } from "@/entities/feedback/model/mockData";
 import type { PendingFeedback, FeedbackStep, Rating } from "@/entities/feedback";
 
 /**
  * 피드백 배너 메인 컴포넌트
  * - 피드백 대기 중인 식당이 있으면 배너 표시
  * - 단계별 질문 진행 (visit → rating/plan)
+ * - TODO: 백엔드 API 연동 필요
  */
 export default function FeedbackBanner() {
   // 피드백 대기 중인 식당 데이터
@@ -26,7 +26,9 @@ export default function FeedbackBanner() {
   useEffect(() => {
     const loadPendingFeedback = async () => {
       try {
-        const data = await getMockPendingFeedback();
+        // TODO: 실제 API 호출로 대체
+        // const data = await fetchPendingFeedback();
+        const data = null; // 임시로 null 처리
         setPendingFeedback(data);
       } catch (error) {
         console.error("Failed to load pending feedback:", error);
