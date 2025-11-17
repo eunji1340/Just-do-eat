@@ -70,6 +70,14 @@ public interface UserTagPrefRepository extends JpaRepository<UserTagPref, UserTa
 	List<UserTagPref> findByUserId(Long userId);
 
 	/**
+	 * 특정 사용자의 모든 태그 선호를 초기화(삭제)합니다.
+	 * - 온보딩 재적용 시 이전 값을 제거 후 새로 채우기 위해 사용
+	 */
+	@Modifying
+	@Query(value = "DELETE FROM user_tag_pref WHERE user_id = :userId", nativeQuery = true)
+	void deleteByUserId(@Param("userId") Long userId);
+
+	/**
 	 * 사용자 태그 선호도를 TagStat 맵으로 변환
 	 *
 	 * Entity 리스트를 tagId → TagStat 맵으로 변환하여
