@@ -44,6 +44,15 @@ def personal_score(
     user_id = req.user.user_id if hasattr(req.user, 'user_id') else None
     num_candidates = len(req.candidates)
     
+    # 데이터 확인 (문제가 있을 때만 경고)
+    user_tag_pref_size = len(req.user.tag_pref) if req.user.tag_pref else 0
+    if user_tag_pref_size == 0:
+        logger.warning(f"API_USER_TAG_PREF_EMPTY: user_id={user_id}")
+    
+    candidates_with_tags = [c for c in req.candidates if c.tag_pref and len(c.tag_pref) > 0]
+    if not candidates_with_tags:
+        logger.warning(f"API_CANDIDATE_TAGS_EMPTY: 태그가 있는 후보가 없음 (total={num_candidates})")
+    
     # 알고리즘 선택
     if algo == "ml_v1" and _check_ml_available():
         scored = score_personal_ml(req.user, req.candidates, debug=req.debug)
@@ -54,11 +63,11 @@ def personal_score(
     
     elapsed = int((perf_counter() - t0) * 1000)
     
-    # API 레벨 로깅 (불필요한 대형 dict 로그 축소)
+    # API 레벨 로깅 (불필요한 대형 dict 로그 축소, 성능 최적화)
     if elapsed > 100:  # 성능 경고만 자세히 로깅
         logger.warning(f"API_SCORE_SLOW: elapsed_ms={elapsed} > 100ms, algo={algo_version}, num_candidates={num_candidates}, top5_scores={[float(s) for _, s, _ in scored[:5]]}")
     else:
-        # 정상 응답은 간단히만 로깅
+        # 정상 응답은 간단히만 로깅 (DEBUG 레벨로 변경하여 INFO 레벨에서 대용량 로그 방지)
         logger.debug(f"API_SCORE: algo={algo_version}, num_candidates={num_candidates}, elapsed_ms={elapsed}")
 
     return {

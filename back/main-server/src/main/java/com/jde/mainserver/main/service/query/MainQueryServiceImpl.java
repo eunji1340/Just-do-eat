@@ -114,12 +114,20 @@ public class MainQueryServiceImpl implements MainQueryService {
 		boolean isNewUser = false;
 		if (!isGuest) {
 			var userTagStats = userTagPrefRepository.getUserTagStats(userId);
+			
+			// user_tag_pref 확인 (문제가 있을 때만 경고)
+			if (userTagStats == null || userTagStats.isEmpty()) {
+				log.warn("[MainQueryService.getFeedBatch] user_tag_pref is empty: userId={}", userId);
+			}
+			
 			boolean hasTagPref = (userTagStats != null && !userTagStats.isEmpty());
 			
 			// user_tag_pref가 없어도 pref_score가 있으면 기존 회원으로 판별
 			if (!hasTagPref) {
 				boolean hasPrefScore = userRestaurantStateRepository.existsByUserIdAndPrefScoreNotZero(userId);
 				isNewUser = !hasPrefScore;
+				log.debug("[MainQueryService.getFeedBatch] user type: userId={}, hasTagPref={}, hasPrefScore={}, isNewUser={}", 
+					userId, hasTagPref, hasPrefScore, isNewUser);
 			}
 		}
 
@@ -319,6 +327,12 @@ public class MainQueryServiceImpl implements MainQueryService {
 
 		// 사용자 태그 선호도 조회
 		var userTagStats = userTagPrefRepository.getUserTagStats(userId);
+		
+		// user_tag_pref 확인 (문제가 있을 때만 경고)
+		if (userTagStats == null || userTagStats.isEmpty()) {
+			log.warn("[MainQueryService.preparePoolForExistingUser] user_tag_pref is empty: userId={}", userId);
+		}
+		
 		var userTagPref = userTagStats.entrySet().stream()
 			.collect(Collectors.toMap(
 				Map.Entry::getKey,
@@ -904,6 +918,12 @@ public class MainQueryServiceImpl implements MainQueryService {
 	public PersonalScoreResponse getPersonalFeed(long userId, int top, boolean debug, Map<String, Object> ctx) {
 		// UserTagPrefRepository의 TagStat을 TagPreference로 변환
 		var userTagStats = userTagPrefRepository.getUserTagStats(userId);
+		
+		// user_tag_pref 확인 (문제가 있을 때만 경고)
+		if (userTagStats == null || userTagStats.isEmpty()) {
+			log.warn("[MainQueryService.getPersonalFeed] user_tag_pref is empty: userId={}", userId);
+		}
+		
 		var userTagPref = userTagStats.entrySet().stream()
 			.collect(Collectors.toMap(
 				Map.Entry::getKey,
