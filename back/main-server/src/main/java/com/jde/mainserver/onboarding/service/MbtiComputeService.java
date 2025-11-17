@@ -56,8 +56,8 @@ public class MbtiComputeService {
 		// 축 쌍별 우세 측과 차이를 계산하여 코드와 가중치 생성
 		PairResult mn = decide(axisCounts, "M", "N"); // 1번째 자리
 		PairResult pq = decide(axisCounts, "P", "Q"); // 2번째 자리
-		PairResult st = decide(axisCounts, "S", "T"); // 3번째 자리
-		PairResult da = decide(axisCounts, "D", "A"); // 4번째 자리
+		PairResult st = decide(axisCounts, "S", "A"); // 3번째 자리
+		PairResult da = decide(axisCounts, "T", "D"); // 4번째 자리
 
 		String code = "" + mn.winner + pq.winner + st.winner + da.winner;
 
