@@ -39,6 +39,7 @@ public class OnboardingController {
     private final BingoQueryService bingoQueryService;
 	private final OnboardingTypeQueryService onboardingTypeQueryService;
 	private final MbtiComputeService mbtiComputeService;
+	private final com.jde.mainserver.onboarding.service.OnboardingTagPrefInitializer onboardingTagPrefInitializer;
 
     /** 세션 발급: POST /api/onboarding/session (permitAll) */
     @PostMapping("/session")
@@ -161,5 +162,22 @@ public class OnboardingController {
 		return onboardingTypeQueryService.getByCode(typeId)
 			.map(result -> ApiResponse.onSuccess(GeneralSuccessCode.OK, result))
 			.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Unknown typeId: " + typeId));
+	}
+
+	/**
+	 * 온보딩 기반 태그 선호 재적용: POST /onboarding/apply-tag-prefs (인증 필요)
+	 * - 회원 키로 저장된 온보딩 JSON을 읽어 user_tag_pref를 초기화한다.
+	 * - 세션ID는 사용하지 않으며, 저장된 사용자 키 데이터만 사용한다.
+	 */
+	@PostMapping("/apply-tag-prefs")
+	public ApiResponse<Void> applyTagPrefs(Authentication authentication) {
+		String sub = (authentication == null) ? null : authentication.getName();
+		if (sub == null) return ApiResponse.onSuccess(GeneralSuccessCode.OK);
+		long memberId;
+		try { memberId = Long.parseLong(sub); }
+		catch (NumberFormatException e) { return ApiResponse.onSuccess(GeneralSuccessCode.OK); }
+
+		onboardingTagPrefInitializer.applyFromStore(memberId, null);
+		return ApiResponse.onSuccess(GeneralSuccessCode.OK);
 	}
 }
