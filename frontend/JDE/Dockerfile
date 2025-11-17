@@ -4,14 +4,14 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm ci
 
-COPY .env
+COPY .env .env.production
 COPY . .
 RUN npm run build  # Vite 기본 outDir = dist
 
 # ---------- runtime ----------
 FROM nginx:1.25-alpine
 
-RUN rm -rf ./etc/nginx/conf.d/default.conf
+RUN rm -rf /etc/nginx/conf.d/default.conf
 
 WORKDIR /usr/share/nginx/html
 RUN rm -rf ./*
