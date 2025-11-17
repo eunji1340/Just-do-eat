@@ -116,10 +116,9 @@ def score_personal(
     
     user_tags = user.tag_pref or {}
     
-    # pref_score가 있는 식당 수 카운트 (디버그용)
+    # pref_score가 있는 식당 수 카운트 (문제가 있을 때만 로깅)
     pref_score_count = sum(1 for c in candidates if c.pref_score is not None)
-    if pref_score_count > 0:
-        print(f"[DEBUG] pref_score가 있는 식당 수: {pref_score_count}/{len(candidates)}")
+    # pref_score는 선택적이므로 로깅하지 않음
     
     for c in candidates:
         rid = c.restaurant_id
@@ -161,12 +160,8 @@ def score_personal(
         # 최종 점수: base * 거리감쇠
         score_val = base * decay
         
-        # pref_score가 있는 식당 디버그 출력 (최종 점수 포함)
-        if pref is not None or w_eng > 0.0 or (c.has_interaction_recent is False):
-            w_tag_contrib = ALPHA_TAG * w_tag
-            w_pref_contrib = BETA_PREF * w_pref
-            cold_damp_applied = COLD_START_DAMP if (c.has_interaction_recent is False) else 1.0
-            print(f"[DEBUG] 식당: restaurant_id={rid}, pref_score={pref}, w_pref={round(w_pref, 4)}, w_tag={round(w_tag, 4)}, w_eng={round(w_eng, 4)}, w_tag_contrib(α×w_tag)={round(w_tag_contrib, 4)}, w_pref_contrib(β×w_pref)={round(w_pref_contrib, 4)}, has_interaction={c.has_interaction_recent}, cold_damp={cold_damp_applied}, base={round(base, 4)}, distance_decay={round(decay, 4)}, final_score={round(score_val, 4)}")
+        # pref_score가 있는 식당은 debug 모드에서만 상세 로깅
+        # (일반적으로는 로깅하지 않음)
         
         dbg = None
         if debug:
