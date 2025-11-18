@@ -966,6 +966,16 @@ public class MainQueryServiceImpl implements MainQueryService {
 			return null;
 		}
 
+		// 선택한지 하루(24시간) 이상 지났을 때만 반환
+		if (state.getLastSwipeAt() != null) {
+			var now = java.time.Instant.now();
+			var oneDayAgo = now.minusSeconds(24 * 60 * 60); // 24시간 전
+			if (state.getLastSwipeAt().isAfter(oneDayAgo)) {
+				// 하루가 지나지 않았으면 null 반환
+				return null;
+			}
+		}
+
 		Long restaurantId = state.getId().getRestaurantId();
 
 		// 식당 정보 조회
