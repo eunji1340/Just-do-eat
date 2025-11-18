@@ -189,6 +189,9 @@ public class OnboardingController {
 	/**
 	 * Convert relative image paths (e.g. '/mbtis/MPST.png') into absolute URLs
 	 * using either FRONT_BASE_URL or the current request host.
+	 * 
+	 * 이미지 경로에 '/api' prefix를 추가하여 응답합니다.
+	 * 예: '/mbtis/MPST.png' -> 'https://www.justdoeat.ai.kr/api/mbtis/MPST.png'
 	 */
 	private OnboardingTypeResult toAbsoluteImageUrls(OnboardingTypeResult r, HttpServletRequest req) {
 		return new OnboardingTypeResult(
@@ -201,15 +204,38 @@ public class OnboardingController {
 				.map(m -> new OnboardingTypeMatch(
 					m.type(),
 					m.label(),
-					staticUrlResolver.toAbsolute(m.imagePath(), req)
+					staticUrlResolver.toAbsolute(prependApiPrefix(m.imagePath()), req)
 				)).toList(),
 			r.badMatch().stream()
 				.map(m -> new OnboardingTypeMatch(
 					m.type(),
 					m.label(),
-					staticUrlResolver.toAbsolute(m.imagePath(), req)
+					staticUrlResolver.toAbsolute(prependApiPrefix(m.imagePath()), req)
 				)).toList(),
-			staticUrlResolver.toAbsolute(r.imagePath(), req)
+			staticUrlResolver.toAbsolute(prependApiPrefix(r.imagePath()), req)
 		);
+	}
+
+	/**
+	 * 이미지 경로에 '/api' prefix를 추가합니다.
+	 * 예: '/mbtis/MPST.png' -> '/api/mbtis/MPST.png'
+	 * 
+	 * @param path 원본 이미지 경로 (예: '/mbtis/MPST.png')
+	 * @return '/api' prefix가 추가된 경로 (예: '/api/mbtis/MPST.png')
+	 */
+	private String prependApiPrefix(String path) {
+		if (path == null || path.isBlank()) {
+			return path;
+		}
+		// 이미 '/api'로 시작하는 경우 중복 추가 방지
+		if (path.startsWith("/api/")) {
+			return path;
+		}
+		// 경로가 '/'로 시작하는 경우 '/api'를 추가
+		if (path.startsWith("/")) {
+			return "/api" + path;
+		}
+		// 경로가 '/'로 시작하지 않는 경우 '/api/'를 앞에 추가
+		return "/api/" + path;
 	}
 }
