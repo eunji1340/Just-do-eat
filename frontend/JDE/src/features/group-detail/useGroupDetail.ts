@@ -1,28 +1,38 @@
 // src/features/group-detail/useGroupDetail.ts
 import * as React from "react";
-import type { GroupDetail } from "@/entities/groups/types";
-import { dummyGroupDetail } from "@/entities/groups/dummy-detail";
+import type { Room } from "@/entities/groups/types";
+import { getGroupDetail } from "./api/getGroupDetail";
 
-export function useGroupDetail(groupId: string) {
-  const [data, setData] = React.useState<GroupDetail | null>(null);
-  const [error, setError] = React.useState<string | undefined>(undefined);
+export function useGroupDetail(roomId: string) {
+  const [data, setData] = React.useState<Room | null>(null);
+  const [loading, setLoading] = React.useState(true);
+  const [error, setError] = React.useState<string | null>(null);
 
   React.useEffect(() => {
-    let alive = true;            // ⚠️ 메모리릭/중복세팅 방지
-    setData(null);               // 로딩 시작
-    setError(undefined);
+    if (!roomId) return;
 
-    // TODO: 실제 axios 교체
-    // fetch(`/api/groups/${groupId}`)
-    //   .then(r => r.json())
-    //   .then(json => { if (alive) setData(json) })
-    //   .catch(e => { if (alive) setError(String(e)); });
+    let cancelled = false;
 
-    if (alive) setData(dummyGroupDetail);
+    async function fetchDetail() {
+      setLoading(true);
+      setError(null);
 
-    return () => { alive = false };
-  }, [groupId]);                 // ✅ groupId만! data/error 넣지 마세요.
+      try {
+        const result = await getGroupDetail(roomId);
+        if (!cancelled) setData(result);
+      } catch (e: any) {
+        if (!cancelled) setError(e.message || "로드 실패");
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    }
 
-  const loading = data === null && !error;
+    fetchDetail();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [roomId]);
+
   return { data, loading, error };
 }

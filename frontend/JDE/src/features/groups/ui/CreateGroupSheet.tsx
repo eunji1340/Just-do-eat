@@ -13,21 +13,23 @@ export default function CreateGroupSheet({ open, onOpenChange, onCreated }: Prop
 
   React.useEffect(() => { if (open) { setroomName(""); setError(null); setLoading(false); } }, [open]);
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    if (!roomName.trim()) return setError("모임 이름을 입력해 주세요.");
-    try {
-      setLoading(true);
-      const payload: CreateGroupPayload = { roomName: roomName.trim() };
-      const { id } = await createGroup(payload);
-      onOpenChange(false);
-      onCreated?.(id);
-    } catch (err: any) {
-      setError(err?.message || "그룹 생성 중 오류가 발생했습니다.");
-    } finally {
-      setLoading(false);
-    }
+async function handleSubmit(e: React.FormEvent) {
+  e.preventDefault();
+  if (!roomName.trim()) return setError("모임 이름을 입력해 주세요.");
+  try {
+    setLoading(true);
+    const payload: CreateGroupPayload = { roomName: roomName.trim() };
+
+    const { roomId } = await createGroup(payload); // ✅ roomId로 받기
+    onOpenChange(false);
+    onCreated?.(roomId); // ✅ 여기로 전달
+
+  } catch (err: any) {
+    setError(err?.message || "그룹 생성 중 오류가 발생했습니다.");
+  } finally {
+    setLoading(false);
   }
+}
 
   return (
     <BottomSheet open={open} onOpenChange={onOpenChange} anchorSelector="#app-content-root">
