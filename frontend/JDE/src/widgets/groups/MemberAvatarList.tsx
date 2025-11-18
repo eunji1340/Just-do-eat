@@ -11,10 +11,10 @@
 // - (옵션) maxVisible로 "+N" 처리 가능(미설정 시 전체 표시)
 // ================================
 
-import type { Member } from "@/entities/groups/types";
+import type { RoomMember } from "@/entities/groups/types";
 
 type Props = {
-  members: Member[];
+  members: RoomMember[];
   /** '+N' 집계를 위한 최대 표시 개수 (옵션). 미설정 시 전체 표시 */
   maxVisible?: number;
 };
@@ -38,14 +38,14 @@ export default function MemberAvatarList({ members, maxVisible }: Props) {
     >
       {visible.map((m) => (
         <div
-          key={m.id}
+          key={m.userId}
           // 아이템 박스가 절대 줄어들지 않게 고정
           className="flex w-16 flex-none shrink-0 snap-start flex-col items-center"
         >
-          <Avatar url={m.profileImg} name={m.nickname} />
+          <Avatar url={m.imageUrl} name={m.userName} />
           {/* 닉네임 폭도 w-16로 고정해서 줄바꿈/줄임 처리 안정화 */}
           <span className="mt-1 line-clamp-1 w-16 text-center text-xs text-foreground/80">
-            {m.nickname}
+            {m.userName}
           </span>
         </div>
       ))}
