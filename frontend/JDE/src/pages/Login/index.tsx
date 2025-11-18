@@ -193,7 +193,7 @@ export default function LoginPage() {
         }
       >
         {/* 로고 */}
-        <div className="flex justify-center mb-4">
+        <div className="flex justify-center mb-4 mt-20">
           <img
             src="/logo2_primary.png"
             alt="JUST DO EAT"
