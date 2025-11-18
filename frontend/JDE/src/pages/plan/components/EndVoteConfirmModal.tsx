@@ -1,5 +1,3 @@
-import { AlertCircle } from "lucide-react";
-
 type EndVoteConfirmModalProps = {
   isOpen: boolean;
   onClose: () => void;
