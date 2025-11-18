@@ -20,6 +20,8 @@ import PlanDetailPage from "@/pages/plan/PlanDetailPage";
 import FavoritesPage from "@/pages/favorites/FavoritesPage";
 import MyPage from "@/pages/my/MyPage";
 import RestaurantDetailPage from "@/pages/restaurant/RestaurantDetailPage";
+import InvitePage from "@/pages/groups/InvitePage";
+import PlanListPage from "@/pages/groups/PlanListPage";
 
 const router = createBrowserRouter([
   {
@@ -75,6 +77,13 @@ const router = createBrowserRouter([
     ),
   },
   {
+    path: "groups/:groupId/plans",
+    element:
+      <AppLayout>
+        <PlanListPage />
+      </AppLayout>
+  },
+  {
     path: "/roulette",
     element: (
       <AppLayout>
@@ -121,6 +130,14 @@ const router = createBrowserRouter([
   {
     path: "/restaurants/:restaurantId",
     element: <RestaurantDetailPage />,
+  },
+  {
+    path: "/invite",
+    element: (
+      <AppLayout>
+        <InvitePage />
+      </AppLayout>
+    )
   }
 ]);
 
