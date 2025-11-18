@@ -11,6 +11,10 @@ export type RoomMember = {
 export type Plan = {
   planId: number;
   startAt: string;              // ISO 문자열
+  planManager: string;
+  planName:string;
+  restaurantName:string
+  restaurantId:number;
   restaurantImageUrl: string;   // 썸네일로 쓸 수 있음
 };
 
