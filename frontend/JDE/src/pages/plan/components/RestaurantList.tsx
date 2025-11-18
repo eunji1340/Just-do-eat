@@ -9,12 +9,16 @@ type RestaurantListProps = {
   hasMore: boolean;
   currentHistoryIndex: number;
   directSelectMode: boolean;
+  voteMode?: boolean;
   selectedRestaurantId: string | null;
   selectedTool: "VOTE" | "LADDER" | "ROULETTE" | "DIRECT" | null;
   restaurantListRef: React.RefObject<HTMLDivElement | null>;
   onRestaurantSelect: (restaurantId: string) => void;
   onPrevious: () => void;
   onNext: () => void;
+  getVoteCount?: (restaurantId: string) => number;
+  totalParticipants?: number;
+  currentVoteCount?: number;
 };
 
 export function RestaurantList({
@@ -23,12 +27,16 @@ export function RestaurantList({
   hasMore,
   currentHistoryIndex,
   directSelectMode,
+  voteMode = false,
   selectedRestaurantId,
   selectedTool,
   restaurantListRef,
   onRestaurantSelect,
   onPrevious,
   onNext,
+  getVoteCount,
+  totalParticipants,
+  currentVoteCount,
 }: RestaurantListProps) {
   if (isLoading) {
     return (
@@ -61,6 +69,11 @@ export function RestaurantList({
         <p className="text-sm font-semibold text-neutral-700">
           {restaurants.length}개의 후보 식당
         </p>
+        {currentVoteCount !== undefined && totalParticipants !== undefined && (
+          <p className="text-sm font-medium text-neutral-500">
+            투표 인원 수 {currentVoteCount} / {totalParticipants}
+          </p>
+        )}
       </div>
 
       <div className="flex flex-col gap-3">
@@ -68,7 +81,7 @@ export function RestaurantList({
           <div
             key={restaurant.id}
             onClick={(e) => {
-              if (directSelectMode) {
+              if (directSelectMode || voteMode) {
                 e.stopPropagation();
                 onRestaurantSelect(restaurant.id);
               }
@@ -78,17 +91,22 @@ export function RestaurantList({
               restaurant={restaurant}
               highlight={
                 (selectedTool !== null && selectedTool !== "DIRECT") ||
-                directSelectMode
+                directSelectMode ||
+                voteMode
               }
-              showRadio={directSelectMode}
+              showRadio={directSelectMode || voteMode}
               isSelected={selectedRestaurantId === restaurant.id}
               onRadioClick={() => {
-                if (directSelectMode) {
+                if (directSelectMode || voteMode) {
                   onRestaurantSelect(restaurant.id);
                 }
               }}
+              voteCount={getVoteCount ? getVoteCount(restaurant.id) : undefined}
+              totalParticipants={totalParticipants}
+              showVoteCount={voteMode}
               className={cn(
-                directSelectMode && selectedRestaurantId === restaurant.id
+                (directSelectMode || voteMode) &&
+                  selectedRestaurantId === restaurant.id
                   ? "ring-2 ring-primary"
                   : ""
               )}
@@ -127,4 +145,3 @@ export function RestaurantList({
     </div>
   );
 }
-
