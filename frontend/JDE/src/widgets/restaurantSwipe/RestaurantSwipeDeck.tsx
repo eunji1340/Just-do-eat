@@ -1,12 +1,14 @@
 // src/widgets/restaurantSwipe/RestaurantSwipeDeck.tsx
 
 import * as React from "react";
-import SwipeCard from "@/features/swipe/SwipeCard";
+import { useNavigate } from "react-router-dom";
+import SwipeCard from "@/features/feed/FeedCard";
 import SwipeOverlay from "./SwipeOverlay";
 import type { Restaurant } from "@/entities/restaurant/types";
-import type { Offset } from "@/features/swipe/useSwipeHandler";
+import type { Offset } from "@/features/feed/useSwipeHandler";
 import { X, Check, ArrowDown, CircleAlert, Star } from "lucide-react";
 import { CircularButton } from "@/shared/ui/button/circular-button";
+import http from "@/shared/api/http";
 
 type Props = {
   items: Restaurant[];
@@ -24,6 +26,7 @@ export default function RestaurantSwipeDeck({
   onDeckEmpty,
   hasMore = true,
 }: Props) {
+  const navigate = useNavigate();
   const [index, setIndex] = React.useState(0);
   const [offset, setOffset] = React.useState<Offset>({ x: 0, y: 0 });
   const [finalDir, setFinalDir] = React.useState<
@@ -60,6 +63,25 @@ export default function RestaurantSwipeDeck({
     }, overlayHoldMs);
   }
 
+  // 버튼 클릭 시 스와이프 애니메이션 트리거
+  function triggerSwipeAnimation(dir: "left" | "right" | "up") {
+    // 방향에 따라 최종 offset 계산
+    const targetOffset =
+      dir === "left"
+        ? { x: -window.innerWidth, y: 0 }
+        : dir === "right"
+        ? { x: window.innerWidth, y: 0 }
+        : { x: 0, y: -window.innerHeight };
+
+    // offset 애니메이션
+    setOffset(targetOffset);
+
+    // 애니메이션 완료 후 handleSwiped 호출
+    window.setTimeout(() => {
+      handleSwiped(dir);
+    }, 300); // 애니메이션 시간
+  }
+
   React.useEffect(() => {
     if (!onDeckEmpty) return;
 
@@ -76,25 +98,37 @@ export default function RestaurantSwipeDeck({
     }
   }, [index, items.length, onDeckEmpty, emptyNotified]);
 
-  // 🔥 방향별 라벨 & 색상
-  function getConfirmInfo(dir: "left" | "right" | "up") {
-    switch (dir) {
-      case "right":
-        return {
-          label: "갈게요",
-          sub: "이 식당으로 결정했어요",
-          theme: "confirm",
-        };
-      case "left":
-        return {
-          label: "싫어요",
-          sub: "이 식당은 제외했어요",
-          theme: "dislike",
-        };
-      case "up":
-      default:
-        return { label: "보류", sub: "일단 후보에 남겨둘게요", theme: "hold" };
+  // 북마크 버튼 핸들러
+  async function handleBookmark() {
+    const cur = items[index];
+    if (!cur) return;
+
+    // 로그인 체크
+    const token = localStorage.getItem("accessToken");
+    if (!token) {
+      alert("로그인이 필요한 기능입니다.");
+      return;
     }
+
+    try {
+      await http.post(`/restaurants/${cur.restaurant_id}/bookmark`);
+      console.log(`✅ [북마크] 추가 성공 - restaurantId: ${cur.restaurant_id}`);
+      alert("북마크에 추가되었습니다!");
+    } catch (err) {
+      console.error("[북마크] 추가 실패:", err);
+      alert("북마크 추가에 실패했습니다.");
+    }
+  }
+
+  // 정보 버튼 핸들러 (식당 상세 페이지로 이동)
+  function handleInfo() {
+    const cur = items[index];
+    if (!cur) return;
+
+    // 피드에서 진입했다는 정보를 state로 전달
+    navigate(`/restaurants/${cur.restaurant_id}`, {
+      state: { fromFeed: true },
+    });
   }
 
   return (
@@ -105,35 +139,6 @@ export default function RestaurantSwipeDeck({
         finalDir={finalDir}
         visible={overlayVisible}
       />
-
-      {/* 🔥 스와이프 확정 후 전체 화면 오버레이 */}
-      {finalDir && (
-        <div className="absolute inset-0 z-30 flex items-center justify-center bg-black/60">
-          {(() => {
-            const info = getConfirmInfo(finalDir);
-            const bg =
-              info.theme === "confirm"
-                ? "bg-emerald-500"
-                : info.theme === "dislike"
-                ? "bg-red-500"
-                : "bg-amber-500";
-
-            return (
-              <div className="rounded-3xl px-8 py-6 bg-white/90 shadow-2xl text-center">
-                <div
-                  className={`inline-block rounded-full px-4 py-1 text-xs font-semibold text-white ${bg}`}
-                >
-                  {info.label}
-                </div>
-                <h2 className="mt-3 text-2xl font-extrabold text-gray-900">
-                  {info.label}
-                </h2>
-                <p className="mt-1 text-sm text-gray-600">{info.sub}</p>
-              </div>
-            );
-          })()}
-        </div>
-      )}
 
       {/* 카드 */}
       {top ? (
@@ -154,32 +159,32 @@ export default function RestaurantSwipeDeck({
           <div className="pointer-events-auto flex items-center gap-4">
             <CircularButton
               type="dislike"
-              icon={<X />}
-              onClick={() => handleSwiped("left")}
+              icon={<X strokeWidth={5} />}
+              onClick={() => triggerSwipeAnimation("left")}
               aria-label="싫어요"
             />
             <CircularButton
               type="bookmark"
-              icon={<Star />}
-              onClick={() => handleSwiped("left")} // TODO: 북마크 액션 따로 분리 가능
+              icon={<Star strokeWidth={3} />}
+              onClick={handleBookmark}
               aria-label="북마크"
             />
             <CircularButton
               type="next"
-              icon={<ArrowDown />}
-              onClick={() => handleSwiped("up")}
+              icon={<ArrowDown strokeWidth={4} />}
+              onClick={() => triggerSwipeAnimation("up")}
               aria-label="보류"
             />
             <CircularButton
               type="info"
-              icon={<CircleAlert />}
-              onClick={() => handleSwiped("up")} // TODO: 상세보기 모달로 변경 가능
+              icon={<CircleAlert strokeWidth={3} />}
+              onClick={handleInfo}
               aria-label="정보"
             />
             <CircularButton
               type="confirm"
-              icon={<Check />}
-              onClick={() => handleSwiped("right")}
+              icon={<Check strokeWidth={5} />}
+              onClick={() => triggerSwipeAnimation("right")}
               aria-label="갈게요"
             />
           </div>

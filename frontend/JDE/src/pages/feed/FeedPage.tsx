@@ -100,6 +100,7 @@ function mapBackendToRestaurant(raw: BackendRestaurantItem): Restaurant {
     menu: menu ?? [],
     distance_m: raw.distance_m,
     is_open: raw.is_open,
+    hours: raw.hours ?? null,
   };
 }
 
@@ -193,20 +194,36 @@ export default function FeedPage() {
   ) {
     const action = mapDirToAction(dir);
     const overlayHoldMs = 700;
-    try {
-      await http.post("/main/feed/swipe", {
-        restaurantId: item.restaurant_id,
-        action,
-      });
 
-      if (dir === "right") {
-        setTimeout(() => {
-          navigate("/");
-        }, overlayHoldMs); // 700ms 정도
-        return;
+    // 🔐 로그인 체크: 로컬 스토리지에서 토큰 확인
+    const token = localStorage.getItem("accessToken");
+    const isLoggedIn = !!token;
+
+    // 로그인한 사용자만 스와이프 액션 전송
+    if (isLoggedIn) {
+      try {
+        await http.post("/main/feed/swipe", {
+          restaurantId: item.restaurant_id,
+          action,
+        });
+        console.log(
+          `✅ [스와이프 액션] 전송 성공 - restaurantId: ${item.restaurant_id}, action: ${action}`
+        );
+      } catch (err) {
+        console.error("[FeedPage] 스와이프 액션 전송 실패:", err);
       }
-    } catch (err) {
-      console.error("[FeedPage] 스와이프 액션 전송 실패:", err);
+    } else {
+      console.log(
+        `⚠️ [비로그인] 스와이프 액션 전송 스킵 - restaurantId: ${item.restaurant_id}, action: ${action}`
+      );
+    }
+
+    // SELECT(우 스와이프) 시 메인 페이지로 이동
+    if (dir === "right") {
+      setTimeout(() => {
+        navigate("/");
+      }, overlayHoldMs); // 700ms 정도
+      return;
     }
   }
 

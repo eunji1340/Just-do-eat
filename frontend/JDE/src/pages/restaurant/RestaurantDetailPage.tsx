@@ -1,10 +1,12 @@
-import { useParams, useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { TopNavBar } from "@/widgets/top-navbar";
 import { useRestaurantDetail } from "./api/useRestaurantDetail";
 import RestaurantHeader from "./ui/RestaurantHeader";
 import RestaurantBasicInfo from "./ui/RestaurantBasicInfo";
 import RestaurantMenu from "./ui/RestaurantMenu";
 import RestaurantLocation from "./ui/RestaurantLocation";
+import FloatingActionButtons from "@/features/restaurant/ui/FloatingActionButtons";
 
 // ============================================
 // 메인 컴포넌트
@@ -18,9 +20,26 @@ import RestaurantLocation from "./ui/RestaurantLocation";
 export default function RestaurantDetailPage() {
   const { restaurantId } = useParams<{ restaurantId: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // 피드에서 진입했는지 확인
+  const fromFeed = location.state?.fromFeed || false;
 
   // 커스텀 훅으로 식당 상세 정보 조회
   const { restaurant, isLoading, error } = useRestaurantDetail(restaurantId);
+
+  // 슬라이드 애니메이션 상태
+  const [isVisible, setIsVisible] = useState(false);
+
+  // 마운트 후 슬라이드 업 애니메이션 트리거
+  useEffect(() => {
+    // 약간의 지연 후 애니메이션 시작 (DOM 렌더링 보장)
+    const timer = setTimeout(() => {
+      setIsVisible(true);
+    }, 10);
+
+    return () => clearTimeout(timer);
+  }, []);
 
   /**
    * 공유 버튼 클릭 핸들러
@@ -69,7 +88,11 @@ export default function RestaurantDetailPage() {
       </div>
 
       {/* 메인 콘텐츠 컨테이너 - AppLayout과 동일한 제한 */}
-      <div className="relative w-full min-w-[320px] sm:max-w-[640px] shadow-sm min-h-screen">
+      <div
+        className={`relative w-full min-w-[320px] sm:max-w-[640px] shadow-sm min-h-screen transition-transform duration-500 ease-out ${
+          isVisible ? "translate-y-0" : "translate-y-full"
+        }`}
+      >
         {/* 메인 콘텐츠 영역 */}
         <div className="relative min-h-screen">
           {/* 로딩 상태 */}
@@ -111,6 +134,15 @@ export default function RestaurantDetailPage() {
           )}
         </div>
       </div>
+
+      {/* 우하단 플로팅 버튼 (식당 정보가 로드된 경우에만 표시) - fixed이므로 메인 컨텐츠 밖에 배치 */}
+      {!isLoading && !error && restaurant && (
+        <FloatingActionButtons
+          restaurantId={restaurant.restaurant_id}
+          showBackToFeed={fromFeed}
+          isVisible={isVisible}
+        />
+      )}
     </div>
   );
 }
