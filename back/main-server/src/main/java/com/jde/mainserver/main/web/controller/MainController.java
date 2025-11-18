@@ -114,7 +114,7 @@ public class MainController {
 
 	@Operation(
 		summary = "최근 선택 식당 조회",
-		description = "사용자가 가장 최근에 SELECT 액션으로 선택한 식당을 조회합니다. 없으면 204 No Content를 반환합니다.",
+		description = "사용자가 가장 최근에 SELECT 액션으로 선택한 식당을 조회합니다. 선택한지 하루(24시간) 이상 지난 경우만 반환합니다. 없으면 204 No Content를 반환합니다.",
 		security = @SecurityRequirement(name = "Json Web Token(JWT)")
 	)
 	@GetMapping("/restaurants/last-selected")
