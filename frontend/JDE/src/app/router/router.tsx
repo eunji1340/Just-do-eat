@@ -5,7 +5,7 @@
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { lazy } from "react";
 import MainPage from "../../pages/main/MainPage";
-import SwipePage from "../../pages/swipe/SwipePage";
+import FeedPage from "../../pages/feed/FeedPage";
 import OnboardingLanding from "../../pages/Onboarding/landing";
 import OnboardingPage from "../../pages/Onboarding";
 import OnboardingResult from "../../pages/Onboarding/result";
@@ -34,10 +34,10 @@ const router = createBrowserRouter([
     ),
   },
   {
-    path: "/swipe",
+    path: "/feed",
     element: (
       <AppLayout>
-        <SwipePage />
+        <FeedPage />
       </AppLayout>
     ),
   },
