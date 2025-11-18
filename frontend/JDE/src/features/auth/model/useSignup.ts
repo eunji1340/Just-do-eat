@@ -95,17 +95,38 @@ export function useSignup() {
     const { uploadUrl, publicUrl, headers } = presignResponse.data.data;
 
     // 2. S3에 파일 업로드
-    const uploadResponse = await fetch(uploadUrl, {
-      method: "PUT",
-      headers: {
-        "Content-Type": file.type,
-        ...(headers || {}),
-      },
-      body: file,
-    });
+    try {
+      const uploadResponse = await fetch(uploadUrl, {
+        method: "PUT",
+        headers: {
+          "Content-Type": file.type,
+          ...(headers || {}),
+        },
+        body: file,
+      });
 
-    if (!uploadResponse.ok) {
-      throw new Error("이미지 업로드에 실패했습니다.");
+      if (!uploadResponse.ok) {
+        // CORS 오류인 경우 특별 처리
+        if (uploadResponse.status === 0 || uploadResponse.status === 403) {
+          throw new Error(
+            "S3 업로드 중 CORS 오류가 발생했습니다. 백엔드에서 S3 CORS 설정을 확인해주세요."
+          );
+        }
+        throw new Error(
+          `이미지 업로드에 실패했습니다. (${uploadResponse.status})`
+        );
+      }
+    } catch (fetchError) {
+      // CORS 오류 또는 네트워크 오류
+      if (
+        fetchError instanceof TypeError &&
+        fetchError.message.includes("fetch")
+      ) {
+        throw new Error(
+          "S3 업로드 중 네트워크 오류가 발생했습니다. 백엔드에서 S3 CORS 설정을 확인해주세요."
+        );
+      }
+      throw fetchError;
     }
 
     // 3. PATCH /users/me/image로 이미지 URL 저장 (인증 필요)
