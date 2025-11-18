@@ -153,9 +153,22 @@ public class PlanDecisionService {
         var rows = voteRepository.tallyByPlanId(planId);
         long total = voteRepository.countByPlanId(planId);
 
+        // 모든 투표를 가져와서 식당별 userId 리스트 생성
+        List<PlanVote> allVotes = voteRepository.findAllByPlanId(planId);
+        java.util.Map<Long, java.util.List<Long>> restaurantUserIdsMap = allVotes.stream()
+                .collect(java.util.stream.Collectors.groupingBy(
+                        PlanVote::getRestaurantId,
+                        java.util.stream.Collectors.mapping(
+                                PlanVote::getUserId,
+                                java.util.stream.Collectors.toList()
+                        )
+                ));
+
         List<TallyResponse.Item> items = new ArrayList<>();
         for (var r : rows) {
-            items.add(new TallyResponse.Item(r.getRestaurantId(), r.getVotes()));
+            Long restaurantId = r.getRestaurantId();
+            List<Long> userIds = restaurantUserIdsMap.getOrDefault(restaurantId, new ArrayList<>());
+            items.add(new TallyResponse.Item(restaurantId, r.getVotes(), userIds));
         }
 
         return new TallyResponse(planId, items, total);
