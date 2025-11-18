@@ -10,7 +10,7 @@ import {
   createPlan,
   type CreatePlanPayload,
   type PriceRangeCode,
-} from "@/features/group-detail/createPlan"; // ✅ API 파일 경로/타입 맞게 수정
+} from "@/features/group-detail/createPlan";
 import { ChevronDown } from "lucide-react";
 
 import TimePickerInSheet from "@/shared/ui/time-picker/TimePickerInSheet";
@@ -47,11 +47,19 @@ const DISLIKE_CATEGORY_OPTIONS = [
   "술집",
 ] as const;
 
+// 🔹 GroupDetail의 roomMemberList 모양에 맞춰 주세요
+type Member = {
+  userId: number;
+  userName: string;
+  imageUrl?: string;
+};
+
 type Props = {
   open: boolean;
   onOpenChange: (o: boolean) => void;
   onCreated?: (id: number) => void;
-  groupId?: number; // roomId
+  groupId: number; // roomId (이제 필수)
+  members: Member[];
 };
 
 export default function CreatePlanSheet({
@@ -59,6 +67,7 @@ export default function CreatePlanSheet({
   onOpenChange,
   onCreated,
   groupId,
+  members,
 }: Props) {
   // 👇 폼 상태들
   const [title, setTitle] = React.useState(""); // planName
@@ -77,8 +86,10 @@ export default function CreatePlanSheet({
     []
   );
 
-  // 임시: 참여자 ID 목록을 쉼표로 입력 (예: 1, 2, 3)
-  const [participants, setParticipants] = React.useState("");
+  // ✅ 참여자: 선택된 userId 목록
+  const [selectedParticipantIds, setSelectedParticipantIds] = React.useState<
+    number[]
+  >([]);
 
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
@@ -95,7 +106,7 @@ export default function CreatePlanSheet({
       setTime("");
       setSelectedPriceRanges([]);
       setDislikeCategories([]);
-      setParticipants("");
+      setSelectedParticipantIds([]);
       setError(null);
       setLoading(false);
     }
@@ -113,28 +124,22 @@ export default function CreatePlanSheet({
     );
   }
 
+  function toggleParticipant(userId: number) {
+    setSelectedParticipantIds((prev) =>
+      prev.includes(userId) ? prev.filter((id) => id !== userId) : [...prev, userId]
+    );
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-
-    if (!groupId) {
-      return setError("모임 정보가 없습니다. 페이지를 새로고침 해 주세요.");
-    }
 
     if (!title.trim()) return setError("약속 이름을 입력해 주세요.");
     if (!date) return setError("날짜를 선택해 주세요.");
     if (!time) return setError("시간을 선택해 주세요.");
     if (selectedPriceRanges.length === 0)
       return setError("가격대를 한 개 이상 선택해 주세요.");
-
-    // 참여자 ID를 쉼표로 구분해 입력한다고 가정 (예: "1, 2, 3")
-    const participantIds = participants
-      .split(",")
-      .map((raw) => Number(raw.trim()))
-      .filter((n) => !Number.isNaN(n));
-
-    if (participantIds.length === 0) {
-      return setError("참여자 ID를 한 개 이상 입력해 주세요. (예: 1, 2, 3)");
-    }
+    if (selectedParticipantIds.length === 0)
+      return setError("참여자를 한 명 이상 선택해 주세요.");
 
     try {
       setLoading(true);
@@ -154,7 +159,7 @@ export default function CreatePlanSheet({
         centerLon,
         radiusM,
         startsAt,
-        participantIds,
+        participantIds: selectedParticipantIds, // ✅ 여기!
         dislikeCategories,
         priceRanges: selectedPriceRanges,
       };
@@ -309,21 +314,35 @@ export default function CreatePlanSheet({
               </p>
             </div>
 
-            {/* 참여자 (임시: ID 쉼표 입력) */}
+            {/* ✅ 참여자 선택 (멤버 목록 기반) */}
             <div className="grid gap-2">
-              <label htmlFor="participants" className="text-sm font-medium">
-                참여자 ID
-              </label>
-              <input
-                id="participants"
-                className={baseFieldClass}
-                placeholder="예) 1, 2 (나중에 멤버 리스트 선택으로 개선)"
-                value={participants}
-                onChange={(e) => setParticipants(e.target.value)}
-                required
-              />
+              <span className="text-sm font-medium">참여자</span>
+              <div className="flex flex-wrap gap-2">
+                {members.map((m) => {
+                  const selected = selectedParticipantIds.includes(m.userId);
+                  return (
+                    <button
+                      key={m.userId}
+                      type="button"
+                      onClick={() => toggleParticipant(m.userId)}
+                      className={cn(
+                        "flex items-center gap-2 rounded-full border px-3 py-1 text-xs",
+                        selected
+                          ? "border-primary bg-primary text-primary-foreground"
+                          : "border-border bg-background text-foreground"
+                      )}
+                    >
+                      {/* 간단한 이니셜 아바타 (나중에 공용 컴포넌트로 뽑아도 됨) */}
+                      <div className="flex size-6 items-center justify-center rounded-full bg-muted text-[10px]">
+                        {m.userName.slice(0, 2)}
+                      </div>
+                      <span>{m.userName}</span>
+                    </button>
+                  );
+                })}
+              </div>
               <p className="text-xs text-muted-foreground">
-                임시로 userId를 쉼표로 구분해서 입력해 주세요. (예: 2, 1)
+                함께 약속에 참여할 멤버를 선택해 주세요.
               </p>
             </div>
 

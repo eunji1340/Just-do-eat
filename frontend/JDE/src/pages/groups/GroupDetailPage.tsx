@@ -95,7 +95,12 @@ async function handleInviteClick() {
       </div>
 
       {/* 바텀시트 */}
-      <CreatePlanSheet open={openCreate} onOpenChange={setOpenCreate} groupId={Number(groupId)} />
+      <CreatePlanSheet 
+        open={openCreate} 
+        onOpenChange={setOpenCreate} 
+        groupId={Number(groupId)} 
+        members={data.roomMemberList}  
+      />
 
       {/* 🔗 초대 링크 모달 */}
       {inviteModalOpen && inviteLink && (
