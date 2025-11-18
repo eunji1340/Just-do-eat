@@ -1,4 +1,4 @@
-import { AlertCircle, Vote, UserCheck } from "lucide-react";
+import { Vote, UserCheck } from "lucide-react";
 
 type TieVoteModalProps = {
   isOpen: boolean;
