@@ -193,7 +193,7 @@ export default function BingoFlow({ onComplete }: BingoFlowProps) {
         </div>
 
         {/* 통계 */}
-        <div className="flex gap-2">
+        <div className="flex gap-2 mb-3">
           <div className="flex-1 bg-red-50 rounded-xl p-2 text-center border border-red-200">
             <p className="text-lg font-bold text-red-600 m-0">{likeCount}</p>
             <p className="text-xs text-red-700 m-0 mt-0.5">좋아요</p>
