@@ -14,19 +14,28 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.context.annotation.Import;
+import org.springframework.test.context.TestPropertySource;
 
 import org.springframework.data.jpa.mapping.JpaMetamodelMappingContext;
 import com.jde.mainserver.global.annotation.resolver.AuthUserArgumentResolver;
+import com.jde.mainserver.global.url.StaticUrlResolver;
 import com.jde.mainserver.onboarding.OnboardingSurveyStore;
+import com.jde.mainserver.onboarding.bingo.service.BingoQueryService;
 import com.jde.mainserver.onboarding.mbti.dto.MbtiChoiceItem;
 import com.jde.mainserver.onboarding.mbti.dto.MbtiQuestionItem;
 import com.jde.mainserver.onboarding.mbti.dto.MbtiQuestionsResponse;
 import com.jde.mainserver.onboarding.mbti.service.MbtiQueryService;
+import com.jde.mainserver.onboarding.service.MbtiComputeService;
+import com.jde.mainserver.onboarding.service.OnboardingTagPrefInitializer;
+import com.jde.mainserver.onboarding.service.OnboardingTypeQueryService;
 
 import static org.mockito.Mockito.when;
 
 @WebMvcTest(controllers = OnboardingController.class)
 @AutoConfigureMockMvc(addFilters = false)
+@Import(StaticUrlResolver.class)
+@TestPropertySource(properties = "custom.front-base-url=http://localhost")
 class OnboardingControllerTest {
 
 	@Autowired
@@ -34,6 +43,18 @@ class OnboardingControllerTest {
 
 	@MockBean
 	MbtiQueryService mbtiQueryService;
+
+	@MockBean
+	BingoQueryService bingoQueryService;
+
+	@MockBean
+	OnboardingTypeQueryService onboardingTypeQueryService;
+
+	@MockBean
+	MbtiComputeService mbtiComputeService;
+
+	@MockBean
+	OnboardingTagPrefInitializer onboardingTagPrefInitializer;
 
 	@MockBean
 	OnboardingSurveyStore onboardingSurveyStore;
