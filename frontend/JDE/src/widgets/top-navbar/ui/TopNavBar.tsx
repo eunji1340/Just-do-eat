@@ -109,24 +109,38 @@ export const TopNavBar = (props: TopNavBarAllProps) => {
   }
 
   /**
-   * Label variant: 페이지 라벨 + 검색
+   * Label variant: 페이지 라벨 + 검색 (뒤로가기, 오른쪽 컨텐츠 옵션)
    * 마이, 약속, 결정도구(투표, 룰렛) 페이지
    */
   if (variant === "label") {
-    const { label, onSearchClick } = props as LabelTopNavBarProps;
+    const { label, onSearchClick, onBack, rightContent } = props as LabelTopNavBarProps;
 
     return (
       <header className={containerClass}>
-        <h1 className="text-xl font-semibold text-gray-900">{label}</h1>
+        <div className="flex items-center gap-4 flex-1">
+          {onBack && (
+            <button
+              onClick={onBack}
+              aria-label="뒤로가기"
+              className="text-gray-700 hover:text-gray-900 transition-colors"
+            >
+              <ChevronLeft className="w-6 h-6" strokeWidth={2} />
+            </button>
+          )}
+          <h1 className="text-xl font-semibold text-gray-900">{label}</h1>
+        </div>
 
-        <div className="ml-auto flex items-center">
-          <button
-            onClick={onSearchClick}
-            aria-label="검색"
-            className="text-gray-700 hover:text-gray-900 transition-colors"
-          >
-            <Search className="w-6 h-6" strokeWidth={2} />
-          </button>
+        <div className="ml-auto flex items-center gap-2">
+          {rightContent}
+          {onSearchClick && (
+            <button
+              onClick={onSearchClick}
+              aria-label="검색"
+              className="text-gray-700 hover:text-gray-900 transition-colors"
+            >
+              <Search className="w-6 h-6" strokeWidth={2} />
+            </button>
+          )}
         </div>
       </header>
     );
