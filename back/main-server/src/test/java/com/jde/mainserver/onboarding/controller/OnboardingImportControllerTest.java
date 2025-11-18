@@ -106,7 +106,7 @@ class OnboardingImportControllerTest {
 			.andExpect(jsonPath("$.success").value(true))
 			.andExpect(jsonPath("$.typeId").value("MPST"))
 			.andExpect(jsonPath("$.mukbtiResult.code").value("MPST"))
-			.andExpect(jsonPath("$.mukbtiResult.imagePath").value("http://localhost/mbtis/MPST.png"))
+			.andExpect(jsonPath("$.mukbtiResult.imagePath").value("http://localhost/api/mbtis/MPST.png"))
 			.andExpect(jsonPath("$.tagPrefs").exists());
 	}
 }
