@@ -99,7 +99,7 @@ public class PlanDecisionController {
     // 5) 투표 집계 조회 GET /plans/{planId}/decision/vote/tally
     @Operation(
         summary = "투표 집계 조회",
-        description = "투표 결과를 집계하여 조회합니다.",
+        description = "투표 결과를 집계하여 조회합니다. 각 식당별로 투표 수와 함께 투표한 사용자 ID 리스트가 포함됩니다.",
         security = @SecurityRequirement(name = "Json Web Token(JWT)")
     )
     @GetMapping("/decision/vote/tally")
