@@ -33,8 +33,16 @@ export type MetaOptions = {
  * @returns 쿠키 값 또는 null
  */
 function getCookie(name: string): string | null {
-  const m = document.cookie.match(new RegExp("(^| )" + name + "=([^;]+)"));
-  return m ? decodeURIComponent(m[2]) : null;
+  try {
+    // 정규식 특수문자 이스케이프
+    const escapedName = name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const regex = new RegExp(`(^| )${escapedName}=([^;]+)`);
+    const m = document.cookie.match(regex);
+    return m ? decodeURIComponent(m[2]) : null;
+  } catch (err) {
+    console.error("쿠키 읽기 실패:", err);
+    return null;
+  }
 }
 
 /* ----- 리프레시 설정 ----- */
@@ -54,8 +62,7 @@ const REFRESH_ENABLED = false;
  * - withCredentials: 쿠키 자동 전송
  */
 const axiosInstance: AxiosInstance = axios.create({
-  baseURL:
-    import.meta.env.VITE_API_BASE_URL || "http://k13a701.p.ssafy.io/api",
+  baseURL: import.meta.env.VITE_API_BASE_URL || "https://justdoeat.ai.kr/api/",
   timeout: 30000, // 30초로 증가
   withCredentials: true,
 });
@@ -153,6 +160,12 @@ axiosInstance.interceptors.response.use(
     return res;
   },
   async (error: AxiosError) => {
+    // error.config가 없으면 처리 불가
+    if (!error.config) {
+      console.error("❌ [응답 에러] config 없음", error);
+      throw error;
+    }
+
     console.error("❌ [응답 에러]", {
       url: error.config?.url,
       status: error.response?.status,
@@ -186,20 +199,32 @@ axiosInstance.interceptors.response.use(
 
     // 이미 리프레시 중이면 대기 큐에 추가
     if (isRefreshing) {
-      const newAT = await new Promise<string>((resolve, reject) =>
-        subscribe(resolve, reject)
-      );
-      originalReq!.headers = {
-        ...(originalReq!.headers ?? {}),
-        Authorization: `Bearer ${newAT}`,
-      };
-      originalReq!.__retry = true;
-      return axiosInstance(originalReq!);
+      try {
+        const newAT = await new Promise<string>((resolve, reject) =>
+          subscribe(resolve, reject)
+        );
+        if (!originalReq) {
+          throw new Error("원본 요청 정보가 없습니다.");
+        }
+        originalReq.headers = {
+          ...(originalReq.headers ?? {}),
+          Authorization: `Bearer ${newAT}`,
+        };
+        originalReq.__retry = true;
+        return axiosInstance(originalReq);
+      } catch (err) {
+        console.error("❌ [리프레시 대기 중 에러]", err);
+        throw error; // 원본 에러를 다시 throw
+      }
     }
 
     // 토큰 갱신 시작
     isRefreshing = true;
     try {
+      if (!originalReq) {
+        throw new Error("원본 요청 정보가 없습니다.");
+      }
+
       const csrf = getCookie("csrf");
       const refreshResp = await axiosInstance.request({
         method: "POST",
@@ -217,16 +242,17 @@ axiosInstance.interceptors.response.use(
       publishSuccess(newAccessToken);
 
       // 원래 요청 재시도
-      originalReq!.headers = {
-        ...(originalReq!.headers ?? {}),
+      originalReq.headers = {
+        ...(originalReq.headers ?? {}),
         Authorization: `Bearer ${newAccessToken}`,
       };
-      originalReq!.__retry = true;
-      return axiosInstance(originalReq!);
+      originalReq.__retry = true;
+      return axiosInstance(originalReq);
     } catch (err) {
+      console.error("❌ [토큰 갱신 실패]", err);
       publishError(err);
       localStorage.removeItem("accessToken");
-      throw err;
+      throw error; // 원본 에러를 다시 throw하여 무한 루프 방지
     } finally {
       isRefreshing = false;
     }

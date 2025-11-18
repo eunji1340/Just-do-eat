@@ -85,56 +85,54 @@ export const rankingMockData = [
   },
 ];
 
-/** 음식 종류별 카테고리 Mock 데이터 */
+/** 음식 종류별 카테고리 데이터 */
 export const categoryMockData = [
   {
-    id: "korean",
+    id: "한식",
     categoryName: "한식",
-    imageUrl: "https://via.placeholder.com/80",
   },
   {
-    id: "chinese",
+    id: "중식",
     categoryName: "중식",
-    imageUrl: "https://via.placeholder.com/80",
   },
   {
-    id: "japanese",
+    id: "일식",
     categoryName: "일식",
-    imageUrl: "https://via.placeholder.com/80",
   },
   {
-    id: "western",
+    id: "양식",
     categoryName: "양식",
-    imageUrl: "https://via.placeholder.com/80",
   },
   {
-    id: "snack",
+    id: "분식",
     categoryName: "분식",
-    imageUrl: "https://via.placeholder.com/80",
   },
   {
-    id: "chicken",
+    id: "치킨",
     categoryName: "치킨",
-    imageUrl: "https://via.placeholder.com/80",
   },
   {
-    id: "pizza",
-    categoryName: "피자",
-    imageUrl: "https://via.placeholder.com/80",
+    id: "패스트푸드",
+    categoryName: "패스트푸드",
   },
   {
-    id: "cafe",
-    categoryName: "카페",
-    imageUrl: "https://via.placeholder.com/80",
+    id: "디저트",
+    categoryName: "디저트",
   },
   {
-    id: "meat",
-    categoryName: "고기",
-    imageUrl: "https://via.placeholder.com/80",
+    id: "샐러드",
+    categoryName: "샐러드",
   },
   {
-    id: "seafood",
-    categoryName: "해산물",
-    imageUrl: "https://via.placeholder.com/80",
+    id: "아시아/퓨전",
+    categoryName: "아시아/퓨전",
+  },
+  {
+    id: "뷔페/패밀리",
+    categoryName: "뷔페/패밀리",
+  },
+  {
+    id: "술집",
+    categoryName: "술집",
   },
 ];
