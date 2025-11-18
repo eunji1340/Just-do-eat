@@ -35,7 +35,8 @@ public class SecurityConfig {
             "/regions/**",
             "/main/**",
             "/restaurants/**",
-            "/test/**"
+            "/test/**",
+            "/mbtis/**"  // MBTI 이미지 정적 리소스 (인증 불필요)
             // ⚠️ /plans/** 는 보호됨(토큰 필요)
     };
 
