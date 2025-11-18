@@ -1,14 +1,16 @@
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useUserStore } from '../../entities/user/model/user-store';
-import AuthLayout from '@/widgets/auth/AuthLayout';
-import SignupForm from '@/features/auth/ui/SignupForm';
-import { useSignup } from '@/features/auth/model/useSignup';
+import React from "react";
+import { useNavigate } from "react-router-dom";
+import type { AxiosError, AxiosResponse } from "axios";
+import { TopNavBar } from "@/widgets/top-navbar";
+import { useUserStore } from "../../entities/user/model/user-store";
+import AuthLayout from "@/widgets/auth/AuthLayout";
+import SignupForm from "@/features/auth/ui/SignupForm";
+import { useSignup } from "@/features/auth/model/useSignup";
+import customAxios from "@/shared/api/http";
 
 export default function SignupPage() {
   const nav = useNavigate();
-  const { mukbtiResult, resetOnboarding } = useUserStore();
-  const [signupSuccess, setSignupSuccess] = React.useState(false);
+  const { resetOnboarding } = useUserStore();
   const {
     formData,
     previewUrl,
@@ -20,60 +22,102 @@ export default function SignupPage() {
     setNameCheckResult,
   } = useSignup();
 
-  React.useEffect(() => {
-    // 회원가입 성공 후에는 온보딩 체크를 하지 않음
-    if (!mukbtiResult && !signupSuccess) {
-      alert('온보딩을 먼저 완료해주세요.');
-      nav('/onboarding/test');
-    }
-  }, [mukbtiResult, nav, signupSuccess]);
+  type UserMeResponse = {
+    status: string;
+    code: string;
+    message: string;
+    data?: {
+      userId: number;
+      name: string;
+      imageUrl: string;
+      role: string;
+      ageGroup: string;
+      gender: string;
+      createdAt: string;
+      updatedAt: string;
+      regionId: number | null;
+      regionName: string | null;
+    };
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    const success = await submit(e);
-    if (success) {
-      // 회원가입 성공 플래그 설정 (useEffect 리다이렉트 방지)
-      setSignupSuccess(true);
-      alert('회원가입이 완료되었습니다! 로그인해주세요.');
-      // 먼저 페이지 이동
-      nav('/login');
-      // 페이지 이동 후 온보딩 정보 초기화
-      setTimeout(() => {
-        resetOnboarding();
-      }, 0);
+    const result = await submit(e);
+    if (result.success && result.accessToken) {
+      // 사용자 정보 불러오기
+      try {
+        const response = await customAxios<AxiosResponse<UserMeResponse>>({
+          method: "GET",
+          url: "/users/me",
+        });
+
+        const userData = response.data?.data;
+
+        if (userData) {
+          const { setUser } = useUserStore.getState();
+          setUser({
+            userId: userData.userId,
+            name: userData.name,
+            imageUrl: userData.imageUrl,
+            ageGroup: userData.ageGroup,
+            gender: userData.gender,
+            role: userData.role,
+          });
+        }
+      } catch (error) {
+        const axiosError = error as AxiosError<{ message?: string }>;
+        console.error("사용자 정보 불러오기 실패:", axiosError);
+        // 사용자 정보 불러오기 실패는 무시하고 메인 페이지로 이동
+      }
+
+      // 온보딩 정보 초기화
+      resetOnboarding();
+
+      // 메인 페이지로 이동
+      nav("/", { replace: true });
     }
   };
 
-  // 회원가입 성공 후에는 체크하지 않음
-  if (!mukbtiResult && !signupSuccess) {
-    return null;
-  }
-
   return (
-    <AuthLayout
-      title="회원가입"
-      footer={
-        <>
-          이미 계정이 있으신가요?{' '}
-          <a 
-            href="/login" 
-            onClick={(e) => { e.preventDefault(); nav('/login'); }}
-            className="text-[var(--color-primary)] font-bold underline hover:opacity-80"
-          >
-            로그인하기
-          </a>
-        </>
-      }
-    >
-      <SignupForm
-        formData={formData}
-        previewUrl={previewUrl}
-        handleChange={handleChange}
-        handleImageSelect={handleImageSelect}
-        submitting={submitting}
-        error={error}
-        handleSubmit={handleSubmit}
-        setNameCheckResult={setNameCheckResult}
+    <>
+      {/* 상단 네비바 */}
+      <TopNavBar
+        variant="auth"
+        label="회원가입"
+        onBack={() => nav("/onboarding/landing")}
       />
-    </AuthLayout>
+
+      <AuthLayout
+        footer={
+          <div className="pt-6 border-t border-[var(--color-border)] text-center">
+            <p className="text-base text-[var(--color-fg)] font-semibold mb-2">
+              이미 계정이 있으신가요?{" "}
+              <a
+                href="/login"
+                onClick={(e) => {
+                  e.preventDefault();
+                  nav("/login");
+                }}
+                className="text-[var(--color-primary)] font-bold underline hover:opacity-80 transition-opacity"
+              >
+                로그인하기
+              </a>
+            </p>
+          </div>
+        }
+      >
+        <div className="w-full min-w-0 overflow-visible">
+          <SignupForm
+            formData={formData}
+            previewUrl={previewUrl}
+            handleChange={handleChange}
+            handleImageSelect={handleImageSelect}
+            submitting={submitting}
+            error={error}
+            handleSubmit={handleSubmit}
+            setNameCheckResult={setNameCheckResult}
+          />
+        </div>
+      </AuthLayout>
+    </>
   );
 }
