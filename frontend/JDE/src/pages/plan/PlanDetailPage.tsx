@@ -1,6 +1,14 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { Users, ChevronLeft, ChevronRight, Vote, Dice5, Trophy, CheckCircle2 } from "lucide-react";
+import {
+  Users,
+  ChevronLeft,
+  ChevronRight,
+  Vote,
+  ChartPie,
+  Trophy,
+  CheckCircle2,
+} from "lucide-react";
 import { getPlanDetail } from "@/entities/plan/api/getPlanDetail";
 import { getPlanCandidates } from "@/entities/plan/api/getPlanCandidates";
 import { selectDecisionTool } from "@/entities/plan/api/selectDecisionTool";
@@ -39,7 +47,9 @@ function ParticipantAvatar({ participant }: { participant: PlanParticipant }) {
 }
 
 // CandidateRestaurant를 Restaurant로 변환
-const mapCandidateToRestaurant = (candidate: CandidateRestaurant): Restaurant => {
+const mapCandidateToRestaurant = (
+  candidate: CandidateRestaurant
+): Restaurant => {
   // 대표 메뉴 2개 추출 (is_recommend 또는 is_ai_mate가 true인 것 우선)
   const recommendedMenus = candidate.menu.filter(
     (m) => m.is_recommend || m.is_ai_mate
@@ -73,8 +83,10 @@ export default function PlanDetailPage() {
   // cursor 히스토리 관리 (이전으로 돌아가기 위해)
   const [cursorHistory, setCursorHistory] = useState<string[]>(["0"]);
   const [currentHistoryIndex, setCurrentHistoryIndex] = useState(0);
-  const [selectedTool, setSelectedTool] = useState<"VOTE" | "LADDER" | "ROULETTE" | null>(null);
-  
+  const [selectedTool, setSelectedTool] = useState<
+    "VOTE" | "LADDER" | "ROULETTE" | null
+  >(null);
+
   // cursor의 최신 값을 참조하기 위한 ref
   const cursorRef = useRef<string | null>("0");
   const hasMoreRef = useRef(true);
@@ -107,25 +119,37 @@ export default function PlanDetailPage() {
 
       try {
         setIsLoadingCandidates(true);
-        console.log("[fetchCandidates] 요청 cursor:", currentCursor, "addToHistory:", addToHistory);
+        console.log(
+          "[fetchCandidates] 요청 cursor:",
+          currentCursor,
+          "addToHistory:",
+          addToHistory
+        );
         const response = await getPlanCandidates(planId, currentCursor);
-        console.log("[fetchCandidates] 응답 next_cursor:", response.next_cursor);
-        console.log("[fetchCandidates] 응답 items 개수:", response.items.length);
-        
+        console.log(
+          "[fetchCandidates] 응답 next_cursor:",
+          response.next_cursor
+        );
+        console.log(
+          "[fetchCandidates] 응답 items 개수:",
+          response.items.length
+        );
+
         // CandidateRestaurant를 Restaurant로 변환
         const mappedRestaurants = response.items.map(mapCandidateToRestaurant);
         console.log("[fetchCandidates] 변환된 restaurants:", mappedRestaurants);
         setRestaurants(mappedRestaurants);
-        
+
         // 다음 cursor가 있는지 확인
         const nextCursor = response.next_cursor;
         const hasNextPage = nextCursor !== null && nextCursor !== "0";
-        
+
         // 히스토리에 추가 (다음 버튼 클릭 시)
         if (addToHistory) {
           // 현재 cursor를 히스토리에 추가
           setCurrentHistoryIndex((currentIndex) => {
-            const index = historyIndex !== undefined ? historyIndex : currentIndex;
+            const index =
+              historyIndex !== undefined ? historyIndex : currentIndex;
             setCursorHistory((prev) => {
               const newHistory = prev.slice(0, index + 1);
               newHistory.push(currentCursor); // 현재 cursor 저장
@@ -134,13 +158,18 @@ export default function PlanDetailPage() {
             return index + 1;
           });
         }
-        
+
         // cursor와 hasMore는 항상 업데이트
         setCursor(nextCursor);
         cursorRef.current = nextCursor;
         setHasMore(hasNextPage);
         hasMoreRef.current = hasNextPage;
-        console.log("[fetchCandidates] hasMore 업데이트:", hasNextPage, "nextCursor:", nextCursor);
+        console.log(
+          "[fetchCandidates] hasMore 업데이트:",
+          hasNextPage,
+          "nextCursor:",
+          nextCursor
+        );
       } catch (error) {
         console.error("후보 식당 목록 로딩 실패:", error);
         setRestaurants([]);
@@ -157,7 +186,12 @@ export default function PlanDetailPage() {
   const handleNext = useCallback(() => {
     const currentCursor = cursorRef.current;
     const currentHasMore = hasMoreRef.current;
-    console.log("[handleNext] 현재 cursor:", currentCursor, "hasMore:", currentHasMore);
+    console.log(
+      "[handleNext] 현재 cursor:",
+      currentCursor,
+      "hasMore:",
+      currentHasMore
+    );
     if (currentCursor && currentHasMore && !isLoadingCandidates) {
       fetchCandidates(currentCursor, true);
     }
@@ -165,17 +199,32 @@ export default function PlanDetailPage() {
 
   // 이전 식당 리스트 보기
   const handlePrevious = useCallback(() => {
-    console.log("[handlePrevious] currentHistoryIndex:", currentHistoryIndex, "cursorHistory:", cursorHistory);
+    console.log(
+      "[handlePrevious] currentHistoryIndex:",
+      currentHistoryIndex,
+      "cursorHistory:",
+      cursorHistory
+    );
     if (currentHistoryIndex > 0 && !isLoadingCandidates) {
       const prevIndex = currentHistoryIndex - 1;
       const prevCursor = cursorHistory[prevIndex];
-      console.log("[handlePrevious] 이전 cursor로 이동:", prevCursor, "prevIndex:", prevIndex);
+      console.log(
+        "[handlePrevious] 이전 cursor로 이동:",
+        prevCursor,
+        "prevIndex:",
+        prevIndex
+      );
       // 이전 cursor로 데이터 가져오기 (히스토리 추가 안 함, prevIndex 전달)
       // 인덱스는 fetchCandidates 내부에서 업데이트하지 않으므로 여기서 업데이트
       setCurrentHistoryIndex(prevIndex);
       fetchCandidates(prevCursor, false, prevIndex);
     }
-  }, [currentHistoryIndex, cursorHistory, isLoadingCandidates, fetchCandidates]);
+  }, [
+    currentHistoryIndex,
+    cursorHistory,
+    isLoadingCandidates,
+    fetchCandidates,
+  ]);
 
   // 결정 도구 선택 핸들러 (선택만)
   const handleSelectToolClick = useCallback(
@@ -214,38 +263,40 @@ export default function PlanDetailPage() {
   }, [selectedTool]);
 
   // 결정 도구 시작 핸들러 (API 호출)
-  const handleStartTool = useCallback(
-    async () => {
-      if (!planId || restaurants.length === 0 || !selectedTool) return;
+  const handleStartTool = useCallback(async () => {
+    if (!planId || restaurants.length === 0 || !selectedTool) return;
 
-      try {
-        // 현재 화면에 보이는 식당들의 ID 배열 생성
-        const restaurantIds = restaurants.map((r) => parseInt(r.id, 10));
-        console.log("[handleStartTool] 선택된 도구:", selectedTool, "식당 IDs:", restaurantIds);
+    try {
+      // 현재 화면에 보이는 식당들의 ID 배열 생성
+      const restaurantIds = restaurants.map((r) => parseInt(r.id, 10));
+      console.log(
+        "[handleStartTool] 선택된 도구:",
+        selectedTool,
+        "식당 IDs:",
+        restaurantIds
+      );
 
-        await selectDecisionTool(planId, selectedTool, restaurantIds);
-        console.log("[handleStartTool] 결정 도구 선택 성공");
+      await selectDecisionTool(planId, selectedTool, restaurantIds);
+      console.log("[handleStartTool] 결정 도구 선택 성공");
 
-        // 룰렛은 별도 페이지로 이동
-        if (selectedTool === "ROULETTE") {
-          navigate(`/roulette?planId=${planId}`);
-        } else {
-          // 투표나 토너먼트는 현재 페이지에서 처리 (추후 구현)
-          console.log("[handleStartTool] 투표/토너먼트 기능은 추후 구현 예정");
-        }
-      } catch (error) {
-        console.error("[handleStartTool] 결정 도구 선택 실패:", error);
-        alert("결정 도구 선택에 실패했습니다. 다시 시도해주세요.");
+      // 룰렛은 별도 페이지로 이동
+      if (selectedTool === "ROULETTE") {
+        navigate(`/roulette?planId=${planId}`);
+      } else {
+        // 투표나 토너먼트는 현재 페이지에서 처리 (추후 구현)
+        console.log("[handleStartTool] 투표/토너먼트 기능은 추후 구현 예정");
       }
-    },
-    [planId, restaurants, selectedTool, navigate]
-  );
+    } catch (error) {
+      console.error("[handleStartTool] 결정 도구 선택 실패:", error);
+      alert("결정 도구 선택에 실패했습니다. 다시 시도해주세요.");
+    }
+  }, [planId, restaurants, selectedTool, navigate]);
 
   // cursor ref 동기화
   useEffect(() => {
     cursorRef.current = cursor;
   }, [cursor]);
-  
+
   useEffect(() => {
     hasMoreRef.current = hasMore;
   }, [hasMore]);
@@ -260,16 +311,14 @@ export default function PlanDetailPage() {
     cursorRef.current = "0";
     setHasMore(true);
     hasMoreRef.current = true;
-    
+
     fetchPlanDetail();
     fetchCandidates("0", false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [planId]); // planId만 의존성으로 사용하여 초기 로딩만 실행
 
   // 날짜 포맷팅
-  const formattedDate = planDetail
-    ? formatPlanDate(planDetail.startAt)
-    : "";
+  const formattedDate = planDetail ? formatPlanDate(planDetail.startAt) : "";
 
   // 참가자 아바타 표시용
   const participants = planDetail?.planParticipantList || [];
@@ -277,7 +326,10 @@ export default function PlanDetailPage() {
   if (isLoading) {
     return (
       <>
-        <TopNavBar variant="default" onSearchClick={() => navigate("/search")} />
+        <TopNavBar
+          variant="default"
+          onSearchClick={() => navigate("/search")}
+        />
         <div className="flex min-h-screen items-center justify-center">
           <p className="text-sm text-neutral-500">로딩 중...</p>
         </div>
@@ -288,7 +340,10 @@ export default function PlanDetailPage() {
   if (isError || !planDetail) {
     return (
       <>
-        <TopNavBar variant="default" onSearchClick={() => navigate("/search")} />
+        <TopNavBar
+          variant="default"
+          onSearchClick={() => navigate("/search")}
+        />
         <div className="flex min-h-screen flex-col items-center justify-center gap-3 px-4">
           <h2 className="text-base font-semibold text-neutral-900">
             약속 정보를 불러올 수 없습니다
@@ -307,7 +362,6 @@ export default function PlanDetailPage() {
     );
   }
 
-
   return (
     <>
       <div className="min-h-screen bg-gradient-to-b from-[#E8F4F8] to-[#F0F9FC] pb-32">
@@ -317,7 +371,9 @@ export default function PlanDetailPage() {
             <h2 className="text-lg font-bold text-neutral-900">약속</h2>
             <div className="flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1.5">
               <Users className="h-4 w-4 text-primary" />
-              <span className="text-sm font-semibold text-primary">{participants.length}명</span>
+              <span className="text-sm font-semibold text-primary">
+                {participants.length}명
+              </span>
             </div>
           </div>
         </div>
@@ -326,12 +382,14 @@ export default function PlanDetailPage() {
         <div className="px-4 pt-6 pb-2">
           <div className="flex items-start justify-between gap-4">
             <div className="flex-1">
-              <p className="text-sm font-medium text-neutral-600">{formattedDate}</p>
+              <p className="text-sm font-medium text-neutral-600">
+                {formattedDate}
+              </p>
               <h1 className="mt-1 text-2xl font-bold leading-tight text-neutral-900">
-                {planDetail.roomName}의 약속 이름(수정)
+                {planDetail.roomName}의 {planDetail.planName}
               </h1>
             </div>
-            
+
             {/* Participant Avatars */}
             <div className="flex -space-x-3">
               {participants.slice(0, 3).map((participant) => (
@@ -363,8 +421,10 @@ export default function PlanDetailPage() {
                   </p>
                   <p className="text-xs text-neutral-600 mt-0.5">
                     {selectedTool === "VOTE" && "투표에 참여할 식당 목록입니다"}
-                    {selectedTool === "ROULETTE" && "룰렛에 포함될 식당 목록입니다"}
-                    {selectedTool === "LADDER" && "토너먼트에 참가할 식당 목록입니다"}
+                    {selectedTool === "ROULETTE" &&
+                      "룰렛에 포함될 식당 목록입니다"}
+                    {selectedTool === "LADDER" &&
+                      "토너먼트에 참가할 식당 목록입니다"}
                   </p>
                 </div>
               </div>
@@ -376,7 +436,9 @@ export default function PlanDetailPage() {
         <div className="px-4 pt-4">
           {isLoadingCandidates ? (
             <div className="flex items-center justify-center py-12">
-              <p className="text-sm text-neutral-500">식당 목록을 불러오는 중...</p>
+              <p className="text-sm text-neutral-500">
+                식당 목록을 불러오는 중...
+              </p>
             </div>
           ) : restaurants.length > 0 ? (
             <>
@@ -456,7 +518,7 @@ export default function PlanDetailPage() {
               }`}
             />
             <span className="text-xs">투표</span>
-            
+
             {selectedTool === "VOTE" && (
               <div className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-green-500 shadow-md">
                 <CheckCircle2 className="h-2.5 w-2.5 text-white" />
@@ -473,13 +535,15 @@ export default function PlanDetailPage() {
                 : "bg-white text-neutral-700 hover:bg-primary hover:text-white hover:shadow-lg hover:scale-105"
             }`}
           >
-            <Dice5
+            <ChartPie
               className={`h-5 w-5 transition-transform duration-300 ${
-                selectedTool === "ROULETTE" ? "scale-110" : "group-hover:scale-110"
+                selectedTool === "ROULETTE"
+                  ? "scale-110"
+                  : "group-hover:scale-110"
               }`}
             />
             <span className="text-xs">룰렛</span>
-            
+
             {selectedTool === "ROULETTE" && (
               <div className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-green-500 shadow-md">
                 <CheckCircle2 className="h-2.5 w-2.5 text-white" />
@@ -498,11 +562,13 @@ export default function PlanDetailPage() {
           >
             <Trophy
               className={`h-5 w-5 transition-transform duration-300 ${
-                selectedTool === "LADDER" ? "scale-110" : "group-hover:scale-110"
+                selectedTool === "LADDER"
+                  ? "scale-110"
+                  : "group-hover:scale-110"
               }`}
             />
             <span className="text-xs">토너먼트</span>
-            
+
             {selectedTool === "LADDER" && (
               <div className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-green-500 shadow-md">
                 <CheckCircle2 className="h-2.5 w-2.5 text-white" />
@@ -510,7 +576,7 @@ export default function PlanDetailPage() {
             )}
           </button>
         </div>
-        
+
         {selectedTool && (
           <button
             onClick={handleStartTool}
