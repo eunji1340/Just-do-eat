@@ -1,10 +1,11 @@
 // =============================================
 // src/pages/onboarding/result.tsx
 // =============================================
-import { useEffect, useState } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
-import { useUserStore } from '../../entities/user/model/user-store';
-import customAxios from '../../shared/api/http';
+import { useEffect, useState } from "react";
+import { Link, useSearchParams, useNavigate } from "react-router-dom";
+import { useUserStore } from "../../entities/user/model/user-store";
+import customAxios from "../../shared/api/http";
+import { TopNavBar } from "@/widgets/top-navbar";
 
 type MukbtiMatchType = {
   type: string;
@@ -24,15 +25,18 @@ type MukbtiResultDetail = {
 };
 
 export default function OnboardingResultPage() {
+  const navigate = useNavigate();
   const { mukbtiResult } = useUserStore();
   const [searchParams] = useSearchParams();
-  const [resultDetail, setResultDetail] = useState<MukbtiResultDetail | null>(null);
+  const [resultDetail, setResultDetail] = useState<MukbtiResultDetail | null>(
+    null
+  );
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [sharing, setSharing] = useState(false);
 
   // 쿼리 파라미터에서 typeId 가져오기, 없으면 store의 mukbtiResult 사용
-  const typeId = searchParams.get('typeId');
+  const typeId = searchParams.get("typeId");
   const targetTypeId = typeId || mukbtiResult?.code;
 
   useEffect(() => {
@@ -43,16 +47,19 @@ export default function OnboardingResultPage() {
 
     // API에서 상세 결과 정보 가져오기
     customAxios({
-      method: 'GET',
+      method: "GET",
       url: `/onboarding/result/types/${targetTypeId}`,
-      meta: { authRequired: false }
+      meta: { authRequired: false },
     })
       .then((response: any) => {
         setResultDetail(response.data.data);
         setLoading(false);
       })
       .catch((err: any) => {
-        const errorMessage = err.response?.data?.message || err.message || '결과를 불러올 수 없습니다.';
+        const errorMessage =
+          err.response?.data?.message ||
+          err.message ||
+          "결과를 불러올 수 없습니다.";
         setError(errorMessage);
         setLoading(false);
       });
@@ -60,26 +67,26 @@ export default function OnboardingResultPage() {
 
   const handleShare = async () => {
     if (!targetTypeId || sharing || !resultDetail) return;
-    
+
     setSharing(true);
-    
+
     // 공유할 URL 생성
     const shareUrl = `${window.location.origin}/onboarding/result?typeId=${targetTypeId}`;
     const shareText = `나의 먹BTI 유형은 ${resultDetail.label} (${resultDetail.code})입니다!\n${resultDetail.nickname}\n\n${shareUrl}`;
-    
+
     try {
       // Web Share API 지원 여부 확인
       if (navigator.share) {
         await navigator.share({
-          title: '내 먹BTI 결과',
+          title: "내 먹BTI 결과",
           text: shareText,
-          url: shareUrl
+          url: shareUrl,
         });
       } else {
         // 폴백: 클립보드에 URL 복사
         if (navigator.clipboard && navigator.clipboard.writeText) {
           await navigator.clipboard.writeText(shareUrl);
-          alert('링크가 클립보드에 복사되었습니다!');
+          alert("링크가 클립보드에 복사되었습니다!");
         } else {
           // 클립보드 API도 지원하지 않는 경우
           alert(`공유 링크: ${shareUrl}`);
@@ -87,13 +94,13 @@ export default function OnboardingResultPage() {
       }
     } catch (err) {
       // AbortError는 사용자가 공유를 취소한 경우이므로 무시
-      if (err instanceof Error && err.name !== 'AbortError') {
-        console.error('공유 실패:', err);
+      if (err instanceof Error && err.name !== "AbortError") {
+        console.error("공유 실패:", err);
         // 에러 발생 시에도 클립보드 복사 시도
         try {
           if (navigator.clipboard && navigator.clipboard.writeText) {
             await navigator.clipboard.writeText(shareUrl);
-            alert('링크가 클립보드에 복사되었습니다!');
+            alert("링크가 클립보드에 복사되었습니다!");
           }
         } catch (clipboardErr) {
           alert(`공유 링크: ${shareUrl}`);
@@ -106,15 +113,71 @@ export default function OnboardingResultPage() {
 
   if (!targetTypeId) {
     return (
-      <div className="fixed inset-0 flex flex-col bg-[var(--color-bg)] py-4">
-        <div className="grid gap-3 p-4 max-w-xl mx-auto text-center">
-          <h2 className="text-2xl font-bold text-[var(--color-fg)]">결과가 아직 없습니다</h2>
-          <p className="text-[var(--color-fg)]">온보딩을 먼저 진행해주세요.</p>
-          <Link to="/onboarding" className="text-[var(--color-primary)] underline hover:opacity-80">
-            온보딩으로 이동
-          </Link>
+      <>
+        <TopNavBar
+          variant="auth"
+          label="취향 테스트 결과"
+          onBack={() => navigate(-1)}
+        />
+        <div className="flex flex-col items-center justify-center bg-gradient-to-b from-orange-50/30 to-white p-4 min-h-screen">
+          <div className="max-w-md mx-auto text-center space-y-6">
+            {/* 일러스트 아이콘 영역 */}
+            <div className="relative inline-block">
+              <div className="w-32 h-32 mx-auto bg-gradient-to-br from-orange-100 to-orange-200 rounded-full flex items-center justify-center shadow-lg">
+                <svg
+                  className="w-16 h-16 text-orange-500"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"
+                  />
+                </svg>
+              </div>
+              {/* 장식 점들 */}
+              <div className="absolute -top-2 -right-2 w-4 h-4 bg-yellow-400 rounded-full animate-pulse"></div>
+              <div className="absolute -bottom-2 -left-2 w-3 h-3 bg-orange-400 rounded-full animate-pulse delay-75"></div>
+            </div>
+
+            {/* 텍스트 영역 */}
+            <div className="space-y-3">
+              <h2 className="text-2xl font-bold text-gray-900">
+                결과가 아직 없습니다
+              </h2>
+              <p className="text-gray-600 text-base leading-relaxed">
+                테스트를 완료하고
+                <br />
+                나만의 맞춤 결과를 확인해보세요!
+              </p>
+            </div>
+
+            {/* 버튼 영역 */}
+            <Link
+              to="/onboarding/test"
+              className="inline-flex items-center gap-2 px-8 py-4 bg-primary text-white font-bold rounded-full hover:from-primary hover:to-orange-700 transition-all shadow-lg hover:shadow-xl hover:scale-105 active:scale-95"
+            >
+              <span>테스트 시작하기</span>
+              <svg
+                className="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2.5}
+                  d="M13 7l5 5m0 0l-5 5m5-5H6"
+                />
+              </svg>
+            </Link>
+          </div>
         </div>
-      </div>
+      </>
     );
   }
 
@@ -132,9 +195,16 @@ export default function OnboardingResultPage() {
     return (
       <div className="fixed inset-0 flex flex-col bg-[var(--color-bg)] py-4">
         <div className="grid gap-3 p-4 max-w-xl mx-auto text-center">
-          <h2 className="text-2xl font-bold text-[var(--color-fg)]">오류 발생</h2>
-          <p className="text-[var(--color-fg)]">{error || '결과를 불러올 수 없습니다.'}</p>
-          <Link to="/onboarding" className="text-[var(--color-primary)] underline hover:opacity-80">
+          <h2 className="text-2xl font-bold text-[var(--color-fg)]">
+            오류 발생
+          </h2>
+          <p className="text-[var(--color-fg)]">
+            {error || "결과를 불러올 수 없습니다."}
+          </p>
+          <Link
+            to="/onboarding"
+            className="text-[var(--color-primary)] underline hover:opacity-80"
+          >
             온보딩으로 이동
           </Link>
         </div>
@@ -145,8 +215,10 @@ export default function OnboardingResultPage() {
   return (
     <div className="fixed inset-0 flex flex-col bg-[var(--color-bg)] py-4 overflow-auto">
       <div className="grid gap-4 p-4 max-w-xl w-full mx-auto">
-        <h2 className="text-2xl font-bold text-center text-[var(--color-fg)]">당신의 먹BTI 유형은?</h2>
-        
+        <h2 className="text-2xl font-bold text-center text-[var(--color-fg)]">
+          당신의 먹BTI 유형은?
+        </h2>
+
         {/* 유형 정보 */}
         <section className="border border-[var(--color-border)] rounded-xl p-4 bg-[var(--color-surface)] text-center">
           <h3 className="mt-0 mb-2 text-lg font-semibold text-[var(--color-fg)]">
@@ -154,21 +226,27 @@ export default function OnboardingResultPage() {
           </h3>
           {resultDetail.imagePath && (
             <div className="flex justify-center mb-3">
-              <img 
-                src={resultDetail.imagePath} 
+              <img
+                src={resultDetail.imagePath}
                 alt={resultDetail.label}
                 className="max-w-[300px] max-h-[300px] w-auto h-auto object-contain rounded-lg"
               />
             </div>
           )}
-          <p className="m-0 text-sm text-[var(--color-fg)] mb-3">{resultDetail.nickname}</p>
-          <p className="m-0 text-[var(--color-fg)]">{resultDetail.description}</p>
+          <p className="m-0 text-sm text-[var(--color-fg)] mb-3">
+            {resultDetail.nickname}
+          </p>
+          <p className="m-0 text-[var(--color-fg)]">
+            {resultDetail.description}
+          </p>
         </section>
 
         {/* 키워드 */}
         {resultDetail.keywords && resultDetail.keywords.length > 0 && (
           <section className="border border-[var(--color-border)] rounded-xl p-4 bg-[var(--color-surface)] text-center">
-            <h3 className="mt-0 mb-3 text-lg font-semibold text-[var(--color-fg)]">핵심 키워드</h3>
+            <h3 className="mt-0 mb-3 text-lg font-semibold text-[var(--color-fg)]">
+              핵심 키워드
+            </h3>
             <div className="flex flex-wrap gap-2 justify-center">
               {resultDetail.keywords.map((keyword, idx) => (
                 <span
@@ -187,13 +265,15 @@ export default function OnboardingResultPage() {
           {/* 잘 맞는 유형 */}
           {resultDetail.goodMatch && resultDetail.goodMatch.length > 0 && (
             <section className="border border-[var(--color-border)] rounded-xl p-4 bg-[var(--color-surface)] text-center">
-              <h3 className="mt-0 mb-3 text-lg font-semibold text-[var(--color-fg)]">잘 맞는 유형</h3>
+              <h3 className="mt-0 mb-3 text-lg font-semibold text-[var(--color-fg)]">
+                잘 맞는 유형
+              </h3>
               <div className="flex flex-col gap-4 items-center">
                 {resultDetail.goodMatch.map((match, idx) => (
                   <div key={idx} className="flex flex-col items-center gap-2">
                     {match.imagePath && (
-                      <img 
-                        src={match.imagePath} 
+                      <img
+                        src={match.imagePath}
                         alt={match.label}
                         className="max-w-[120px] max-h-[120px] w-auto h-auto object-contain rounded-lg"
                       />
@@ -210,14 +290,15 @@ export default function OnboardingResultPage() {
           {/* 안 맞는 유형 */}
           {resultDetail.badMatch && resultDetail.badMatch.length > 0 && (
             <section className="border border-[var(--color-border)] rounded-xl p-4 bg-[var(--color-surface)] text-center">
-              <h3 className="mt-0 mb-3 text-lg font-semibold text-[var(--color-fg)]">안 맞는 유형</h3>
+              <h3 className="mt-0 mb-3 text-lg font-semibold text-[var(--color-fg)]">
+                안 맞는 유형
+              </h3>
               <div className="flex flex-col gap-4 items-center">
                 {resultDetail.badMatch.map((match, idx) => (
                   <div key={idx} className="flex flex-col items-center gap-2">
-                    
                     {match.imagePath && (
-                      <img 
-                        src={match.imagePath} 
+                      <img
+                        src={match.imagePath}
                         alt={match.label}
                         className="max-w-[120px] max-h-[120px] w-auto h-auto object-contain rounded-lg"
                       />
@@ -239,7 +320,7 @@ export default function OnboardingResultPage() {
             disabled={sharing}
             className="px-4 py-3 rounded-xl border-2 border-[var(--color-primary)] bg-[var(--color-bg)] text-[var(--color-fg)] font-bold cursor-pointer hover:bg-[var(--color-surface)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed w-full"
           >
-            {sharing ? '공유 중...' : '결과 공유하기'}
+            {sharing ? "공유 중..." : "결과 공유하기"}
           </button>
 
           {/* 이 결과로 회원가입하기 버튼 */}
