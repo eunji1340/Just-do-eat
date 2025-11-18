@@ -107,20 +107,55 @@ export default function MyPage() {
 
       const { uploadUrl, publicUrl, headers } = presignResponse.data.data;
 
+      // 디버깅: presigned URL과 headers 확인
+      console.log("[MyPage] Presigned URL:", uploadUrl);
+      console.log("[MyPage] Headers from backend:", headers);
+      console.log("[MyPage] File type:", file.type);
+
       // 2. S3에 파일 업로드
       try {
+        // S3 presigned URL은 이미 서명에 필요한 모든 정보를 포함하고 있으므로
+        // 백엔드에서 받은 headers를 사용하되, Content-Type은 파일 타입으로 설정
+        const requestHeaders: Record<string, string> = {
+          "Content-Type": file.type || "image/png",
+        };
+
+        // 백엔드에서 받은 headers가 있으면 추가 (하지만 Content-Type은 파일 타입 우선)
+        if (headers && typeof headers === "object") {
+          Object.entries(headers).forEach(([key, value]) => {
+            if (key.toLowerCase() !== "content-type" && value) {
+              requestHeaders[key] = String(value);
+            }
+          });
+        }
+
+        console.log("[MyPage] Request headers:", requestHeaders);
+        console.log(
+          "[MyPage] Upload URL (first 100 chars):",
+          uploadUrl.substring(0, 100)
+        );
+
         const uploadResponse = await fetch(uploadUrl, {
           method: "PUT",
-          headers: {
-            "Content-Type": file.type,
-            ...(headers || {}),
-          },
+          headers: requestHeaders,
           body: file,
         });
 
+        console.log("[MyPage] Upload response status:", uploadResponse.status);
+        console.log(
+          "[MyPage] Upload response headers:",
+          Object.fromEntries(uploadResponse.headers.entries())
+        );
+
         if (!uploadResponse.ok) {
+          // 403 에러는 CORS 설정 문제 또는 권한 문제
+          if (uploadResponse.status === 403) {
+            throw new Error(
+              "S3 업로드가 거부되었습니다 (403). Network 탭에서 preflight 요청이 403으로 실패하는 것을 확인했습니다.\n\n백엔드 개발자에게 S3 버킷의 CORS 설정을 요청해주세요:\n1. S3 버킷 → Permissions → CORS에 다음 설정 추가:\n   - AllowedOrigins: http://localhost:5173, 프로덕션 도메인\n   - AllowedMethods: PUT, GET, HEAD, OPTIONS\n   - AllowedHeaders: Content-Type, *\n   - ExposeHeaders: ETag\n2. 버킷 정책에서 PUT 권한 확인"
+            );
+          }
           // CORS 오류인 경우 특별 처리
-          if (uploadResponse.status === 0 || uploadResponse.status === 403) {
+          if (uploadResponse.status === 0) {
             throw new Error(
               "S3 업로드 중 CORS 오류가 발생했습니다. 백엔드에서 S3 CORS 설정을 확인해주세요."
             );
@@ -129,14 +164,33 @@ export default function MyPage() {
             `이미지 업로드에 실패했습니다. (${uploadResponse.status})`
           );
         }
-      } catch (fetchError) {
-        // CORS 오류 또는 네트워크 오류
-        if (
+      } catch (fetchError: any) {
+        // 상세한 에러 로깅
+        console.error("[MyPage] S3 업로드 에러 상세:", {
+          error: fetchError,
+          message: fetchError?.message,
+          name: fetchError?.name,
+          stack: fetchError?.stack,
+        });
+
+        // CORS 오류 감지 (preflight 실패 포함)
+        const isCorsError =
           fetchError instanceof TypeError &&
-          fetchError.message.includes("fetch")
-        ) {
+          (fetchError.message.includes("fetch") ||
+            fetchError.message.includes("CORS") ||
+            fetchError.message.includes("Failed to fetch") ||
+            fetchError.message.includes("blocked by CORS policy") ||
+            fetchError.message.includes("Access-Control-Allow-Origin"));
+
+        if (isCorsError) {
           throw new Error(
-            "S3 업로드 중 네트워크 오류가 발생했습니다. 백엔드에서 S3 CORS 설정을 확인해주세요."
+            "S3 업로드 중 CORS 오류가 발생했습니다. 백엔드 개발자에게 S3 버킷의 CORS 설정을 요청해주세요.\n\n필요한 CORS 설정:\n- AllowedOrigins: http://localhost:5173 (개발), 프로덕션 도메인\n- AllowedMethods: PUT, GET, HEAD, OPTIONS\n- AllowedHeaders: Content-Type, *\n- ExposeHeaders: ETag"
+          );
+        }
+        // 네트워크 오류
+        if (fetchError instanceof TypeError) {
+          throw new Error(
+            `S3 업로드 중 네트워크 오류가 발생했습니다: ${fetchError.message}`
           );
         }
         throw fetchError;
