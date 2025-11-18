@@ -79,7 +79,7 @@ async function handleInviteClick() {
         <PastAppointmentsSectionCard
           items={data.planList}
           members={data.roomMemberList}
-          onSeeAll={() => navigate(`/groups/${groupId}/appointments`)}
+          onSeeAll={() => navigate(`/groups/${groupId}/plans`)}
         />
       </main>
 

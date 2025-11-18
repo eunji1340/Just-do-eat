@@ -73,6 +73,10 @@ export interface LabelTopNavBarProps extends TopNavBarProps {
   label: string;
   /** 검색 핸들러 */
   onSearchClick?: () => void;
+  /** 뒤로가기 핸들러 */
+  onBack?: () => void;
+  /** 오른쪽에 표시할 커스텀 컨텐츠 */
+  rightContent?: React.ReactNode;
 }
 
 /**
