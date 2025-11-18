@@ -19,10 +19,10 @@ export function mapSearchResponseToRestaurant(
 ): Restaurant {
   // 가격대 변환: LOW → ₩, MEDIUM → ₩₩, HIGH → ₩₩₩, PREMIUM → ₩₩₩₩
   const priceRangeMap: Record<string, string> = {
-    LOW: "₩",
-    MEDIUM: "₩₩",
-    HIGH: "₩₩₩",
-    PREMIUM: "₩₩₩₩",
+    LOW: "~ 1만원",
+    MEDIUM: "1 ~ 3만원",
+    HIGH: "2.5 ~ 6만원",
+    PREMIUM: "6만원~",
   };
 
   return {
@@ -36,7 +36,7 @@ export function mapSearchResponseToRestaurant(
     image: api.image ? [api.image] : [],
 
     // 카테고리: 가장 구체적인 것 선택 (category3 > category2 > category1)
-    category: api.category3 || api.category2 || api.category1,
+    category: api.category2 || api.category1,
 
     // 평점
     rating: api.kakao_rating,
