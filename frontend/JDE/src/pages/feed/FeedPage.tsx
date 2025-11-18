@@ -4,7 +4,7 @@ import * as React from "react";
 import RestaurantSwipeDeck from "@/widgets/restaurantSwipe/RestaurantSwipeDeck";
 import type { Restaurant } from "@/entities/restaurant/types";
 import http from "@/shared/api/http";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 // ==== 백엔드 응답 타입 ====
 
 // 백엔드에서 내려주는 raw item
@@ -39,9 +39,9 @@ type BackendRestaurantItem = {
   is_parking: boolean | null;
   is_reservation: boolean | null;
   hours: {
-    dow: number;           // 0=공휴일, 1=월, ... 7=일
-    open: string;          // "HH:mm:ss"
-    close: string;         // "HH:mm:ss"
+    dow: number; // 0=공휴일, 1=월, ... 7=일
+    open: string; // "HH:mm:ss"
+    close: string; // "HH:mm:ss"
     break_open: string | null;
     break_close: string | null;
     is_holiday: boolean;
@@ -55,12 +55,11 @@ type FeedResponse = {
   next_cursor: string | null;
 };
 
-
 // 스와이프 방향 → 백엔드 액션 매핑
-type SwipeDir = "left" | "right" | "up";
-type SwipeAction = "HOLD" | "DISLIKE" | "SELECT";
+type FeedDir = "left" | "right" | "up";
+type FeedAction = "HOLD" | "DISLIKE" | "SELECT";
 
-function mapDirToAction(dir: SwipeDir): SwipeAction {
+function mapDirToAction(dir: FeedDir): FeedAction {
   switch (dir) {
     case "right":
       return "SELECT"; // 갈게요
@@ -73,7 +72,7 @@ function mapDirToAction(dir: SwipeDir): SwipeAction {
 }
 
 // 🔥 핵심: 백엔드 item → 프론트 Restaurant 타입으로 변환
-// src/pages/swipe/SwipePage.tsx (동일 파일 내)
+// src/pages/feed/FeedPage.tsx (동일 파일 내)
 
 function mapBackendToRestaurant(raw: BackendRestaurantItem): Restaurant {
   // 메뉴: name + price만 사용하는데, 추천 플래그는 나중에 타입 확장해서 써도 됨
@@ -96,8 +95,7 @@ function mapBackendToRestaurant(raw: BackendRestaurantItem): Restaurant {
     category: raw.category2 || raw.category1 || "기타",
     rating: raw.kakao_rating ?? 0,
     // price_range는 이제 PREMIUM까지 올 수 있음
-    price_range:
-      (raw.price_range as Restaurant["price_range"]) ?? "MEDIUM",
+    price_range: (raw.price_range as Restaurant["price_range"]) ?? "MEDIUM",
     website_url: raw.kakao_url ?? "",
     menu: menu ?? [],
     distance_m: raw.distance_m,
@@ -105,8 +103,7 @@ function mapBackendToRestaurant(raw: BackendRestaurantItem): Restaurant {
   };
 }
 
-
-export default function SwipePage() {
+export default function FeedPage() {
   const [items, setItems] = React.useState<Restaurant[]>([]);
   const [cursor, setCursor] = React.useState<string | null>("0"); // 🔥 문자열 기반
   const [loading, setLoading] = React.useState(false);
@@ -117,12 +114,16 @@ export default function SwipePage() {
   const didInitRef = React.useRef(false);
 
   const navigate = useNavigate();
-  
+  const [searchParams] = useSearchParams();
+
+  // 쿼리 파라미터에서 카테고리 읽기
+  const category = searchParams.get("category");
+
   // ✅ 최초 1회: 초기 추천 리스트(fetch)
   React.useEffect(() => {
     if (didInitRef.current) return; // 이미 한 번 호출했으면 무시
     didInitRef.current = true;
-    
+
     fetchMore();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -141,9 +142,26 @@ export default function SwipePage() {
       setLoading(true);
       setError(null);
 
-      const res = await http.get<FeedResponse>("/main/feed", {
-        params: { cursor },
-      });
+      let res;
+
+      if (category) {
+        // 카테고리별 추천
+        console.log(
+          `🍽️ [카테고리 피드] API 호출 - 카테고리: ${category}, cursor: ${cursor}`
+        );
+        res = await http.get<FeedResponse>(
+          `/main/restaurants/popular/category`,
+          {
+            params: { category, cursor },
+          }
+        );
+      } else {
+        // 개인 추천
+        console.log(`✨ [개인 피드] API 호출 - cursor: ${cursor}`);
+        res = await http.get<FeedResponse>("/main/feed", {
+          params: { cursor },
+        });
+      }
 
       const backendItems = res.data.items ?? [];
       const mapped = backendItems.map(mapBackendToRestaurant);
@@ -158,7 +176,7 @@ export default function SwipePage() {
         setHasMore(false);
       }
     } catch (err: any) {
-      console.error("[SwipePage] feed 로딩 실패:", err);
+      console.error("[FeedPage] feed 로딩 실패:", err);
       setError(
         err?.response?.data?.detail ??
           err?.message ??
@@ -169,25 +187,26 @@ export default function SwipePage() {
     }
   }
 
-  async function handleTopSwiped(dir: "left" | "right" | "up", item: Restaurant) {
+  async function handleTopSwiped(
+    dir: "left" | "right" | "up",
+    item: Restaurant
+  ) {
     const action = mapDirToAction(dir);
     const overlayHoldMs = 700;
     try {
-      await http.post("/main/feed/swipe", 
-        {
+      await http.post("/main/feed/swipe", {
         restaurantId: item.restaurant_id,
         action,
-      }
-    );
+      });
 
-    if (dir === "right") {
-      setTimeout(() => {
-        navigate("/");
-      }, overlayHoldMs); // 700ms 정도
-      return;
-    }
+      if (dir === "right") {
+        setTimeout(() => {
+          navigate("/");
+        }, overlayHoldMs); // 700ms 정도
+        return;
+      }
     } catch (err) {
-      console.error("[SwipePage] 스와이프 액션 전송 실패:", err);
+      console.error("[FeedPage] 스와이프 액션 전송 실패:", err);
     }
   }
 
@@ -202,9 +221,7 @@ export default function SwipePage() {
       <section className="w-full flex items-center justify-center">
         <div className="w-full max-w-xl">
           {error && (
-            <div className="p-4 text-center text-sm text-red-500">
-              {error}
-            </div>
+            <div className="p-4 text-center text-sm text-red-500">{error}</div>
           )}
 
           {items.length === 0 && loading ? (
