@@ -22,19 +22,20 @@ type Props = {
 export default function BingoBoard({ items, value, onChange }: Props) {
   const cycle = (idx: number) => {
     const cur = value[idx] ?? 0; // -1,0,1 순환
-    const nxt = ((cur === 1 ? -1 : cur + 1) as VoteValue);
+    const nxt = (cur === 1 ? -1 : cur + 1) as VoteValue;
     onChange({ ...value, [idx]: nxt });
   };
 
-  const badge = (v: VoteValue | undefined) => v === 1 ? 'LIKE' : v === -1 ? 'DISLIKE' : 'SKIP';
+  const badge = (v: VoteValue | undefined) =>
+    v === 1 ? "LIKE" : v === -1 ? "DISLIKE" : "SKIP";
 
   const getButtonStyles = (v: VoteValue) => {
     if (v === 1) {
-      return 'bg-[var(--color-success)] text-white';
+      return "bg-red-500 text-white border-red-600";
     } else if (v === -1) {
-      return 'bg-[var(--color-error)] text-white';
+      return "bg-blue-500 text-white border-blue-600";
     } else {
-      return 'bg-[var(--color-surface)] text-[var(--color-fg)]';
+      return "bg-[var(--color-surface)] text-[var(--color-fg)] border-[var(--color-border)]";
     }
   };
 
@@ -49,10 +50,10 @@ export default function BingoBoard({ items, value, onChange }: Props) {
               onClick={() => cycle(idx)}
               title={`${badge(v as VoteValue)}`}
               className={`
-                p-2 rounded-lg border border-[var(--color-border)] cursor-pointer
+                p-2 rounded-xl border-2 cursor-pointer
                 flex items-center justify-center text-center
-                text-xs leading-tight break-keep
-                transition-colors hover:opacity-80
+                text-xs font-medium leading-tight break-keep
+                transition-all hover:opacity-90 hover:scale-105 active:scale-95
                 ${getButtonStyles(v as VoteValue)}
               `}
             >
