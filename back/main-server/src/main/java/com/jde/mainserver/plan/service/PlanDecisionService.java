@@ -127,9 +127,10 @@ public class PlanDecisionService {
         if (decision.getStatus() != DecisionStatus.VOTING) {
             throw new IllegalStateException("voting is not in progress");
         }
-        if (voteRepository.existsByPlanIdAndUserId(planId, userId)) {
-            throw new IllegalStateException("already voted");
-        }
+
+        // 기존 투표가 있으면 삭제 (재투표 가능)
+        voteRepository.findByPlanIdAndUserId(planId, userId)
+                .ifPresent(voteRepository::delete);
 
         PlanVote vote = PlanVote.builder()
                 .planId(planId)
