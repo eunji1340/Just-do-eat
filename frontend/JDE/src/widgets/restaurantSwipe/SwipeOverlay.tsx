@@ -1,39 +1,52 @@
 // 목적: 진행 중/확정 스와이프 힌트를 전체 화면 배경과 텍스트로 보여줌
 // 참고: 'null as const' 사용 금지(에러). 유니온 타입으로 처리.
 
-import type { Offset } from '@/features/swipe/useSwipeHandler'
+import type { Offset } from "@/features/feed/useSwipeHandler";
 
-type SwipeFinal = 'left' | 'right' | 'up' | null
+type SwipeFinal = "left" | "right" | "up" | null;
 
 type Props = {
-  offset: Offset
+  offset: Offset;
+  finalDir?: SwipeFinal;
+  visible: boolean;
+};
+
+function getState(
+  offset: Offset,
   finalDir?: SwipeFinal
-  visible: boolean
+): { dir: SwipeFinal; strength: number } {
+  if (finalDir && finalDir !== null) return { dir: finalDir, strength: 1 };
+  const ax = Math.abs(offset.x);
+  const ay = Math.abs(offset.y);
+  if (offset.x > 0 && ax > ay)
+    return { dir: "right", strength: Math.min(ax / 160, 1) };
+  if (offset.x < 0 && ax > ay)
+    return { dir: "left", strength: Math.min(ax / 160, 1) };
+  if (offset.y < 0 && ay >= ax)
+    return { dir: "up", strength: Math.min(ay / 160, 1) };
+  return { dir: null, strength: 0 };
 }
 
-function getState(offset: Offset, finalDir?: SwipeFinal): { dir: SwipeFinal; strength: number } {
-  if (finalDir && finalDir !== null) return { dir: finalDir, strength: 1 }
-  const ax = Math.abs(offset.x)
-  const ay = Math.abs(offset.y)
-  if (offset.x > 0 && ax > ay) return { dir: 'right', strength: Math.min(ax / 160, 1) }
-  if (offset.x < 0 && ax > ay) return { dir: 'left', strength: Math.min(ax / 160, 1) }
-  if (offset.y < 0 && ay >= ax) return { dir: 'up', strength: Math.min(ay / 160, 1) }
-  return { dir: null, strength: 0 }
-}
+export default function SwipeOverlay({
+  offset,
+  finalDir = null,
+  visible,
+}: Props) {
+  const { dir, strength } = getState(offset, finalDir);
+  const map: Record<
+    Exclude<SwipeFinal, null>,
+    { bg: string; label: string }
+  > = {
+    left: { bg: "bg-red-400", label: "싫어요" },
+    right: { bg: "bg-green-500", label: "갈게요" },
+    up: { bg: "bg-yellow-500", label: "보류" },
+  };
 
-export default function SwipeOverlay({ offset, finalDir = null, visible }: Props) {
-  const { dir, strength } = getState(offset, finalDir)
-  const map: Record<Exclude<SwipeFinal, null>, { bg: string; label: string }> = {
-    left:  { bg: 'bg-red-400', label: '싫어요' },
-    right: { bg: 'bg-green-500',    label: '갈게요' },
-    up:    { bg: 'bg-yellow-500',  label: '보류' },
-  }
-
-  const active = dir !== null && visible
-  const k = dir as Exclude<SwipeFinal, null>
-  const bg = active ? map[k].bg : 'bg-transparent'
-  const text = active ? map[k].label : ''
-  const opacity = finalDir ? 0.9 : strength * 0.75
+  const active = dir !== null && visible;
+  const k = dir as Exclude<SwipeFinal, null>;
+  const bg = active ? map[k].bg : "bg-transparent";
+  const text = active ? map[k].label : "";
+  const opacity = finalDir ? 0.9 : strength * 0.75;
 
   return (
     <div
@@ -49,5 +62,5 @@ export default function SwipeOverlay({ offset, finalDir = null, visible }: Props
         </div>
       )}
     </div>
-  )
+  );
 }
