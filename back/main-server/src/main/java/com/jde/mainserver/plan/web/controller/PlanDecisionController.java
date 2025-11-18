@@ -82,7 +82,7 @@ public class PlanDecisionController {
     // 4) 투표 제출(1인1표) POST /plans/{planId}/decision/vote/ballots
     @Operation(
         summary = "투표 제출",
-        description = "투표를 제출합니다. 1인 1표로 제한됩니다.",
+        description = "투표를 제출합니다. 1인 1표로 제한되며, 기존 투표가 있으면 재투표로 처리됩니다.",
         security = @SecurityRequirement(name = "Json Web Token(JWT)")
     )
     @PostMapping("/decision/vote/ballots")
