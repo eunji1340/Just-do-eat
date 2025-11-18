@@ -1,8 +1,6 @@
 import customAxios from "@/shared/api/http";
 import type { AxiosResponse } from "axios";
 
-type SelectToolRequest = number[]; // 식당 ID 배열
-
 type SelectToolResponse = {
   planId: number;
   toolType: "VOTE" | "LADDER" | "ROULETTE";
@@ -33,10 +31,11 @@ export async function selectDecisionTool(
     meta: { authRequired: true },
   });
 
-  if (response.data?.status !== "OK" && response.data?.status !== "100 CONTINUE") {
-    throw new Error(
-      response.data?.message || "결정 도구 선택에 실패했습니다."
-    );
+  if (
+    response.data?.status !== "OK" &&
+    response.data?.status !== "100 CONTINUE"
+  ) {
+    throw new Error(response.data?.message || "결정 도구 선택에 실패했습니다.");
   }
 
   if (!response.data?.data) {
@@ -45,4 +44,3 @@ export async function selectDecisionTool(
 
   return response.data.data;
 }
-

@@ -62,7 +62,7 @@ const REFRESH_ENABLED = false;
  * - withCredentials: 쿠키 자동 전송
  */
 const axiosInstance: AxiosInstance = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || "http://localhost:8080/api/",
+  baseURL: import.meta.env.VITE_API_BASE_URL || "https://justdoeat.ai.kr/api/",
   timeout: 30000, // 30초로 증가
   withCredentials: true,
 });
