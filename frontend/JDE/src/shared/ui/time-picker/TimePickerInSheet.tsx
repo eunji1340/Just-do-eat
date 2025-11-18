@@ -51,7 +51,7 @@ export default function TimePickerInSheet({ value, onChange, open, onOpenChange 
       <button
         type="button"
         className={cn(
-          "flex h-10 w-full items-center justify-between rounded-md border px-3 text-left text-sm outline-none",
+          "flex h-10 w-full items-center justify-between rounded-md border border-neutral-300 px-3 text-left text-sm outline-none",
         )}
         onClick={() => onOpenChange(!open)}
       >

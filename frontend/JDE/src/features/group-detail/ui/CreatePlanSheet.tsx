@@ -1,17 +1,20 @@
 // src/features/groups/ui/CreatePlanSheet.tsx
 // 목적: 약속(플랜) 생성 바텀 시트 UI
-// - group 만들기 시트(CreateGroupSheet)를 재활용하되
-//   약속에 필요한 필드(이름, 장소, 가격대, 날짜, 시간, 참여자)를 모두 입력받는다.
+// - /plans/{roomId} POST API와 연결
+// - 약속에 필요한 필드(이름, 날짜/시간, 가격대, 싫어하는 카테고리, 참여자)를 입력받는다.
 
 import * as React from "react";
 import BottomSheet from "@/shared/ui/sheet/BottomSheet";
 import { Button } from "@/shared/ui/shadcn/button";
-// TODO: 실제 API 경로/이름에 맞게 수정하세요.
-import { createPlan, type CreatePlanPayload } from "@/features/group-detail/createPlan";
+import {
+  createPlan,
+  type CreatePlanPayload,
+  type PriceRangeCode,
+} from "@/features/group-detail/createPlan"; // ✅ API 파일 경로/타입 맞게 수정
 import { ChevronDown } from "lucide-react";
 
 import TimePickerInSheet from "@/shared/ui/time-picker/TimePickerInSheet";
-import { Calendar } from "@/shared/ui/calendar/calendar"; // 실제 경로에 맞게 수정
+import { Calendar } from "@/shared/ui/calendar/calendar";
 import { cn } from "@/shared/lib/utils";
 
 function formatKoreanDate(value: string) {
@@ -20,25 +23,62 @@ function formatKoreanDate(value: string) {
   return `${y}년 ${m}월 ${d}일`;
 }
 
-type PriceRange = "LOW" | "MEDIUM" | "HIGH" | "PREMIUM" | "";
+// 💰 가격대 옵션
+const PRICE_RANGE_OPTIONS: { value: PriceRangeCode; label: string }[] = [
+  { value: "LOW", label: "LOW" },
+  { value: "MEDIUM", label: "MEDIUM" },
+  { value: "HIGH", label: "HIGH" },
+  { value: "PREMIUM", label: "PREMIUM" },
+];
+
+// 😣 싫어하는 카테고리 옵션
+const DISLIKE_CATEGORY_OPTIONS = [
+  "한식",
+  "중식",
+  "일식",
+  "양식",
+  "분식",
+  "치킨",
+  "패스트푸드",
+  "디저트",
+  "샐러드",
+  "아시아/퓨전",
+  "뷔페/패밀리",
+  "술집",
+] as const;
 
 type Props = {
   open: boolean;
   onOpenChange: (o: boolean) => void;
   onCreated?: (id: number) => void;
-  groupId?: number;
+  groupId?: number; // roomId
 };
 
-export default function CreatePlanSheet({ open, onOpenChange, onCreated, groupId }: Props) {
-  // 👇 각각의 입력 필드 상태
-  const [title, setTitle] = React.useState("");
-  const [place, setPlace] = React.useState("");
-  const [priceRange, setPriceRange] = React.useState<PriceRange>("");
+export default function CreatePlanSheet({
+  open,
+  onOpenChange,
+  onCreated,
+  groupId,
+}: Props) {
+  // 👇 폼 상태들
+  const [title, setTitle] = React.useState(""); // planName
   const [date, setDate] = React.useState(""); // "YYYY-MM-DD"
   const [dateOpen, setDateOpen] = React.useState(false);
   const [time, setTime] = React.useState(""); // "HH:MM"
   const [timeOpen, setTimeOpen] = React.useState(false);
-  const [participants, setParticipants] = React.useState(""); // "이름1, 이름2"
+
+  // 가격대: 여러 개 선택
+  const [selectedPriceRanges, setSelectedPriceRanges] = React.useState<
+    PriceRangeCode[]
+  >([]);
+
+  // 싫어하는 카테고리: 여러 개 선택
+  const [dislikeCategories, setDislikeCategories] = React.useState<string[]>(
+    []
+  );
+
+  // 임시: 참여자 ID 목록을 쉼표로 입력 (예: 1, 2, 3)
+  const [participants, setParticipants] = React.useState("");
 
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
@@ -51,42 +91,72 @@ export default function CreatePlanSheet({ open, onOpenChange, onCreated, groupId
   React.useEffect(() => {
     if (open) {
       setTitle("");
-      setPlace("");
-      setPriceRange("");
       setDate("");
       setTime("");
+      setSelectedPriceRanges([]);
+      setDislikeCategories([]);
       setParticipants("");
       setError(null);
       setLoading(false);
     }
   }, [open]);
 
+  function togglePriceRange(value: PriceRangeCode) {
+    setSelectedPriceRanges((prev) =>
+      prev.includes(value) ? prev.filter((v) => v !== value) : [...prev, value]
+    );
+  }
+
+  function toggleDislikeCategory(value: string) {
+    setDislikeCategories((prev) =>
+      prev.includes(value) ? prev.filter((v) => v !== value) : [...prev, value]
+    );
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
 
+    if (!groupId) {
+      return setError("모임 정보가 없습니다. 페이지를 새로고침 해 주세요.");
+    }
+
     if (!title.trim()) return setError("약속 이름을 입력해 주세요.");
-    if (!place.trim()) return setError("장소를 입력해 주세요.");
-    if (!priceRange) return setError("가격대를 선택해 주세요.");
     if (!date) return setError("날짜를 선택해 주세요.");
     if (!time) return setError("시간을 선택해 주세요.");
-    if (!participants.trim()) return setError("참여자를 입력해 주세요.");
+    if (selectedPriceRanges.length === 0)
+      return setError("가격대를 한 개 이상 선택해 주세요.");
+
+    // 참여자 ID를 쉼표로 구분해 입력한다고 가정 (예: "1, 2, 3")
+    const participantIds = participants
+      .split(",")
+      .map((raw) => Number(raw.trim()))
+      .filter((n) => !Number.isNaN(n));
+
+    if (participantIds.length === 0) {
+      return setError("참여자 ID를 한 개 이상 입력해 주세요. (예: 1, 2, 3)");
+    }
 
     try {
       setLoading(true);
 
-      const participantList = participants
-        .split(",")
-        .map((name) => name.trim())
-        .filter(Boolean);
+      // "2025-12-31T19:00:00" 형태로 변환
+      const startsAt = `${date}T${time}:00`;
+
+      // TODO: 실제 지도 중심 좌표 / 반경 값으로 교체
+      const centerLat = 37.500901;
+      const centerLon = 127.028639;
+      const radiusM = 1000;
 
       const payload: CreatePlanPayload = {
-        title: title.trim(),
-        place: place.trim(),
-        priceRange: priceRange as Exclude<PriceRange, "">,
-        date,
-        time,
-        participants: participantList,
-        groupId,
+        roomId: groupId,
+        planName: title.trim(),
+        centerLat,
+        centerLon,
+        radiusM,
+        startsAt,
+        participantIds,
+        dislikeCategories,
+        priceRanges: selectedPriceRanges,
       };
 
       const { id } = await createPlan(payload);
@@ -101,9 +171,12 @@ export default function CreatePlanSheet({ open, onOpenChange, onCreated, groupId
   }
 
   return (
-    <BottomSheet open={open} onOpenChange={onOpenChange} anchorSelector="#app-content-root">
+    <BottomSheet
+      open={open}
+      onOpenChange={onOpenChange}
+      anchorSelector="#app-content-root"
+    >
       <BottomSheet.Overlay />
-      {/* 📌 flex 레이아웃 + 최대 높이 지정 */}
       <BottomSheet.Content className="flex max-h-[90vh] flex-col">
         <BottomSheet.Header align="center">
           <BottomSheet.Title>약속 만들기</BottomSheet.Title>
@@ -125,54 +198,12 @@ export default function CreatePlanSheet({ open, onOpenChange, onCreated, groupId
                 id="title"
                 data-autofocus
                 className={baseFieldClass}
-                placeholder="예) 을지로 맛집 탐방"
+                placeholder="예) 강남 저녁 회식"
                 maxLength={50}
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 required
               />
-            </div>
-
-            {/* 장소 */}
-            <div className="grid gap-2">
-              <label htmlFor="place" className="text-sm font-medium">
-                장소
-              </label>
-              <input
-                id="place"
-                className={baseFieldClass}
-                placeholder="예) 을지로 3가역 근처"
-                maxLength={100}
-                value={place}
-                onChange={(e) => setPlace(e.target.value)}
-                required
-              />
-            </div>
-
-            {/* 가격대 */}
-            <div className="grid gap-2">
-              <label htmlFor="priceRange" className="text-sm font-medium">
-                가격대
-              </label>
-              <div className="relative">
-                <select
-                  id="priceRange"
-                  className={cn(baseFieldClass, "appearance-none pr-8")}
-                  value={priceRange}
-                  onChange={(e) => setPriceRange(e.target.value as PriceRange)}
-                  required
-                >
-                  <option value="">선택해 주세요</option>
-                  <option value="LOW">LOW</option>
-                  <option value="MEDIUM">MEDIUM</option>
-                  <option value="HIGH">HIGH</option>
-                  <option value="PREMIUM">PREMIUM</option>
-                </select>
-                <ChevronDown
-                  className="pointer-events-none absolute right-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
-                  aria-hidden
-                />
-              </div>
             </div>
 
             {/* 날짜 */}
@@ -181,7 +212,10 @@ export default function CreatePlanSheet({ open, onOpenChange, onCreated, groupId
               <button
                 type="button"
                 onClick={() => setDateOpen((prev) => !prev)}
-                className={cn(baseFieldClass, "flex items-center justify-between")}
+                className={cn(
+                  baseFieldClass,
+                  "flex items-center justify-between"
+                )}
               >
                 <span>{formatKoreanDate(date)}</span>
                 <ChevronDown
@@ -219,21 +253,77 @@ export default function CreatePlanSheet({ open, onOpenChange, onCreated, groupId
               onOpenChange={setTimeOpen}
             />
 
-            {/* 참여자 */}
+            {/* 가격대 (멀티 선택) */}
+            <div className="grid gap-2">
+              <span className="text-sm font-medium">가격대</span>
+              <div className="flex flex-wrap gap-2">
+                {PRICE_RANGE_OPTIONS.map((opt) => {
+                  const selected = selectedPriceRanges.includes(opt.value);
+                  return (
+                    <button
+                      key={opt.value}
+                      type="button"
+                      onClick={() => togglePriceRange(opt.value)}
+                      className={cn(
+                        "rounded-full border px-3 py-1 text-xs",
+                        selected
+                          ? "border-primary bg-primary text-primary-foreground"
+                          : "border-border bg-background text-foreground"
+                      )}
+                    >
+                      {opt.label}
+                    </button>
+                  );
+                })}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                여러 개 선택할 수 있어요.
+              </p>
+            </div>
+
+            {/* 싫어하는 카테고리 (멀티 선택) */}
+            <div className="grid gap-2">
+              <span className="text-sm font-medium">싫어하는 카테고리</span>
+              <div className="flex flex-wrap gap-2">
+                {DISLIKE_CATEGORY_OPTIONS.map((cat) => {
+                  const selected = dislikeCategories.includes(cat);
+                  return (
+                    <button
+                      key={cat}
+                      type="button"
+                      onClick={() => toggleDislikeCategory(cat)}
+                      className={cn(
+                        "rounded-full border px-3 py-1 text-xs",
+                        selected
+                          ? "border-destructive bg-destructive text-destructive-foreground"
+                          : "border-border bg-background text-foreground"
+                      )}
+                    >
+                      {cat}
+                    </button>
+                  );
+                })}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                선택한 카테고리는 추천 결과에서 제외돼요.
+              </p>
+            </div>
+
+            {/* 참여자 (임시: ID 쉼표 입력) */}
             <div className="grid gap-2">
               <label htmlFor="participants" className="text-sm font-medium">
-                참여자
+                참여자 ID
               </label>
               <input
                 id="participants"
                 className={baseFieldClass}
-                placeholder="예) 철수, 영희, 민수"
+                placeholder="예) 1, 2 (나중에 멤버 리스트 선택으로 개선)"
                 value={participants}
                 onChange={(e) => setParticipants(e.target.value)}
                 required
               />
               <p className="text-xs text-muted-foreground">
-                (임시) 쉼표로 구분해서 입력해 주세요. 나중에 모임 멤버 리스트에서 선택하도록 개선 가능
+                임시로 userId를 쉼표로 구분해서 입력해 주세요. (예: 2, 1)
               </p>
             </div>
 
