@@ -25,4 +25,6 @@ public interface PlanVoteRepository extends JpaRepository<PlanVote, Long> {
     }
 
     long countByPlanId(Long planId);
+
+    List<PlanVote> findAllByPlanId(Long planId);
 }
