@@ -1,3 +1,4 @@
+import { useState } from "react";
 import type { Restaurant } from "@/entities/plan/model/types";
 import { cn } from "@/shared/lib/utils";
 
@@ -12,6 +13,7 @@ export function RestaurantCard({
 }: RestaurantCardProps) {
   const { name, category, imageUrl, signatureMenus, likesCount } = restaurant;
   const menus = signatureMenus.slice(0, 2);
+  const [imageError, setImageError] = useState(false);
 
   return (
     <article
@@ -21,11 +23,12 @@ export function RestaurantCard({
       )}
     >
       <div className="h-20 w-20 flex-shrink-0 overflow-hidden rounded-xl bg-slate-100">
-        {imageUrl ? (
+        {imageUrl && !imageError ? (
           <img
             src={imageUrl}
             alt={`${name} 대표 이미지`}
             className="h-full w-full object-cover"
+            onError={() => setImageError(true)}
           />
         ) : (
           <div className="flex h-full w-full items-center justify-center text-xs text-slate-400">
