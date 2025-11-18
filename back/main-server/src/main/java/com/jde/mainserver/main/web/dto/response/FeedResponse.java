@@ -180,6 +180,10 @@ public record FeedResponse(
             @JsonProperty("is_open")
             Boolean isOpen,
 
+            @Schema(description = "즐겨찾기 여부 (is_saved=true인 경우)", example = "true")
+            @JsonProperty("bookmarked")
+            Boolean bookmarked,
+
             @Schema(description = "점수 계산 상세 정보 (debug)", example = "{\"w_tag\": 0.0, \"w_saved\": 0.0, \"w_pref\": 0.015, \"base\": 0.115, \"distance_decay\": 0.98, \"final\": 0.1127}")
             @JsonProperty("debug")
             Map<String, Object> debug
