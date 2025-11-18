@@ -78,6 +78,7 @@ async function handleInviteClick() {
         {/* 이전 약속 섹션 */}
         <PastAppointmentsSectionCard
           items={data.planList}
+          members={data.roomMemberList}
           onSeeAll={() => navigate(`/groups/${groupId}/appointments`)}
         />
       </main>
@@ -94,7 +95,7 @@ async function handleInviteClick() {
       </div>
 
       {/* 바텀시트 */}
-      <CreatePlanSheet open={openCreate} onOpenChange={setOpenCreate} />
+      <CreatePlanSheet open={openCreate} onOpenChange={setOpenCreate} groupId={Number(groupId)} />
 
       {/* 🔗 초대 링크 모달 */}
       {inviteModalOpen && inviteLink && (

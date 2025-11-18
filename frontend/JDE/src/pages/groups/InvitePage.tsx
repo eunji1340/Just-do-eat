@@ -13,7 +13,14 @@ export default function InvitePage() {
   const [status, setStatus] = React.useState<"loading" | "error">("loading");
   const [errorMsg, setErrorMsg] = React.useState<string | null>(null);
 
+  // ✅ StrictMode에서 useEffect가 두 번 실행되는 것을 막기 위한 가드
+  const calledRef = React.useRef(false);
+
   React.useEffect(() => {
+    // 이미 한 번 실행했다면 다시 실행하지 않음
+    if (calledRef.current) return;
+    calledRef.current = true;
+
     const token = searchParams.get("token");
 
     if (!token) {
