@@ -20,6 +20,7 @@ import PlanDetailPage from "@/pages/plan/PlanDetailPage";
 import FavoritesPage from "@/pages/favorites/FavoritesPage";
 import MyPage from "@/pages/my/MyPage";
 import RestaurantDetailPage from "@/pages/restaurant/RestaurantDetailPage";
+import InvitePage from "@/pages/groups/InvitePage";
 
 const router = createBrowserRouter([
   {
@@ -121,6 +122,14 @@ const router = createBrowserRouter([
   {
     path: "/restaurants/:restaurantId",
     element: <RestaurantDetailPage />,
+  },
+  {
+    path: "/invite",
+    element: (
+      <AppLayout>
+        <InvitePage />
+      </AppLayout>
+    )
   }
 ]);
 
