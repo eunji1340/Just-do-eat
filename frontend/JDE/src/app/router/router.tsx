@@ -22,6 +22,7 @@ import RestaurantDetailPage from "@/pages/restaurant/RestaurantDetailPage";
 import InvitePage from "@/pages/groups/InvitePage";
 const SearchResultPage = lazy(() => import("@/pages/search/SearchResultPage"));
 const AppLayout = lazy(() => import("../layout/AppLayout"));
+import PlanListPage from "@/pages/groups/PlanListPage";
 
 const router = createBrowserRouter([
   {
@@ -73,6 +74,14 @@ const router = createBrowserRouter([
     element: (
       <AppLayout>
         <GroupDetailPage />
+      </AppLayout>
+    ),
+  },
+  {
+    path: "groups/:groupId/plans",
+    element: (
+      <AppLayout>
+        <PlanListPage />
       </AppLayout>
     ),
   },
@@ -130,8 +139,8 @@ const router = createBrowserRouter([
       <AppLayout>
         <InvitePage />
       </AppLayout>
-    )
-  }
+    ),
+  },
 ]);
 
 export default function AppRouter() {
