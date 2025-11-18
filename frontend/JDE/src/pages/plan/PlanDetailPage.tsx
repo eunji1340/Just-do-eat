@@ -56,7 +56,6 @@ export default function PlanDetailPage() {
   const {
     selectedRestaurantId: voteSelectedId,
     setSelectedRestaurantId: setVoteSelectedId,
-    hasVoted,
     isSubmitting,
     startVote,
     submitVote,
