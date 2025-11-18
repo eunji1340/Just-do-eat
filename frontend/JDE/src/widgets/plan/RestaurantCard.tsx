@@ -9,6 +9,9 @@ type RestaurantCardProps = {
   showRadio?: boolean;
   isSelected?: boolean;
   onRadioClick?: () => void;
+  voteCount?: number;
+  totalParticipants?: number;
+  showVoteCount?: boolean;
 };
 
 export function RestaurantCard({
@@ -18,6 +21,9 @@ export function RestaurantCard({
   showRadio = false,
   isSelected = false,
   onRadioClick,
+  voteCount,
+  totalParticipants,
+  showVoteCount = false,
 }: RestaurantCardProps) {
   const { name, category, imageUrl, signatureMenus, likesCount } = restaurant;
   const menus = signatureMenus.slice(0, 2);
@@ -92,9 +98,31 @@ export function RestaurantCard({
 
         <div className="h-px w-full bg-slate-100" />
 
-        <p className="ml-auto text-xs font-medium text-slate-400">
-          {likesCount.toString().padStart(3, "0")}명이 즐겨찾는 집
-        </p>
+        {showVoteCount &&
+        voteCount !== undefined &&
+        totalParticipants !== undefined ? (
+          <div className="flex items-center gap-2">
+            <div className="flex-1 h-2 bg-slate-200 rounded-full overflow-hidden">
+              <div
+                className="h-full bg-primary rounded-full transition-all duration-300"
+                style={{
+                  width: `${
+                    totalParticipants > 0
+                      ? (voteCount / totalParticipants) * 100
+                      : 0
+                  }%`,
+                }}
+              />
+            </div>
+            <span className="text-xs font-medium text-slate-400 min-w-[2.5rem] text-right">
+              {voteCount}/{totalParticipants}
+            </span>
+          </div>
+        ) : (
+          <p className="ml-auto text-xs font-medium text-slate-400">
+            {likesCount.toString().padStart(3, "0")}명이 즐겨찾는 집
+          </p>
+        )}
       </div>
     </article>
   );

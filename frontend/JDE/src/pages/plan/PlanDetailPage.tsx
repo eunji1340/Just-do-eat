@@ -3,19 +3,27 @@ import { useNavigate, useParams } from "react-router-dom";
 import { Users } from "lucide-react";
 import { selectDecisionTool } from "@/entities/plan/api/selectDecisionTool";
 import { TopNavBar } from "@/widgets/top-navbar";
+import { useUserMe } from "@/features/user/model/useUserMe";
 import { usePlanDetail } from "./hooks/usePlanDetail";
 import { usePlanCandidates } from "./hooks/usePlanCandidates";
 import { useDirectSelect } from "./hooks/useDirectSelect";
+import { useVote } from "./hooks/useVote";
 import { PlanHeader } from "./components/PlanHeader";
 import { RestaurantList } from "./components/RestaurantList";
 import { BottomActionBar } from "./components/BottomActionBar";
+import { VoteActionBar } from "./components/VoteActionBar";
+import { VoteSubmitButton } from "./components/VoteSubmitButton";
 import { ToolSelectionModal } from "./components/ToolSelectionModal";
 import { ComingSoonModal } from "./components/ComingSoonModal";
 import { DecideSuccessModal } from "./components/DecideSuccessModal";
+import { EndVoteConfirmModal } from "./components/EndVoteConfirmModal";
+import { TieVoteModal } from "./components/TieVoteModal";
+import { ManagerSelectModal } from "./components/ManagerSelectModal";
 
 export default function PlanDetailPage() {
   const { planId } = useParams<{ planId: string }>();
   const navigate = useNavigate();
+  const { userData } = useUserMe();
 
   const { planDetail, isLoading, isError, fetchPlanDetail } =
     usePlanDetail(planId);
@@ -30,21 +38,38 @@ export default function PlanDetailPage() {
 
   const {
     directSelectMode,
-    selectedRestaurantId,
+    selectedRestaurantId: directSelectedId,
     showDecideSuccessModal,
     setShowDecideSuccessModal,
     restaurantListRef,
     bottomButtonsRef,
     handleDirectSelect,
-    handleRestaurantSelect,
+    handleRestaurantSelect: handleDirectRestaurantSelect,
     handleDirectSelectComplete,
   } = useDirectSelect(planId, fetchPlanDetail);
 
   const [selectedTool, setSelectedTool] = useState<
     "VOTE" | "LADDER" | "ROULETTE" | "DIRECT" | null
   >(null);
+
+  const isVotingStatus = planDetail?.status === "VOTING";
+  const {
+    selectedRestaurantId: voteSelectedId,
+    setSelectedRestaurantId: setVoteSelectedId,
+    hasVoted,
+    isSubmitting,
+    startVote,
+    submitVote,
+    endVoteAndDecide,
+    getVoteCount,
+    voteTallyData,
+    getTiedRestaurants,
+  } = useVote(planId, isVotingStatus || false, fetchPlanDetail);
   const [showToolModal, setShowToolModal] = useState(false);
   const [showComingSoonModal, setShowComingSoonModal] = useState(false);
+  const [showEndVoteConfirmModal, setShowEndVoteConfirmModal] = useState(false);
+  const [showTieVoteModal, setShowTieVoteModal] = useState(false);
+  const [showManagerSelectModal, setShowManagerSelectModal] = useState(false);
 
   const handleSelectToolClick = useCallback(() => {
     setShowToolModal(true);
@@ -69,6 +94,10 @@ export default function PlanDetailPage() {
 
         if (toolType === "ROULETTE") {
           navigate(`/roulette?planId=${planId}`);
+        } else if (toolType === "VOTE") {
+          // 투표 시작
+          await startVote();
+          // 투표 모드 활성화는 selectedTool이 "VOTE"로 설정되어 있어서 자동으로 됨
         }
       } catch (error) {
         console.error(
@@ -79,7 +108,91 @@ export default function PlanDetailPage() {
         setSelectedTool(null);
       }
     },
-    [planId, restaurants, navigate]
+    [planId, restaurants, navigate, startVote]
+  );
+
+  const handleVoteRestaurantSelect = useCallback(
+    (restaurantId: string) => {
+      if (!hasVoted) {
+        setVoteSelectedId(restaurantId);
+      }
+    },
+    [hasVoted, setVoteSelectedId]
+  );
+
+  const handleVoteSubmit = useCallback(async () => {
+    try {
+      await submitVote();
+    } catch (error) {
+      alert(
+        error instanceof Error
+          ? error.message
+          : "투표 제출에 실패했습니다. 다시 시도해주세요."
+      );
+    }
+  }, [submitVote]);
+
+  const handleEndVoteClick = useCallback(() => {
+    setShowEndVoteConfirmModal(true);
+  }, []);
+
+  const handleEndVoteConfirm = useCallback(async () => {
+    setShowEndVoteConfirmModal(false);
+    try {
+      // 동점인 식당이 있는지 확인
+      const tiedRestaurants = getTiedRestaurants();
+      if (tiedRestaurants.length > 0) {
+        // 동점인 경우 모달 표시
+        setShowTieVoteModal(true);
+        return;
+      }
+
+      // 동점이 없으면 바로 확정
+      await endVoteAndDecide();
+      setShowDecideSuccessModal(true);
+    } catch (error) {
+      alert(
+        error instanceof Error
+          ? error.message
+          : "투표 종료에 실패했습니다. 다시 시도해주세요."
+      );
+    }
+  }, [endVoteAndDecide, setShowDecideSuccessModal, getTiedRestaurants]);
+
+  const handleRevote = useCallback(async () => {
+    setShowTieVoteModal(false);
+    try {
+      // 재투표 시작 (투표 상태 초기화 후 다시 시작)
+      await startVote();
+    } catch (error) {
+      alert(
+        error instanceof Error
+          ? error.message
+          : "재투표 시작에 실패했습니다. 다시 시도해주세요."
+      );
+    }
+  }, [startVote]);
+
+  const handleManagerSelectClick = useCallback(() => {
+    setShowTieVoteModal(false);
+    setShowManagerSelectModal(true);
+  }, []);
+
+  const handleManagerSelectConfirm = useCallback(
+    async (restaurantId: number) => {
+      setShowManagerSelectModal(false);
+      try {
+        await endVoteAndDecide(restaurantId);
+        setShowDecideSuccessModal(true);
+      } catch (error) {
+        alert(
+          error instanceof Error
+            ? error.message
+            : "식당 확정에 실패했습니다. 다시 시도해주세요."
+        );
+      }
+    },
+    [endVoteAndDecide, setShowDecideSuccessModal]
   );
 
   if (isLoading) {
@@ -121,6 +234,12 @@ export default function PlanDetailPage() {
   }
 
   const participants = planDetail.planParticipantList || [];
+  const isPlanManager = userData?.name === planDetail.planManager;
+  // VOTE 상태일 때 라디오 버튼 표시
+  const voteMode = isVotingStatus;
+  const selectedRestaurantId = isVotingStatus
+    ? voteSelectedId
+    : directSelectedId;
 
   return (
     <>
@@ -137,7 +256,11 @@ export default function PlanDetailPage() {
           </div>
         }
       />
-      <div className="min-h-screen bg-neutral-100 pb-24">
+      <div
+        className={`min-h-screen bg-neutral-100 ${
+          isPlanManager || isVotingStatus ? "pb-24" : ""
+        }`}
+      >
         <PlanHeader planDetail={planDetail} />
 
         <RestaurantList
@@ -146,25 +269,58 @@ export default function PlanDetailPage() {
           hasMore={hasMore}
           currentHistoryIndex={currentHistoryIndex}
           directSelectMode={directSelectMode}
+          voteMode={voteMode}
           selectedRestaurantId={selectedRestaurantId}
           selectedTool={selectedTool}
           restaurantListRef={restaurantListRef}
-          onRestaurantSelect={handleRestaurantSelect}
+          onRestaurantSelect={
+            isVotingStatus
+              ? handleVoteRestaurantSelect
+              : handleDirectRestaurantSelect
+          }
           onPrevious={handlePrevious}
           onNext={handleNext}
+          getVoteCount={isVotingStatus ? getVoteCount : undefined}
+          totalParticipants={
+            isVotingStatus && planDetail
+              ? planDetail.planParticipantList.length
+              : undefined
+          }
+          currentVoteCount={
+            isVotingStatus ? voteTallyData?.totalVotes : undefined
+          }
         />
       </div>
 
-      <BottomActionBar
-        bottomButtonsRef={bottomButtonsRef}
-        isLoading={isLoadingCandidates}
-        hasRestaurants={restaurants.length > 0}
-        directSelectMode={directSelectMode}
-        hasSelectedRestaurant={!!selectedRestaurantId}
-        onSelectToolClick={handleSelectToolClick}
-        onDirectSelect={handleDirectSelect}
-        onDirectSelectComplete={handleDirectSelectComplete}
-      />
+      {isVotingStatus && (
+        <>
+          <VoteSubmitButton
+            hasVoted={hasVoted}
+            hasSelectedRestaurant={!!selectedRestaurantId}
+            isSubmitting={isSubmitting}
+            onVoteSubmit={handleVoteSubmit}
+          />
+          {isPlanManager && (
+            <VoteActionBar
+              bottomButtonsRef={bottomButtonsRef}
+              onEndVote={handleEndVoteClick}
+            />
+          )}
+        </>
+      )}
+
+      {!isVotingStatus && isPlanManager && (
+        <BottomActionBar
+          bottomButtonsRef={bottomButtonsRef}
+          isLoading={isLoadingCandidates}
+          hasRestaurants={restaurants.length > 0}
+          directSelectMode={directSelectMode}
+          hasSelectedRestaurant={!!selectedRestaurantId}
+          onSelectToolClick={handleSelectToolClick}
+          onDirectSelect={handleDirectSelect}
+          onDirectSelectComplete={handleDirectSelectComplete}
+        />
+      )}
 
       <ToolSelectionModal
         isOpen={showToolModal}
@@ -178,6 +334,34 @@ export default function PlanDetailPage() {
         onClose={() => setShowComingSoonModal(false)}
       />
 
+      <EndVoteConfirmModal
+        isOpen={showEndVoteConfirmModal}
+        onClose={() => setShowEndVoteConfirmModal(false)}
+        onConfirm={handleEndVoteConfirm}
+      />
+      <TieVoteModal
+        isOpen={showTieVoteModal}
+        tiedCount={
+          getTiedRestaurants().length > 0 ? getTiedRestaurants().length : 0
+        }
+        voteCount={
+          getTiedRestaurants().length > 0 ? getTiedRestaurants()[0].votes : 0
+        }
+        onClose={() => setShowTieVoteModal(false)}
+        onRevote={handleRevote}
+        onManagerSelect={handleManagerSelectClick}
+      />
+      <ManagerSelectModal
+        isOpen={showManagerSelectModal}
+        tiedRestaurants={getTiedRestaurants()}
+        restaurants={restaurants.map((r) => ({
+          id: r.id,
+          name: r.name,
+          category: r.category,
+        }))}
+        onClose={() => setShowManagerSelectModal(false)}
+        onSelect={handleManagerSelectConfirm}
+      />
       <DecideSuccessModal
         isOpen={showDecideSuccessModal}
         onClose={() => setShowDecideSuccessModal(false)}
