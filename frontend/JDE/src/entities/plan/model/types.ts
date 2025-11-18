@@ -40,6 +40,7 @@ export type PlanParticipant = {
 export type PlanDetailResponse = {
   roomId: number;
   roomName: string;
+  planName: string;
   planId: number;
   planPlace: string | null;
   startAt: string;
@@ -82,4 +83,3 @@ export type PlanCandidatesResponse = {
   next_cursor: string | null;
   items: CandidateRestaurant[];
 };
-
