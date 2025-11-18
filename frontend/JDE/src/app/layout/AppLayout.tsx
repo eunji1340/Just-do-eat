@@ -32,7 +32,8 @@ export default function AppLayout({ children }: Props) {
     // /plans/:planId는 하단 내비바 없음
     const showPatterns = [
       /^\/groups\/[^/]+$/, // 모임 상세
-      /^\/groups\/[^/]+\/appointments\/[^/]+$/, // 약속 상세 (모임 하위)
+      /^\/groups\/[^/]+\/plans\/[^/]+$/, // 약속 상세 (모임 하위)
+      /^\/groups\/[^/]+\/plans$/,   // 목록
       /^\/appointments\/[^/]+$/, // 약속 상세 (독립)
     ];
 
