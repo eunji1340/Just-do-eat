@@ -10,6 +10,8 @@ public interface PlanVoteRepository extends JpaRepository<PlanVote, Long> {
 
     boolean existsByPlanIdAndUserId(Long planId, Long userId);
 
+    java.util.Optional<PlanVote> findByPlanIdAndUserId(Long planId, Long userId);
+
     @Query("""
         select v.restaurantId as restaurantId, count(v) as votes
         from PlanVote v
