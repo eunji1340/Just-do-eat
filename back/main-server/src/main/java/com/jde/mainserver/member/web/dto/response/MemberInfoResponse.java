@@ -19,19 +19,29 @@ public class MemberInfoResponse {
     private AgeGroup ageGroup;
     private Gender gender;
 
-    // ✅ 추가: 감사 타임스탬프
+    // 감사 타임스탬프
     private Instant createdAt;
     private Instant updatedAt;
 
-    // ✅ 선택: 기본 상권 정보(없을 수 있음)
+    // 기본 상권 정보(없을 수 있음)
     private Long regionId;
     private String regionName;
 
+    // 기본: DB에 저장된 imageUrl 그대로 사용
     public static MemberInfoResponse from(Member m) {
+        return from(m, m.getImageUrl());
+    }
+
+    // presigned GET URL 같은 "대체 URL"을 넣고 싶을 때 사용
+    public static MemberInfoResponse from(Member m, String overrideImageUrl) {
+        String finalImageUrl = (overrideImageUrl != null && !overrideImageUrl.isBlank())
+                ? overrideImageUrl
+                : m.getImageUrl();
+
         return new MemberInfoResponse(
-                m.getUserId(),      // getId() → getUserId()
+                m.getUserId(),
                 m.getName(),
-                m.getImageUrl(),
+                finalImageUrl,
                 m.getRole(),
                 m.getAgeGroup(),
                 m.getGender(),
