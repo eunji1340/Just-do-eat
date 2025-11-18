@@ -11,4 +11,15 @@ export default defineConfig({
       "@": path.resolve(__dirname, "src"),
     },
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          react: ['react', 'react-dom'],
+          vendor: ['axios', 'zustand', '@tanstack/react-query'],
+          ui: ['@/widgets/top-navbar'], // 필요하면
+        }
+      }
+    }
+  }
 });

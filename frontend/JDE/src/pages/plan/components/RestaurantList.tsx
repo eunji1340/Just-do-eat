@@ -19,6 +19,7 @@ type RestaurantListProps = {
   getVoteCount?: (restaurantId: string) => number;
   totalParticipants?: number;
   currentVoteCount?: number;
+  allowedRestaurantIds?: number[];
 };
 
 export function RestaurantList({
@@ -37,6 +38,7 @@ export function RestaurantList({
   getVoteCount,
   totalParticipants,
   currentVoteCount,
+  allowedRestaurantIds,
 }: RestaurantListProps) {
   if (isLoading) {
     return (
@@ -77,42 +79,62 @@ export function RestaurantList({
       </div>
 
       <div className="flex flex-col gap-3">
-        {restaurants.map((restaurant) => (
-          <div
-            key={restaurant.id}
-            onClick={(e) => {
-              if (directSelectMode || voteMode) {
-                e.stopPropagation();
-                onRestaurantSelect(restaurant.id);
-              }
-            }}
-          >
-            <RestaurantCard
-              restaurant={restaurant}
-              highlight={
-                (selectedTool !== null && selectedTool !== "DIRECT") ||
-                directSelectMode ||
-                voteMode
-              }
-              showRadio={directSelectMode || voteMode}
-              isSelected={selectedRestaurantId === restaurant.id}
-              onRadioClick={() => {
-                if (directSelectMode || voteMode) {
-                  onRestaurantSelect(restaurant.id);
-                }
-              }}
-              voteCount={getVoteCount ? getVoteCount(restaurant.id) : undefined}
-              totalParticipants={totalParticipants}
-              showVoteCount={voteMode}
-              className={cn(
-                (directSelectMode || voteMode) &&
-                  selectedRestaurantId === restaurant.id
-                  ? "ring-2 ring-primary"
-                  : ""
-              )}
-            />
-          </div>
-        ))}
+        {restaurants
+          .filter((restaurant) => {
+            // 재투표 모드이고 allowedRestaurantIds가 있으면 필터링
+            if (allowedRestaurantIds && allowedRestaurantIds.length > 0) {
+              return allowedRestaurantIds.includes(parseInt(restaurant.id, 10));
+            }
+            return true;
+          })
+          .map((restaurant) => {
+            const isAllowed =
+              !allowedRestaurantIds ||
+              allowedRestaurantIds.length === 0 ||
+              allowedRestaurantIds.includes(parseInt(restaurant.id, 10));
+
+            return (
+              <div
+                key={restaurant.id}
+                onClick={(e) => {
+                  if ((directSelectMode || voteMode) && isAllowed) {
+                    e.stopPropagation();
+                    onRestaurantSelect(restaurant.id);
+                  }
+                }}
+              >
+                <RestaurantCard
+                  restaurant={restaurant}
+                  highlight={
+                    ((selectedTool !== null && selectedTool !== "DIRECT") ||
+                      directSelectMode ||
+                      voteMode) &&
+                    isAllowed
+                  }
+                  showRadio={(directSelectMode || voteMode) && isAllowed}
+                  isSelected={selectedRestaurantId === restaurant.id}
+                  onRadioClick={() => {
+                    if ((directSelectMode || voteMode) && isAllowed) {
+                      onRestaurantSelect(restaurant.id);
+                    }
+                  }}
+                  voteCount={
+                    getVoteCount ? getVoteCount(restaurant.id) : undefined
+                  }
+                  totalParticipants={totalParticipants}
+                  showVoteCount={voteMode}
+                  className={cn(
+                    (directSelectMode || voteMode) &&
+                      selectedRestaurantId === restaurant.id &&
+                      isAllowed
+                      ? "ring-2 ring-primary"
+                      : "",
+                    !isAllowed && voteMode ? "opacity-50" : ""
+                  )}
+                />
+              </div>
+            );
+          })}
       </div>
 
       <div className="mt-6 flex items-center justify-center gap-3">
