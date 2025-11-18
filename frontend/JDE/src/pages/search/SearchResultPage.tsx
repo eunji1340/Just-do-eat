@@ -265,7 +265,7 @@ export default function SearchResultPage() {
 
       try {
         // ===== 1. API 엔드포인트 설정 (하드코딩) =====
-        const baseURL = "http://k13a701.p.ssafy.io/api";
+        const baseURL = "https://www.justdoeat.ai.kr/api";
         console.log("🔍 [검색] 베이스 URL:", baseURL);
 
         // ===== 2. 쿼리 파라미터 생성 =====
