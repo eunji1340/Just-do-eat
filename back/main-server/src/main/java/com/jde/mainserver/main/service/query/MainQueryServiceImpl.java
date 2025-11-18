@@ -221,14 +221,24 @@ public class MainQueryServiceImpl implements MainQueryService {
 		Map<Long, Restaurant> restaurantMap = restaurantRepository.findAllByIdIn(batchRestaurantIds).stream()
 			.collect(Collectors.toMap(Restaurant::getId, r -> r));
 
+		// 북마크 정보 조회 (userId가 있을 때만)
+		Set<Long> bookmarkedIds = new HashSet<>();
+		if (userId != null && !batchRestaurantIds.isEmpty()) {
+			List<Long> savedIds = restaurantRepository.findSavedRestaurantIdsByUserIdAndRestaurantIds(
+				userId, batchRestaurantIds);
+			bookmarkedIds.addAll(savedIds);
+		}
+
 		// 순서 유지하며 식당 정보 리스트 생성 (거리, 영업 상태 업데이트)
 		List<FeedResponse.RestaurantItem> feedItems = batchRestaurants.stream()
 			.map(meta -> {
 				Restaurant restaurant = restaurantMap.get(meta.getRestaurantId());
+				Boolean bookmarked = userId != null && bookmarkedIds.contains(meta.getRestaurantId());
 				return MainConverter.toFeedItem(
 					restaurant,
 					meta.getDistanceM(),
 					meta.getIsOpen(),
+					bookmarked,
 					meta.getDebug()
 				);
 			})

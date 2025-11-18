@@ -128,16 +128,20 @@ public class PlanDecisionService {
             throw new IllegalStateException("voting is not in progress");
         }
 
-        // 기존 투표가 있으면 삭제 (재투표 가능)
-        voteRepository.findByPlanIdAndUserId(planId, userId)
-                .ifPresent(voteRepository::delete);
-
-        PlanVote vote = PlanVote.builder()
-                .planId(planId)
-                .restaurantId(req.restaurantId())
-                .userId(userId)
-                .votedAt(Instant.now())
-                .build();
+        // 기존 투표가 있으면 업데이트, 없으면 생성 (재투표 가능)
+        PlanVote vote = voteRepository.findByPlanIdAndUserId(planId, userId)
+                .map(existingVote -> {
+                    // 기존 투표 업데이트
+                    existingVote.setRestaurantId(req.restaurantId());
+                    existingVote.setVotedAt(Instant.now());
+                    return existingVote;
+                })
+                .orElseGet(() -> PlanVote.builder()
+                        .planId(planId)
+                        .restaurantId(req.restaurantId())
+                        .userId(userId)
+                        .votedAt(Instant.now())
+                        .build());
 
         voteRepository.save(vote);
     }

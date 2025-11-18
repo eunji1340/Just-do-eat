@@ -35,6 +35,16 @@ public class MainConverter {
 		Boolean isOpen,
 		Map<String, Object> debug
 	) {
+		return toFeedItem(restaurant, distanceM, isOpen, null, debug);
+	}
+
+	public static FeedResponse.RestaurantItem toFeedItem(
+		Restaurant restaurant,
+		Integer distanceM,
+		Boolean isOpen,
+		Boolean bookmarked,
+		Map<String, Object> debug
+	) {
 		if (restaurant == null) {
 			return null;
 		}
@@ -70,6 +80,7 @@ public class MainConverter {
 			hourItems,
 			distanceM,
 			isOpen,
+			bookmarked,
 			debug
 		);
 	}
