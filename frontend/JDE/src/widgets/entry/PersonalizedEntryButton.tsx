@@ -9,7 +9,7 @@ import { Card, CardContent, CardFooter } from "@/shared/ui/shadcn/card";
 export default function PersonalizedEntryButton() {
   return (
     // 개인추천피드 페이지로 변경하기
-    <Link to="/swipe" className="block w-full">
+    <Link to="/feed" className="block w-full">
       <Card className="mx-4 overflow-hidden shadow-md pb-0 gap-0">
         {/* 상단: 이미지 + 텍스트 */}
         <CardContent className="px-2 sm:px-12">
