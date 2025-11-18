@@ -31,7 +31,8 @@ export default function AppLayout({ children }: Props) {
     // 약속 상세: /groups/appointments/:id 또는 /meetings/:meetingId/appointments/:id, /plans/:planId
     const showPatterns = [
       /^\/groups\/[^/]+$/, // 모임 상세
-      /^\/groups\/[^/]+\/appointments\/[^/]+$/, // 약속 상세 (모임 하위)
+      /^\/groups\/[^/]+\/plans\/[^/]+$/, // 약속 상세 (모임 하위)
+      /^\/groups\/[^/]+\/plans$/,   // 목록
       /^\/appointments\/[^/]+$/, // 약속 상세 (독립)
       /^\/plans\/[^/]+$/, // 약속 상세 (단일 라우트)
     ];

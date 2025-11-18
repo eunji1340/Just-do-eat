@@ -21,6 +21,7 @@ import FavoritesPage from "@/pages/favorites/FavoritesPage";
 import MyPage from "@/pages/my/MyPage";
 import RestaurantDetailPage from "@/pages/restaurant/RestaurantDetailPage";
 import InvitePage from "@/pages/groups/InvitePage";
+import PlanListPage from "@/pages/groups/PlanListPage";
 
 const router = createBrowserRouter([
   {
@@ -74,6 +75,13 @@ const router = createBrowserRouter([
         <GroupDetailPage />
       </AppLayout>
     ),
+  },
+  {
+    path: "groups/:groupId/plans",
+    element:
+      <AppLayout>
+        <PlanListPage />
+      </AppLayout>
   },
   {
     path: "/roulette",
