@@ -27,6 +27,18 @@ import type {
 import { resolvePlanDetailSample } from './model/plan-detail.sample';
 
 // ----------------------------------------------------
+// Mock 사용자 정보 저장소 (메모리)
+// ----------------------------------------------------
+let mockUserStore: {
+  userId: number;
+  name: string;
+  imageUrl: string | null;
+  ageGroup: string;
+  gender: string;
+  role: string;
+} | null = null;
+
+// ----------------------------------------------------
 // 유틸: MBTI 서버 계산 (클라와 동일 로직, 서버에 있다고 가정)
 // ----------------------------------------------------
 function computeMukbtiServerSide(
@@ -181,6 +193,16 @@ const handleSignup = async ({ request }: { request: Request }) => {
   if (body.sessionId) {
     console.log('[Mock] 회원가입 시 세션 ID 포함:', body.sessionId);
   }
+
+  // 사용자 정보 저장 (회원가입 시)
+  mockUserStore = {
+    userId: Date.now(), // 간단한 ID 생성
+    name: body.name,
+    imageUrl: null, // 회원가입 시에는 이미지가 없음 (나중에 업로드)
+    ageGroup: body.ageGroup || 'TWENTIES',
+    gender: body.gender || 'MALE',
+    role: 'USER',
+  };
 
   // 성공
   return HttpResponse.json({
@@ -442,18 +464,27 @@ export const handlers = [
       );
     }
 
-    // Mock 사용자 정보 반환
+    // 저장된 사용자 정보가 있으면 반환, 없으면 기본값 반환
+    const userData = mockUserStore || {
+      userId: 1,
+      name: 'demo_user_01',
+      imageUrl: 'https://api.dicebear.com/7.x/avataaars/svg?seed=demo_user_01',
+      ageGroup: 'TWENTIES',
+      gender: 'MALE',
+      role: 'USER',
+    };
+
     return HttpResponse.json({
       status: 'OK',
       code: '200',
       message: '요청 성공',
       data: {
-        userId: 1,
-        name: 'demo_user_01',
-        imageUrl: 'https://api.dicebear.com/7.x/avataaars/svg?seed=demo_user_01',
-        ageGroup: 'TWENTIES',
-        gender: 'MALE',
-        role: 'USER',
+        userId: userData.userId,
+        name: userData.name,
+        imageUrl: userData.imageUrl,
+        ageGroup: userData.ageGroup,
+        gender: userData.gender,
+        role: userData.role,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
         regionId: null,
@@ -489,4 +520,127 @@ export const handlers = [
 
   // 12) 프로필 이미지 presigned URL 발급: POST http://localhost:8080/files/profile/presign
   http.post('http://localhost:8080/files/profile/presign', handleProfilePresign),
+
+  // 13) 프로필 이미지 수정: PATCH http://localhost:8080/users/me/image
+  http.patch('http://localhost:8080/users/me/image', async ({ request }) => {
+    await delay(200);
+
+    // Authorization 헤더 확인
+    const authHeader = request.headers.get('Authorization');
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return HttpResponse.json(
+        {
+          status: 'UNAUTHORIZED',
+          code: 'UNAUTHORIZED',
+          message: '인증이 필요합니다.',
+          data: null,
+        },
+        { status: 401 }
+      );
+    }
+
+    const body = (await request.json()) as {
+      imageUrl?: string;
+    };
+
+    if (!body.imageUrl) {
+      return HttpResponse.json(
+        {
+          status: 'BAD_REQUEST',
+          code: 'VALIDATION_ERROR',
+          message: 'imageUrl은 필수입니다.',
+          data: null,
+        },
+        { status: 400 }
+      );
+    }
+
+    // 사용자 정보 업데이트 (없으면 생성)
+    if (!mockUserStore) {
+      mockUserStore = {
+        userId: 1,
+        name: 'demo_user_01',
+        imageUrl: body.imageUrl,
+        ageGroup: 'TWENTIES',
+        gender: 'MALE',
+        role: 'USER',
+      };
+    } else {
+      mockUserStore.imageUrl = body.imageUrl;
+    }
+
+    // 성공 응답
+    return HttpResponse.json({
+      status: 'OK',
+      code: '200',
+      message: '프로필 이미지가 업데이트되었습니다.',
+      data: {
+        imageUrl: body.imageUrl,
+      },
+    });
+  }),
+
+  // 14) 결정 도구 선택: POST http://localhost:8080/plans/:planId/tool
+  http.post('http://localhost:8080/plans/:planId/tool', async ({ params, request }) => {
+    await delay(300);
+
+    // Authorization 헤더 확인
+    const authHeader = request.headers.get('Authorization');
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return HttpResponse.json(
+        {
+          status: 'UNAUTHORIZED',
+          code: 'UNAUTHORIZED',
+          message: '인증이 필요합니다.',
+          data: null,
+        },
+        { status: 401 }
+      );
+    }
+
+    const planId = params.planId as string;
+    const url = new URL(request.url);
+    const toolType = url.searchParams.get('type') as 'VOTE' | 'LADDER' | 'ROULETTE' | null;
+    const restaurantIds = (await request.json()) as number[];
+
+    if (!toolType || !['VOTE', 'LADDER', 'ROULETTE'].includes(toolType)) {
+      return HttpResponse.json(
+        {
+          status: 'BAD_REQUEST',
+          code: 'VALIDATION_ERROR',
+          message: '유효한 결정 도구 타입이 필요합니다. (VOTE, LADDER, ROULETTE)',
+          data: null,
+        },
+        { status: 400 }
+      );
+    }
+
+    if (!Array.isArray(restaurantIds) || restaurantIds.length === 0) {
+      return HttpResponse.json(
+        {
+          status: 'BAD_REQUEST',
+          code: 'VALIDATION_ERROR',
+          message: '식당 ID 배열이 필요합니다.',
+          data: null,
+        },
+        { status: 400 }
+      );
+    }
+
+    // 성공 응답
+    return HttpResponse.json({
+      status: '100 CONTINUE',
+      code: '200',
+      message: '결정 도구가 선택되었습니다.',
+      data: {
+        planId: parseInt(planId, 10),
+        toolType: toolType,
+        status: 'PENDING',
+        finalRestaurantId: 0,
+        startedAt: new Date().toISOString(),
+        closedAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), // 24시간 후
+        createdBy: 1,
+      },
+    });
+  }),
 ];
