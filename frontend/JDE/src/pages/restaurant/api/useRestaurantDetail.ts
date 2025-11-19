@@ -74,7 +74,9 @@ export type RestaurantDetailResponse = {
  * @returns restaurant: 식당 정보, isLoading: 로딩 상태, error: 에러 메시지
  */
 export function useRestaurantDetail(restaurantId: string | undefined) {
-  const [restaurant, setRestaurant] = useState<RestaurantDetailResponse | null>(null);
+  const [restaurant, setRestaurant] = useState<RestaurantDetailResponse | null>(
+    null
+  );
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -95,8 +97,9 @@ export function useRestaurantDetail(restaurantId: string | undefined) {
 
       try {
         // API 호출
-        const baseURL = import.meta.env.VITE_API_BASE_URL;
-        const fullUrl = `${baseURL}/restaurants/${restaurantId}`;
+        const baseURL =
+          import.meta.env.VITE_API_BASE_URL || "https://justdoeat.ai.kr/api/";
+        const fullUrl = `${baseURL}restaurants/${restaurantId}`;
         console.log("🍴 [식당상세] 요청 URL:", fullUrl);
 
         const response = await axios.get<RestaurantDetailResponse>(fullUrl, {

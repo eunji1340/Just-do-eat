@@ -62,22 +62,56 @@ export function useLogin() {
 
       return result;
     } catch (error) {
-      const axiosError = error as AxiosError<{
-        message?: string;
-        status?: string;
-        code?: string;
-      }>;
+      const axiosError = error as AxiosError<LoginApiResponse>;
 
       // 상태 코드에 따른 에러 메시지 처리
       let errorMessage = "로그인 중 오류가 발생했습니다.";
 
       if (axiosError.response) {
         const status = axiosError.response.status;
-        const data = axiosError.response.data;
+        const data = axiosError.response.data as LoginApiResponse;
 
-        // 백엔드에서 제공한 메시지가 있으면 사용
+        // 백엔드에서 제공한 메시지가 있으면 우선 사용
+        // 단, message에 삭제 관련 키워드가 있으면 더 구체적인 메시지로 변환
         if (data?.message) {
-          errorMessage = data.message;
+          const message = data.message.toLowerCase();
+          if (
+            message.includes("삭제") ||
+            message.includes("deleted") ||
+            message.includes("탈퇴")
+          ) {
+            errorMessage = "삭제된 계정입니다. 회원가입을 다시 진행해주세요.";
+          } else if (
+            message.includes("존재하지") ||
+            message.includes("not found") ||
+            message.includes("없는")
+          ) {
+            errorMessage = "존재하지 않는 사용자입니다.";
+          } else {
+            errorMessage = data.message;
+          }
+        } else if (data?.code) {
+          // code를 기반으로 구체적인 메시지 제공
+          const code = data.code.toUpperCase();
+          if (
+            code.includes("USER_NOT_FOUND") ||
+            code.includes("USER_NOT_EXIST")
+          ) {
+            errorMessage = "존재하지 않는 사용자입니다.";
+          } else if (
+            code.includes("USER_DELETED") ||
+            code.includes("USER_INACTIVE")
+          ) {
+            errorMessage = "삭제된 계정입니다. 회원가입을 다시 진행해주세요.";
+          } else if (
+            code.includes("INVALID_CREDENTIALS") ||
+            code.includes("WRONG_PASSWORD")
+          ) {
+            errorMessage = "아이디 또는 비밀번호가 일치하지 않습니다.";
+          } else {
+            // code가 있지만 알 수 없는 경우 기본 메시지 사용
+            errorMessage = data.message || "로그인에 실패했습니다.";
+          }
         } else {
           // 상태 코드별 기본 메시지
           switch (status) {
@@ -89,6 +123,9 @@ export function useLogin() {
               break;
             case 404:
               errorMessage = "존재하지 않는 사용자입니다.";
+              break;
+            case 410: // Gone - 삭제된 리소스
+              errorMessage = "삭제된 계정입니다. 회원가입을 다시 진행해주세요.";
               break;
             case 500:
               errorMessage =

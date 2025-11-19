@@ -21,7 +21,7 @@ export default function RatingStep({ onRating }: RatingStepProps) {
         className="flex-1"
         onClick={() => onRating("bad")}
       >
-        별로
+        별로에요
       </Button>
       <Button
         variant="outline"
@@ -29,7 +29,7 @@ export default function RatingStep({ onRating }: RatingStepProps) {
         className="flex-1"
         onClick={() => onRating("good")}
       >
-        괜찮
+        괜찮았어요
       </Button>
       <Button
         variant="default"
