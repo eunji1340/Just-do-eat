@@ -89,7 +89,7 @@ export default function GroupDetailPage() {
         label={data.roomName}
         onSearchClick={() => navigate("/search/start")}
       />
-      <main className="px-4 pb-36">
+      <main className="px-4 pb-20">
         <MemberSectionCard
           members={data.roomMemberList}
           onInvite={handleInviteClick} // ✅ 초대 API 연결
@@ -99,7 +99,7 @@ export default function GroupDetailPage() {
         <OngoingAppointments
           items={data.planList}
           members={data.roomMemberList}
-          onSeeAll={() => navigate(`/groups/${groupId}/plans`)}
+          onSeeAll={() => navigate(`/groups/${groupId}/plans?status=ongoing`)}
           onSelect={(planId) => navigate(`/plans/${planId}`)}
         />
 
@@ -107,8 +107,15 @@ export default function GroupDetailPage() {
         <PastAppointmentsSectionCard
           items={data.planList}
           members={data.roomMemberList}
-          onSeeAll={() => navigate(`/groups/${groupId}/plans`)}
-          onSelect={(planId) => navigate(`/plans/${planId}`)}
+          onSeeAll={() => navigate(`/groups/${groupId}/plans?status=decided`)}
+          onSelect={(planId, restaurantId) => {
+            // DECIDED 상태인 약속은 식당 상세로 이동
+            if (restaurantId) {
+              navigate(`/restaurants/${restaurantId}`);
+            } else {
+              navigate(`/plans/${planId}`);
+            }
+          }}
         />
       </main>
 

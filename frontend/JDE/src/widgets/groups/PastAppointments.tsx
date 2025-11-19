@@ -1,13 +1,13 @@
 // src/widgets/groups/PastAppointments.tsx
 import * as React from "react";
-import { CalendarClock, ChevronRight, UtensilsCrossed } from "lucide-react";
+import { CalendarClock, ChevronRight } from "lucide-react";
 import type { Room } from "@/entities/groups/types";
 
 type Props = {
   items: Room["planList"];
   members: Room["roomMemberList"]; // 🔹 모임 참여자 배열
   onSeeAll?: () => void;
-  onSelect?: (planId: number) => void;
+  onSelect?: (planId: number, restaurantId?: number) => void;
 };
 
 export default function PastAppointments({
@@ -87,60 +87,84 @@ export default function PastAppointments({
         ) : (
           <ul className="grid grid-cols-2 gap-4">
             {list.map((plan) => (
-              <li
+              <PastPlanCard
                 key={plan.planId}
-                className="overflow-hidden rounded-xl border-2 border-neutral-200 bg-card shadow-sm hover:shadow-md transition-shadow cursor-pointer"
-                onClick={() => onSelect?.(plan.planId)}
-              >
-                {/* 이미지 + 그라데이션 + 식당 이름 */}
-                <div className="relative aspect-video w-full overflow-hidden bg-[#F6EEDC]">
-                  {/* 실제 이미지 (없으면 기본 아이콘) */}
-                  {plan.restaurantImageUrl ? (
-                    <img
-                      src={plan.restaurantImageUrl}
-                      alt={plan.restaurantName ?? "plan.planName"}
-                      className="h-full w-full object-cover"
-                      loading="lazy"
-                    />
-                  ) : (
-                    <div className="h-full w-full bg-gradient-to-br from-orange-100 to-pink-100 flex items-center justify-center">
-                      <UtensilsCrossed className="size-12 text-orange-400" />
-                    </div>
-                  )}
-
-                  {/* 하단 그라데이션 */}
-                  <div className="pointer-events-none absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-black/70 via-black/40 to-transparent" />
-
-                  {/* 텍스트 오버레이 */}
-                  <div className="absolute inset-x-0 bottom-2 flex justify-center px-2">
-                    <p className="line-clamp-2 text-center text-sm font-bold text-white drop-shadow-lg">
-                      {plan.restaurantName ?? "식당 미정"}
-                    </p>
-                  </div>
-                </div>
-
-                {/* 아래 메타 정보 영역 */}
-                <div className="p-2">
-                  {/* 날짜/시간 */}
-                  <p className="text-[11px] text-foreground/60">
-                    {formatDateTime(plan.startAt)}
-                  </p>
-
-                  {/* 약속 이름 */}
-                  <p className="mt-0.5 line-clamp-1 text-sm font-semibold">
-                    {plan.planName}
-                  </p>
-
-                  {/* 주최자 + 참여자 요약 */}
-                  <p className="mt-1 line-clamp-1 text-[11px] text-foreground/60">
-                    {participantsText}
-                  </p>
-                </div>
-              </li>
+                plan={plan}
+                participantsText={participantsText}
+                formatDateTime={formatDateTime}
+                onSelect={onSelect}
+              />
             ))}
           </ul>
         )}
       </div>
     </section>
+  );
+}
+
+function PastPlanCard({
+  plan,
+  participantsText,
+  formatDateTime,
+  onSelect,
+}: {
+  plan: Room["planList"][0];
+  participantsText: string;
+  formatDateTime: (startAt: string) => string;
+  onSelect?: (planId: number, restaurantId?: number) => void;
+}) {
+  const [imageError, setImageError] = React.useState(false);
+  const imageUrl =
+    imageError || !plan.restaurantImageUrl
+      ? "/NOIMAGE.png"
+      : plan.restaurantImageUrl;
+
+  return (
+    <li
+      className="overflow-hidden rounded-xl border-2 border-neutral-200 bg-card shadow-sm hover:shadow-md transition-shadow cursor-pointer"
+      onClick={() => onSelect?.(plan.planId, plan.restaurantId)}
+    >
+      {/* 이미지 + 그라데이션 + 식당 이름 */}
+      <div className="relative aspect-video w-full overflow-hidden bg-[#F6EEDC]">
+        {/* 실제 이미지 (없으면 기본 이미지) */}
+        <img
+          src={imageUrl}
+          alt={plan.restaurantName ?? plan.planName}
+          className={`h-full w-full ${
+            imageUrl === "/NOIMAGE.png" ? "object-contain p-4" : "object-cover"
+          }`}
+          loading="lazy"
+          onError={() => setImageError(true)}
+        />
+
+        {/* 하단 그라데이션 */}
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-black/70 via-black/40 to-transparent" />
+
+        {/* 텍스트 오버레이 */}
+        <div className="absolute inset-x-0 bottom-2 flex justify-center px-2">
+          <p className="line-clamp-2 text-center text-sm font-bold text-white drop-shadow-lg">
+            {plan.restaurantName ?? "식당 미정"}
+          </p>
+        </div>
+      </div>
+
+      {/* 아래 메타 정보 영역 */}
+      <div className="p-2">
+        {/* 날짜/시간 */}
+        <p className="text-[11px] text-foreground/60">
+          {formatDateTime(plan.startAt)}
+        </p>
+
+        {/* 약속 이름 */}
+        <p className="mt-0.5 line-clamp-1 text-sm font-semibold">
+          {plan.planName}
+        </p>
+
+        {/* 주최자 + 참여자 요약 */}
+        <p className="mt-1 line-clamp-1 text-[11px] text-foreground/60">
+          {participantsText}
+        </p>
+      </div>
+    </li>
   );
 }
