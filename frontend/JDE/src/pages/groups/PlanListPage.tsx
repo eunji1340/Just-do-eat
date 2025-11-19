@@ -1,7 +1,7 @@
 // src/pages/groups/PlanListPage.tsx
 // 목적: 특정 모임(group)의 모든 약속(plan) 목록을 보여주는 페이지
 
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { TopNavBar } from "@/widgets/top-navbar";
 import { useGroupDetail } from "@/features/group-detail/useGroupDetail";
 import { Button } from "@/shared/ui/button";
@@ -33,6 +33,8 @@ function formatDateTime(isoString: string) {
 export default function PlanListPage() {
   const navigate = useNavigate();
   const { groupId = "" } = useParams();
+  const [searchParams] = useSearchParams();
+  const statusFilter = searchParams.get("status"); // "ongoing" 또는 "decided"
 
   const { data, loading } = useGroupDetail(groupId);
 
@@ -42,7 +44,7 @@ export default function PlanListPage() {
   if (loading || !data) {
     return (
       <>
-        <TopNavBar variant="default" />
+        <TopNavBar variant="label" label="모임" onBack={() => navigate(-1)} />
         <main className="px-4 pb-36 pt-3">
           <div className="mb-3 h-8 w-40 animate-pulse rounded-full bg-muted/40" />
           <div className="h-24 animate-pulse rounded-2xl bg-muted/40" />
@@ -52,8 +54,18 @@ export default function PlanListPage() {
     );
   }
 
+  // 상태별 필터링
+  let filteredPlans = [...data.planList];
+  if (statusFilter === "ongoing") {
+    // 진행중인 약속: DECIDED가 아닌 것들
+    filteredPlans = filteredPlans.filter((plan) => plan.status !== "DECIDED");
+  } else if (statusFilter === "decided") {
+    // 지난 약속: DECIDED만
+    filteredPlans = filteredPlans.filter((plan) => plan.status === "DECIDED");
+  }
+
   // 최신 순 정렬
-  const sortedPlans = [...data.planList].sort((a, b) => {
+  const sortedPlans = filteredPlans.sort((a, b) => {
     const tA = new Date(a.startAt).getTime();
     const tB = new Date(b.startAt).getTime();
     return tB - tA;
@@ -63,30 +75,42 @@ export default function PlanListPage() {
 
   return (
     <>
-      <TopNavBar variant="default" onSearchClick={() => navigate("/search/start")} />
+      <TopNavBar
+        variant="label"
+        label={data.roomName}
+        onBack={() => navigate(-1)}
+        onSearchClick={() => navigate("/search/start")}
+      />
       <main className="px-4 pb-36 pt-3">
         {/* 상단 헤더 */}
-        <header className="mb-4 flex items-center justify-between">
-          <div>
-            <p className="text-xs font-medium text-muted-foreground">
-              {data.roomName}
-            </p>
-            <h1 className="text-lg font-extrabold tracking-tight">
-              모임의 모든 약속
-            </h1>
-            <p className="mt-1 text-xs text-muted-foreground">
-              {memberText} · 총 {sortedPlans.length}개 약속
-            </p>
-          </div>
+        <header className="mb-4">
+          <h1 className="text-lg font-extrabold tracking-tight">
+            {statusFilter === "ongoing"
+              ? "진행중인 약속"
+              : statusFilter === "decided"
+              ? "지난 약속들"
+              : "모임의 모든 약속"}
+          </h1>
+          <p className="mt-1 text-xs text-muted-foreground">
+            {memberText} · 총 {sortedPlans.length}개 약속
+          </p>
         </header>
 
         {/* 약속 없음 */}
         {sortedPlans.length === 0 && (
           <div className="mt-10 rounded-2xl border border-neutral-300 bg-card/40 p-6 text-center text-sm text-muted-foreground">
-            아직 등록된 약속이 없어요.
+            {statusFilter === "ongoing"
+              ? "진행중인 약속이 없어요."
+              : statusFilter === "decided"
+              ? "지난 약속이 없어요."
+              : "아직 등록된 약속이 없어요."}
             <br />
-            모임 상세에서{" "}
-            <span className="font-semibold">“약속 만들기”</span> 로 첫 약속을 추가해 보세요.
+            {!statusFilter && (
+              <>
+                모임 상세에서{" "}
+                <span className="font-semibold">"약속 만들기"</span> 로 첫 약속을 추가해 보세요.
+              </>
+            )}
           </div>
         )}
 
@@ -95,8 +119,15 @@ export default function PlanListPage() {
           {sortedPlans.map((plan) => (
             <article
               key={plan.planId}
-              onClick={() => navigate(`/plans/${plan.planId}`)}
-              className="flex gap-3 rounded-2xl border border-neutral-300 bg-card p-3 shadow-sm"
+              onClick={() => {
+                // DECIDED 상태이고 restaurantId가 있으면 식당 상세로, 아니면 약속 상세로
+                if (plan.status === "DECIDED" && plan.restaurantId) {
+                  navigate(`/restaurants/${plan.restaurantId}`);
+                } else {
+                  navigate(`/plans/${plan.planId}`);
+                }
+              }}
+              className="flex gap-3 rounded-2xl border border-neutral-300 bg-card p-3 shadow-sm cursor-pointer hover:shadow-md transition-shadow"
             >
               {/* 왼쪽 이미지 */}
               {plan.restaurantImageUrl ? (
