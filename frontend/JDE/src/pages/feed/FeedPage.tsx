@@ -1,11 +1,14 @@
 // 목적: 추천 페이지. 백엔드에서 추천 식당 리스트를 페이징으로 가져와 덱에 전달
 
 import * as React from "react";
+import { useCallback } from "react";
+import { UtensilsCrossed } from "lucide-react";
 import RestaurantSwipeDeck from "@/widgets/restaurantSwipe/RestaurantSwipeDeck";
 import type { Restaurant } from "@/entities/restaurant/types";
 import http from "@/shared/api/http";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { TopNavBar } from "@/widgets/top-navbar/ui/TopNavBar";
+import mockRestaurantsData from "@/mocks/model/images/mockRestaurants.json";
 // ==== 백엔드 응답 타입 ====
 
 // 백엔드에서 내려주는 raw item
@@ -112,82 +115,96 @@ export default function FeedPage() {
   const [hasMore, setHasMore] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
 
-  // 🔥 최초 fetch 여부 체크용 ref
-  const didInitRef = React.useRef(false);
-
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
-  // 쿼리 파라미터에서 카테고리 읽기
+  // 쿼리 파라미터에서 카테고리와 mock 플래그 읽기
   const category = searchParams.get("category");
-
-  // ✅ 최초 1회: 초기 추천 리스트(fetch)
-  React.useEffect(() => {
-    if (didInitRef.current) return; // 이미 한 번 호출했으면 무시
-    didInitRef.current = true;
-
-    fetchMore();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  const useMock = searchParams.get("mock") === "true";
 
   // ✅ 추천 리스트 가져오기 (10개씩)
-  async function fetchMore() {
-    if (loading) return;
-
-    // cursor가 null이면 더 이상 요청하지 않음
-    if (!cursor) {
-      setHasMore(false);
-      return;
-    }
-
-    try {
-      setLoading(true);
-      setError(null);
-
-      let res;
-
-      if (category) {
-        // 카테고리별 추천
-        console.log(
-          `🍽️ [카테고리 피드] API 호출 - 카테고리: ${category}, cursor: ${cursor}`
-        );
-        res = await http.get<FeedResponse>(
-          `/main/restaurants/popular/category`,
-          {
-            params: { category, cursor },
-          }
-        );
-      } else {
-        // 개인 추천
-        console.log(`✨ [개인 피드] API 호출 - cursor: ${cursor}`);
-        res = await http.get<FeedResponse>("/main/feed", {
-          params: { cursor },
-        });
-      }
-
-      const backendItems = res.data.items ?? [];
-      const mapped = backendItems.map(mapBackendToRestaurant);
-
-      setItems((prev) => [...prev, ...mapped]);
-
-      // 🔥 next_cursor 반영
-      const nextCursor = res.data.next_cursor;
-      setCursor(nextCursor);
-
-      if (!nextCursor) {
+  const fetchMore = useCallback(
+    async (currentCursor: string | null) => {
+      // cursor가 null이면 더 이상 요청하지 않음
+      if (!currentCursor) {
         setHasMore(false);
+        return;
       }
-    } catch (err: any) {
-      console.error("[FeedPage] feed 로딩 실패:", err);
-      setError(
-        err?.response?.data?.detail ??
-          err?.message ??
-          "추천 리스트를 불러오지 못했습니다."
-      );
-    } finally {
-      setLoading(false);
-    }
-  }
+
+      try {
+        setLoading(true);
+        setError(null);
+
+        let res;
+
+        if (category) {
+          // 카테고리별 추천
+          console.log(
+            `🍽️ [카테고리 피드] API 호출 - 카테고리: ${category}, cursor: ${currentCursor}`
+          );
+          res = await http.get<FeedResponse>(
+            `/main/restaurants/popular/category`,
+            {
+              params: { category, cursor: currentCursor },
+            }
+          );
+        } else {
+          // 개인 추천
+          if (useMock) {
+            // 목업 데이터 사용
+            console.log(`✨ [개인 피드] 목업 데이터 사용`);
+            const mockData: FeedResponse = {
+              items: mockRestaurantsData.items as BackendRestaurantItem[],
+              next_cursor: mockRestaurantsData.next_cursor,
+            };
+            res = { data: mockData };
+          } else {
+            // 원래 API 사용
+            console.log(`✨ [개인 피드] API 호출 - cursor: ${currentCursor}`);
+            res = await http.get<FeedResponse>("/main/feed", {
+              params: { cursor: currentCursor },
+            });
+          }
+        }
+
+        const backendItems = res.data.items ?? [];
+        const mapped = backendItems.map(mapBackendToRestaurant);
+
+        setItems((prev) => [...prev, ...mapped]);
+
+        // 🔥 next_cursor 반영
+        const nextCursor = res.data.next_cursor;
+        setCursor(nextCursor);
+
+        if (!nextCursor) {
+          setHasMore(false);
+        }
+      } catch (err: any) {
+        console.error("[FeedPage] feed 로딩 실패:", err);
+        setError(
+          err?.response?.data?.detail ??
+            err?.message ??
+            "추천 리스트를 불러오지 못했습니다."
+        );
+      } finally {
+        setLoading(false);
+      }
+    },
+    [category, useMock]
+  );
+
+  // ✅ URL 파라미터 변경 시 초기화 및 데이터 로드
+  React.useEffect(() => {
+    // 상태 초기화
+    setItems([]);
+    setCursor("0");
+    setHasMore(true);
+    setError(null);
+
+    // 데이터 로드
+    fetchMore("0");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [category, useMock]);
 
   async function handleTopSwiped(
     dir: "left" | "right" | "up",
@@ -229,8 +246,8 @@ export default function FeedPage() {
   }
 
   function handleDeckEmpty() {
-    if (hasMore && !loading) {
-      fetchMore();
+    if (hasMore && !loading && cursor) {
+      fetchMore(cursor);
     }
   }
 
@@ -262,8 +279,28 @@ export default function FeedPage() {
           )}
 
           {items.length === 0 && loading ? (
-            <div className="h-full flex items-center justify-center text-gray-500">
-              추천을 불러오는 중입니다...
+            <div className="h-full flex flex-col items-center justify-center gap-6">
+              {/* 스피너와 아이콘 */}
+              <div className="relative">
+                {/* 배경 원형 그라데이션 */}
+                <div className="absolute inset-0 rounded-full bg-gradient-to-br from-orange-100 to-orange-200 animate-pulse"></div>
+                {/* 회전하는 스피너 */}
+                <div className="relative w-20 h-20 border-4 border-orange-200 border-t-orange-500 rounded-full animate-spin"></div>
+                {/* 중앙 아이콘 */}
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <UtensilsCrossed className="w-8 h-8 text-orange-500" />
+                </div>
+              </div>
+
+              {/* 텍스트 */}
+              <div className="flex flex-col items-center gap-2">
+                <p className="text-lg font-semibold text-neutral-700">
+                  맛집을 찾고 있어요
+                </p>
+                <p className="text-sm text-neutral-500">
+                  잠시만 기다려주세요...
+                </p>
+              </div>
             </div>
           ) : (
             <RestaurantSwipeDeck
