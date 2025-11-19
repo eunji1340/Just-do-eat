@@ -7,6 +7,7 @@ import LoginForm from "@/features/auth/ui/LoginForm";
 import { useLogin } from "@/features/auth/model/useLogin";
 import { useUserStore } from "@/entities/user/model/user-store";
 import customAxios from "@/shared/api/http";
+import { getUserMe } from "@/features/user/api/getUserMe";
 
 type UserMeResponse = {
   status: string;
@@ -146,6 +147,21 @@ export default function LoginPage() {
                 },
                 meta: { authRequired: true },
               });
+
+              // 4. users/me를 다시 호출하여 새로운 유효한 S3 URL 받아오기
+              const updatedUserData = await getUserMe();
+              
+              // 사용자 정보 업데이트
+              if (updatedUserData) {
+                setUser({
+                  userId: updatedUserData.userId,
+                  name: updatedUserData.name,
+                  imageUrl: updatedUserData.imageUrl,
+                  ageGroup: updatedUserData.ageGroup,
+                  gender: updatedUserData.gender,
+                  role: updatedUserData.role,
+                });
+              }
 
               // localStorage에서 제거
               localStorage.removeItem("pendingProfileImage");

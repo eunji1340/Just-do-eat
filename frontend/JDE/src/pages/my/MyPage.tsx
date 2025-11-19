@@ -1,18 +1,21 @@
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState, useRef } from "react";
-import { ChevronRight, LogOut, Pencil } from "lucide-react";
+import { ChevronRight, LogOut, Pencil, Trash2 } from "lucide-react";
 import { TopNavBar } from "@/widgets/top-navbar";
 import { useUserMe } from "@/features/user/model/useUserMe";
 import { useUserStore } from "@/entities/user/model/user-store";
 import { useLogout } from "@/features/auth/model/useLogout";
 import customAxios from "@/shared/api/http";
+import { deleteUser } from "@/features/user/api/deleteUser";
 
 export default function MyPage() {
   const navigate = useNavigate();
-  const { userData, isLoading } = useUserMe();
+  const { userData, isLoading, refetch } = useUserMe();
   const { mukbtiResult, setUser } = useUserStore();
   const { logout } = useLogout();
   const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [currentImageUrl, setCurrentImageUrl] = useState<string | null>(null);
@@ -20,6 +23,7 @@ export default function MyPage() {
   const previewUrlRef = useRef<string | null>(null);
   const isMountedRef = useRef(true);
   const imageErrorRef = useRef<Set<string>>(new Set());
+  const refetchAttemptedRef = useRef<Set<string>>(new Set());
 
   useEffect(() => {
     if (userData) {
@@ -32,20 +36,22 @@ export default function MyPage() {
         role: userData.role,
       });
       setCurrentImageUrl(userData.imageUrl);
-      // 이미지 URL이 변경되면 에러 상태 초기화
+      // 이미지 URL이 변경되면 에러 상태 및 refetch 시도 상태 초기화
       if (userData.imageUrl) {
         imageErrorRef.current.delete(userData.imageUrl);
+        refetchAttemptedRef.current.delete(userData.imageUrl);
       }
     }
   }, [userData, setUser]);
 
   // 모달 열릴 때 body 스크롤 잠금 및 ESC 키 처리
   useEffect(() => {
-    if (showLogoutModal) {
+    if (showLogoutModal || showDeleteModal) {
       document.body.style.overflow = "hidden";
       const handleEscape = (e: KeyboardEvent) => {
         if (e.key === "Escape") {
           setShowLogoutModal(false);
+          setShowDeleteModal(false);
         }
       };
       window.addEventListener("keydown", handleEscape);
@@ -54,7 +60,7 @@ export default function MyPage() {
         window.removeEventListener("keydown", handleEscape);
       };
     }
-  }, [showLogoutModal]);
+  }, [showLogoutModal, showDeleteModal]);
 
   const handleSearchClick = () => {
     navigate("/search/start");
@@ -206,20 +212,24 @@ export default function MyPage() {
         meta: { authRequired: true },
       });
 
-      // 4. 이미지 URL 업데이트
+      // 4. users/me를 다시 호출하여 새로운 유효한 S3 URL 받아오기
+      const updatedUserData = await refetch();
+
+      // 5. 이미지 URL 업데이트
       if (isMountedRef.current) {
-        // 로컬 상태 업데이트
-        setCurrentImageUrl(publicUrl);
+        // 백엔드에서 받은 새로운 유효한 URL 사용
+        const newImageUrl = updatedUserData?.imageUrl || publicUrl;
+        setCurrentImageUrl(newImageUrl);
         // 새 이미지 URL의 에러 상태 초기화
-        if (publicUrl) {
-          imageErrorRef.current.delete(publicUrl);
+        if (newImageUrl) {
+          imageErrorRef.current.delete(newImageUrl);
         }
 
         // 미리보기를 실제 URL로 변경
         if (previewUrlRef.current) {
           URL.revokeObjectURL(previewUrlRef.current);
         }
-        setPreviewUrl(publicUrl);
+        setPreviewUrl(newImageUrl);
         previewUrlRef.current = null;
       }
     } catch (error) {
@@ -290,6 +300,33 @@ export default function MyPage() {
     setShowLogoutModal(false);
   };
 
+  const handleDeleteClick = () => {
+    setShowDeleteModal(true);
+  };
+
+  const handleDeleteCancel = () => {
+    setShowDeleteModal(false);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (isDeleting) return;
+
+    setIsDeleting(true);
+    try {
+      await deleteUser();
+      // 회원 탈퇴 성공 후 로그아웃 처리
+      logout();
+      setShowDeleteModal(false);
+    } catch (error) {
+      console.error("회원 탈퇴 실패:", error);
+      alert(
+        error instanceof Error ? error.message : "회원 탈퇴에 실패했습니다."
+      );
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   return (
     <>
       <TopNavBar
@@ -357,9 +394,42 @@ export default function MyPage() {
                             src={imageUrl}
                             alt={userData.name}
                             className="w-full h-full object-cover"
-                            onError={() => {
+                            onError={async () => {
                               if (isMountedRef.current && imageUrl) {
+                                // 즉시 에러 상태에 추가하여 초성이 바로 보이도록
                                 imageErrorRef.current.add(imageUrl);
+
+                                // refetch는 한 번만 시도 (무한 루프 방지)
+                                if (
+                                  !refetchAttemptedRef.current.has(imageUrl)
+                                ) {
+                                  refetchAttemptedRef.current.add(imageUrl);
+
+                                  // 백그라운드에서 최신 URL 받아오기 시도
+                                  try {
+                                    const updatedUserData = await refetch();
+                                    if (
+                                      updatedUserData?.imageUrl &&
+                                      updatedUserData.imageUrl !== imageUrl
+                                    ) {
+                                      // 새로운 URL이 있으면 업데이트
+                                      setCurrentImageUrl(
+                                        updatedUserData.imageUrl
+                                      );
+                                      imageErrorRef.current.delete(
+                                        updatedUserData.imageUrl
+                                      );
+                                      refetchAttemptedRef.current.delete(
+                                        updatedUserData.imageUrl
+                                      );
+                                    }
+                                  } catch (error) {
+                                    console.error(
+                                      "이미지 URL 갱신 실패:",
+                                      error
+                                    );
+                                  }
+                                }
                               }
                             }}
                           />
@@ -478,6 +548,19 @@ export default function MyPage() {
                 strokeWidth={2.5}
               />
             </button>
+            <div className="border-t border-gray-100" />
+            <button
+              onClick={handleDeleteClick}
+              className="w-full px-6 py-5 flex items-center justify-between hover:bg-red-50 transition-all group"
+            >
+              <span className="text-red-600 font-medium group-hover:text-red-700 transition-colors">
+                회원 탈퇴
+              </span>
+              <Trash2
+                className="w-5 h-5 text-red-600 group-hover:text-red-700 group-hover:translate-x-1 transition-all"
+                strokeWidth={2.5}
+              />
+            </button>
           </div>
         </div>
       </div>
@@ -516,6 +599,68 @@ export default function MyPage() {
                 className="flex-1 py-3 px-4 rounded-xl border-none bg-red-500 text-white font-semibold hover:bg-red-600 transition-colors"
               >
                 로그아웃
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 회원 탈퇴 확인 모달 */}
+      {showDeleteModal && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-6"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              handleDeleteCancel();
+            }
+          }}
+        >
+          <div
+            role="dialog"
+            aria-modal="true"
+            className="w-full max-w-[360px] rounded-2xl bg-white p-6 shadow-xl"
+          >
+            {/* 경고 아이콘 추가 */}             {" "}
+            <svg
+              className="w-8 h-8 text-red-600 mx-auto mb-2"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+                             {" "}
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+              />
+                           {" "}
+            </svg>
+            <h2 className="text-lg font-bold text-neutral-900 mb-2 text-center">
+              정말 탈퇴하시겠어요?
+            </h2>
+            <p className="text-sm text-neutral-600 mb-6 text-center">
+              탈퇴하시면 모든 정보가 삭제되며
+              <br />
+              복구할 수 없어요
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={handleDeleteCancel}
+                disabled={isDeleting}
+                className="flex-1 py-3 px-4 rounded-xl border-2 border-neutral-300 bg-white text-neutral-700 font-semibold hover:bg-neutral-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                취소
+              </button>
+              <button
+                onClick={handleDeleteConfirm}
+                disabled={isDeleting}
+                className="flex-1 py-3 px-4 rounded-xl border-none bg-red-500 text-white font-semibold hover:bg-red-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              >
+                {isDeleting && (
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                )}
+                {isDeleting ? "처리 중..." : "탈퇴하기"}
               </button>
             </div>
           </div>
