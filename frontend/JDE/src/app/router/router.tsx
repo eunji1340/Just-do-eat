@@ -131,7 +131,11 @@ const router = createBrowserRouter([
   },
   {
     path: "/restaurants/:restaurantId",
-    element: <RestaurantDetailPage />,
+    element: (
+      <AppLayout>
+        <RestaurantDetailPage />
+      </AppLayout>
+    ),
   },
   {
     path: "/invite",
