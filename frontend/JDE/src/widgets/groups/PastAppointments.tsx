@@ -7,9 +7,10 @@ type Props = {
   items: Room["planList"];
   members: Room["roomMemberList"]; // 🔹 모임 참여자 배열
   onSeeAll?: () => void;
+  onSelect?: (planId: number) => void;
 };
 
-export default function PastAppointments({ items, members, onSeeAll }: Props) {
+export default function PastAppointments({ items, members, onSeeAll, onSelect }: Props) {
   // 🔹 이전 약속(오늘 기준 이전)만 최신순 내림차순 + 최대 4개
 const list = React.useMemo(() => {
   if (!items) return [];
@@ -83,6 +84,7 @@ const list = React.useMemo(() => {
             <li
               key={plan.planId}
               className="overflow-hidden rounded-xl border-neutral-400 bg-card shadow-sm"
+              onClick={() => onSelect?.(plan.planId)}   // 🔥 여기 추가
             >
               {/* 이미지 + 그라데이션 + 식당 이름 */}
               <div className="relative aspect-video w-full overflow-hidden rounded-2xl bg-[#F6EEDC]">
