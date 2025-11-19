@@ -19,6 +19,10 @@ export default function GroupsListPage() {
   const navigate = useNavigate();
   const [openCreate, setOpenCreate] = React.useState(false);
 
+  // 로그인 여부 확인 (localStorage의 accessToken)
+  const accessToken = localStorage.getItem("accessToken");
+  const isLoggedIn = !!accessToken; // 토큰이 있으면 로그인 상태
+
   const { rooms, isLoading, error } = useMyGroups();
 
   // ✅ 나가기로 처리한 roomId들을 따로 관리 (렌더링에서만 숨김)
@@ -38,7 +42,9 @@ export default function GroupsListPage() {
   async function handleLeave(roomId: number) {
     try {
       // 1) 일단 화면에서 숨기기 (낙관적 업데이트)
-      setLeavingIds((prev) => (prev.includes(roomId) ? prev : [...prev, roomId]));
+      setLeavingIds((prev) =>
+        prev.includes(roomId) ? prev : [...prev, roomId]
+      );
 
       // 2) 서버에 DELETE 요청
       await leaveGroup(roomId);
@@ -59,7 +65,10 @@ export default function GroupsListPage() {
 
   return (
     <>
-      <TopNavBar variant="default" onSearchClick={() => navigate("/search/start")} />
+      <TopNavBar
+        variant="default"
+        onSearchClick={() => navigate("/search/start")}
+      />
 
       {isLoading ? (
         <div className="flex flex-col items-center justify-center gap-3 p-8 py-40 text-center">
@@ -91,8 +100,8 @@ export default function GroupsListPage() {
             <MyMeetingCard
               key={room.roomId}
               group={room}
-              onLeave={handleLeave}              // ✅ 나가기 콜백
-              onOpenGroup={handleOpenGroup}      // ✅ 카드 클릭 → 상세 이동
+              onLeave={handleLeave} // ✅ 나가기 콜백
+              onOpenGroup={handleOpenGroup} // ✅ 카드 클릭 → 상세 이동
             />
           ))}
         </section>
