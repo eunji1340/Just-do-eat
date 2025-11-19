@@ -1,7 +1,7 @@
-// 예시: src/pages/RoulettePage.tsx (기존 MOCK 버전 → 실제 plan 연동 버전)
+// src/pages/RoulettePage.tsx
 
 import * as React from "react";
-import { useSearchParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import type { RouletteItem } from "@/entities/roulette/types";
 import RouletteWheel from "@/widgets/roulette/RouletteWheel";
 import { useRoulette } from "@/features/roulette/useRoulette";
@@ -9,10 +9,8 @@ import { getDeterministicWinnerIndex } from "@/features/roulette/utils/getWinner
 import { usePlanCandidates } from "@/pages/plan/hooks/usePlanCandidates";
 
 export default function RoulettePage() {
-  const [searchParams] = useSearchParams();
-  const planId = searchParams.get("planId") || "";
+  const { planId = "" } = useParams<{ planId: string }>();
 
-  // 1) 약속 후보 식당 목록 재사용
   const {
     restaurants,
     isLoading: isLoadingCandidates,
@@ -29,7 +27,6 @@ export default function RoulettePage() {
       },
     });
 
-  // 2) 후보 식당 → RouletteItem 으로 변환 + winnerIndex 계산
   React.useEffect(() => {
     if (!planId || restaurants.length === 0) return;
 
@@ -46,7 +43,6 @@ export default function RoulettePage() {
     setWinnerIndex(idx);
   }, [planId, restaurants]);
 
-  // 3) "룰렛 돌리기" 버튼 → 항상 같은 인덱스로 회전
   const handleSpinClick = React.useCallback(() => {
     if (winnerIndex === null || spinning || items.length === 0) return;
     spinToIndex(winnerIndex);
