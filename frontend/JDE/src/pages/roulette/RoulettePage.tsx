@@ -1,29 +1,68 @@
-// 목적: 룰렛 단독 전체화면(데스크탑 포함) 배치
+// 예시: src/pages/RoulettePage.tsx (기존 MOCK 버전 → 실제 plan 연동 버전)
 
 import * as React from "react";
+import { useSearchParams } from "react-router-dom";
 import type { RouletteItem } from "@/entities/roulette/types";
 import RouletteWheel from "@/widgets/roulette/RouletteWheel";
 import { useRoulette } from "@/features/roulette/useRoulette";
-
-const MOCK: RouletteItem[] = [
-  { id: "r1", label: "봉추찜닭", weight: 1, color: "#FF6B6B" },
-  { id: "r2", label: "을지로 골뱅이", weight: 1, color: "#4ECDC4" },
-  { id: "r3", label: "김밥행", weight: 1, color: "#FFD93D" },
-  { id: "r4", label: "춘삼식당", weight: 1, color: "#6C5CE7" },
-  { id: "r5", label: "푸주옥", weight: 1, color: "#45AAF2" },
-];
+import { getDeterministicWinnerIndex } from "@/features/roulette/utils/getWinnerindex";
+import { usePlanCandidates } from "@/pages/plan/hooks/usePlanCandidates";
 
 export default function RoulettePage() {
-  const [items] = React.useState<RouletteItem[]>(MOCK);
-  const { angle, spinning, durationMs, gradientStops, spin } = useRoulette({
-    items,
-    onFinish: ({ item }) => alert(`오늘은 ➜ ${item.label}!`),
-  });
+  const [searchParams] = useSearchParams();
+  const planId = searchParams.get("planId") || "";
+
+  // 1) 약속 후보 식당 목록 재사용
+  const {
+    restaurants,
+    isLoading: isLoadingCandidates,
+  } = usePlanCandidates(planId);
+
+  const [items, setItems] = React.useState<RouletteItem[]>([]);
+  const [winnerIndex, setWinnerIndex] = React.useState<number | null>(null);
+
+  const { angle, spinning, durationMs, gradientStops, spinToIndex } =
+    useRoulette({
+      items,
+      onFinish: ({ item }) => {
+        alert(`오늘은 ➜ ${item.label}!`);
+      },
+    });
+
+  // 2) 후보 식당 → RouletteItem 으로 변환 + winnerIndex 계산
+  React.useEffect(() => {
+    if (!planId || restaurants.length === 0) return;
+
+    const rouletteItems: RouletteItem[] = restaurants.map((r) => ({
+      id: String(r.id),
+      label: r.name,
+      weight: 1,
+    }));
+
+    setItems(rouletteItems);
+
+    const candidateIds = restaurants.map((r) => Number(r.id));
+    const idx = getDeterministicWinnerIndex(planId, candidateIds);
+    setWinnerIndex(idx);
+  }, [planId, restaurants]);
+
+  // 3) "룰렛 돌리기" 버튼 → 항상 같은 인덱스로 회전
+  const handleSpinClick = React.useCallback(() => {
+    if (winnerIndex === null || spinning || items.length === 0) return;
+    spinToIndex(winnerIndex);
+  }, [winnerIndex, spinning, items.length, spinToIndex]);
+
+  if (isLoadingCandidates) {
+    return (
+      <main className="min-h-dvh flex items-center justify-center bg-surface">
+        <p className="text-sm text-muted-foreground">룰렛 준비 중...</p>
+      </main>
+    );
+  }
 
   return (
     <main className="min-h-dvh bg-surface">
       <div className="mx-auto max-w-7xl px-4 py-6 md:py-10">
-        {/* 상단 제목/설명 */}
         <header className="text-center space-y-1">
           <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight">
             모임 장소 룰렛
@@ -33,7 +72,6 @@ export default function RoulettePage() {
           </p>
         </header>
 
-        {/* 제목과 휠 사이 여백만 주기 */}
         <section className="mt-6 md:mt-8 lg:mt-10 grid place-items-center">
           <RouletteWheel
             items={items}
@@ -41,12 +79,10 @@ export default function RoulettePage() {
             angle={angle}
             durationMs={durationMs}
             spinning={spinning}
-            onSpin={spin}
+            onSpin={handleSpinClick} // 🔥 누가 눌러도 같은 결과
           />
         </section>
       </div>
     </main>
   );
 }
-
-

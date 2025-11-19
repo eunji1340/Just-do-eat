@@ -49,6 +49,7 @@ export function mapSearchResponseToRestaurant(
     menu: [], // 검색 결과에는 메뉴 정보 없음
     distance_m: 0, // 검색 결과에는 거리 정보 없음
     is_open: true, // 기본값: 영업 중
+    hours: null, // 검색 결과에는 영업시간 정보 없음
   };
 }
 
@@ -88,5 +89,6 @@ export function mapBookmarkResponseToRestaurant(
     })),
     distance_m: 0,
     is_open: true,
+    hours: null, // 북마크 응답에는 영업시간 정보 없음
   };
 }
