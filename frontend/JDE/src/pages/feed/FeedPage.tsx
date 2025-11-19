@@ -245,17 +245,17 @@ export default function FeedPage() {
   }
 
   return (
-    <main className="relative min-h-dvh bg-white">
-      {/* TopNavBar - simple variant (카드 위 overlay) */}
+    <main className="min-h-dvh bg-white">
+      {/* TopNavBar - simple variant */}
       <TopNavBar
         variant="simple"
         onBack={handleBack}
         onSearchClick={handleSearchClick}
         showHomeButton={false}
-        className="absolute top-0 left-0 right-0 z-50"
       />
 
-      <section className="w-full h-dvh flex items-center justify-center">
+      {/* negative margin으로 네비바 위로 올리기 */}
+      <section className="-mt-[52px] w-full h-dvh flex items-center justify-center">
         <div className="w-full max-w-xl h-full">
           {error && (
             <div className="p-4 text-center text-sm text-red-500">{error}</div>
