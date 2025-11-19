@@ -1,6 +1,5 @@
 import { useState } from "react";
 import type { Restaurant } from "../types";
-import NoImage from "/public/NOIMAGE.png";
 
 // RestaurantCard Props 타입 정의
 interface RestaurantCardProps {
@@ -46,7 +45,10 @@ export function RestaurantCard({
             alt={restaurant.name}
             className="w-full h-full object-cover"
             onError={() => {
-              console.error(`❌ 이미지 로드 실패: ${restaurant.name}`, imageUrl);
+              console.error(
+                `❌ 이미지 로드 실패: ${restaurant.name}`,
+                imageUrl
+              );
               setImageError(true);
             }}
             onLoad={() => {
@@ -56,7 +58,7 @@ export function RestaurantCard({
         ) : (
           // 이미지가 없거나 로드 실패 시 placeholder
           <div className="w-full h-full p-4 flex items-center justify-center bg-t3">
-            <img src={NoImage} alt="" />
+            <img src="/NOIMAGE.png" alt="" />
           </div>
         )}
       </div>
@@ -90,10 +92,7 @@ export function RestaurantCard({
           {topMenus.length > 0 && (
             <div className="space-y-0.5">
               {topMenus.map((menu, index) => (
-                <p
-                  key={index}
-                  className="text-sm text-gray-600 line-clamp-1"
-                >
+                <p key={index} className="text-sm text-gray-600 line-clamp-1">
                   {menu.name}
                 </p>
               ))}
@@ -105,9 +104,7 @@ export function RestaurantCard({
         {favoriteBy && (
           <>
             <div className="border-t border-gray-200 my-2" />
-            <p className="text-xs text-gray-500">
-              {favoriteBy}이 즐겨찾는 집
-            </p>
+            <p className="text-xs text-gray-500">{favoriteBy}이 즐겨찾는 집</p>
           </>
         )}
       </div>
