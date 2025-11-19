@@ -84,7 +84,7 @@ const router = createBrowserRouter([
       </AppLayout>
   },
   {
-    path: "/roulette",
+    path: "/roulette/:planId",
     element: (
       <AppLayout>
         <RoulettePage />
