@@ -109,12 +109,6 @@ function PlanCard({
   formatDateTime: (startAt: string) => string;
   onSelect?: (planId: number) => void;
 }) {
-  const [imageError, setImageError] = React.useState(false);
-  const imageUrl =
-    imageError || !plan.restaurantImageUrl
-      ? "/NOIMAGE.png"
-      : plan.restaurantImageUrl;
-
   return (
     <li
       className="overflow-hidden rounded-xl border-2 border-neutral-200 bg-card transition-shadow cursor-pointer"
