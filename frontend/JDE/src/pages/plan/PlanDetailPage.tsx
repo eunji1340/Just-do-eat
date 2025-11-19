@@ -96,8 +96,7 @@ export default function PlanDetailPage() {
         await selectDecisionTool(planId, toolType, restaurantIds);
 
         if (toolType === "ROULETTE") {
-          console.log("@@@@@@@@@@@@@@@@@@@@")
-          navigate(`/roulette?planId=${planId}`);
+          navigate(`/roulette/${planId}`);
         } else if (toolType === "VOTE") {
           // 투표 시작
           await startVote();
