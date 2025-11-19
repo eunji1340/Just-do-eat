@@ -133,7 +133,7 @@ export default function RecommendationSection({
 
       try {
         // ===== API 호출 =====
-        const baseURL = "http://k13a701.p.ssafy.io/api";
+        const baseURL = import.meta.env.VITE_API_BASE_URL;
         const fullUrl = `${baseURL}/main/restaurants/popular`;
         console.log("🔥 [인기식당] 요청 URL:", fullUrl);
 
@@ -211,17 +211,11 @@ export default function RecommendationSection({
 
   /**
    * 카테고리 클릭 핸들러
-   * 스와이프 페이지로 이동하며 카테고리명(한글) 전달
+   * 피드 페이지로 이동하며 카테고리명(한글)을 쿼리 파라미터로 전달
    */
   const handleCategoryClick = (categoryName: string) => {
     console.log("🍽️ [카테고리 클릭]", categoryName);
-    navigate("/swipe", {
-      state: {
-        type: "category",
-        categoryName, // 한글 카테고리명 전달 (예: "한식", "중식")
-        districtName, // 선택된 상권명 전달
-      },
-    });
+    navigate(`/feed?category=${encodeURIComponent(categoryName)}`);
   };
 
   /**
