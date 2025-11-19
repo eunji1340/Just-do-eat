@@ -64,7 +64,7 @@ async function handleInviteClick() {
 
   return (
     <>
-      <TopNavBar variant="default" onSearchClick={() => navigate("/search/start")} />
+      <TopNavBar variant="default" onSearchClick={undefined} />
       <main className="px-4 pb-36 pt-3">
         <h1 className="text-center text-2xl font-extrabold tracking-tight">
           {data.roomName}
@@ -80,7 +80,6 @@ async function handleInviteClick() {
           items={data.planList}
           members={data.roomMemberList}
           onSeeAll={() => navigate(`/groups/${groupId}/plans`)}
-          onSelect={(planId) => navigate(`/plans/${planId}`)}
         />
       </main>
 
