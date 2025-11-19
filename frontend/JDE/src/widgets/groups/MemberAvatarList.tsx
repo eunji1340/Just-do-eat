@@ -11,6 +11,7 @@
 // - (옵션) maxVisible로 "+N" 처리 가능(미설정 시 전체 표시)
 // ================================
 
+import * as React from "react";
 import type { RoomMember } from "@/entities/groups/types";
 
 type Props = {
@@ -26,9 +27,9 @@ export default function MemberAvatarList({ members, maxVisible }: Props) {
   return (
     <div
       className={[
-        "h-[20vh]",
+        "h-[8vh]",
         // 가로 스크롤 컨테이너
-        "flex items-center gap-3 overflow-x-auto pb-1 pr-3",
+        "flex items-center gap-3 overflow-x-auto pb-0 pr-3",
         // 스냅 스크롤(옵션): 항목 단위로 딱딱 맞게 멈춤
         "snap-x snap-mandatory",
         // 모바일/크롬 등 스크롤바 숨김(옵션)
@@ -40,18 +41,18 @@ export default function MemberAvatarList({ members, maxVisible }: Props) {
         <div
           key={m.userId}
           // 아이템 박스가 절대 줄어들지 않게 고정
-          className="flex w-16 flex-none shrink-0 snap-start flex-col items-center"
+          className="flex w-12 flex-none shrink-0 snap-start flex-col items-center"
         >
           <Avatar url={m.imageUrl} name={m.userName} />
-          {/* 닉네임 폭도 w-16로 고정해서 줄바꿈/줄임 처리 안정화 */}
-          <span className="mt-1 line-clamp-1 w-16 text-center text-xs text-foreground/80">
+          {/* 닉네임 폭도 w-12로 고정해서 줄바꿈/줄임 처리 안정화 */}
+          <span className="mt-1 line-clamp-1 w-12 text-center text-xs text-foreground/80">
             {m.userName}
           </span>
         </div>
       ))}
 
       {rest > 0 && (
-        <div className="flex h-12 w-12 flex-none shrink-0 snap-start items-center justify-center rounded-full border bg-background text-xs text-foreground/70">
+        <div className="flex h-10 w-10 flex-none shrink-0 snap-start items-center justify-center rounded-full border bg-background text-xs text-foreground/70">
           +{rest}
         </div>
       )}
@@ -60,12 +61,14 @@ export default function MemberAvatarList({ members, maxVisible }: Props) {
 }
 
 function Avatar({ url, name }: { url?: string; name: string }) {
-  const initials = name.slice(0, 2);
+  const [imageError, setImageError] = React.useState(false);
+  const initials = name.slice(0, 1);
 
   // 공통: 절대 줄어들지 않도록 shrink-0/flex-none 추가
-  const baseClass = "h-16 w-16 rounded-full shrink-0 flex-none";
+  const baseClass = "h-10 w-10 rounded-full shrink-0 flex-none";
 
-  if (!url) {
+  // 이미지가 없거나 에러가 있으면 초성 표시
+  if (!url || imageError) {
     return (
       <div
         className={[
@@ -74,7 +77,7 @@ function Avatar({ url, name }: { url?: string; name: string }) {
         ].join(" ")}
         aria-label={`${name} 기본 아바타`}
       >
-        {initials}
+        <span className="select-none">{initials}</span>
       </div>
     );
   }
@@ -86,6 +89,9 @@ function Avatar({ url, name }: { url?: string; name: string }) {
       className={[baseClass, "object-cover shadow"].join(" ")}
       loading="lazy"
       decoding="async"
+      onError={() => {
+        setImageError(true);
+      }}
     />
   );
 }
