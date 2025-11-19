@@ -1,4 +1,5 @@
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import type { Restaurant } from "@/entities/plan/model/types";
 import { RestaurantCard } from "@/widgets/plan/RestaurantCard";
 import { cn } from "@/shared/lib/utils";
@@ -40,6 +41,7 @@ export function RestaurantList({
   currentVoteCount,
   allowedRestaurantIds,
 }: RestaurantListProps) {
+  const navigate = useNavigate();
   if (isLoading) {
     return (
       <div className="px-4 pt-4">
@@ -100,8 +102,12 @@ export function RestaurantList({
                   if ((directSelectMode || voteMode) && isAllowed) {
                     e.stopPropagation();
                     onRestaurantSelect(restaurant.id);
+                  } else if (!directSelectMode && !voteMode) {
+                    // 일반 모드일 때는 식당 상세 페이지로 이동
+                    navigate(`/restaurants/${restaurant.id}`);
                   }
                 }}
+                className={!directSelectMode && !voteMode ? "cursor-pointer" : ""}
               >
                 <RestaurantCard
                   restaurant={restaurant}
