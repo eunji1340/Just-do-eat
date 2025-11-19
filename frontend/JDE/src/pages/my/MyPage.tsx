@@ -19,6 +19,9 @@ export default function MyPage() {
   const [isUploading, setIsUploading] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [currentImageUrl, setCurrentImageUrl] = useState<string | null>(null);
+  const [failedImageUrls, setFailedImageUrls] = useState<Set<string>>(
+    new Set()
+  );
   const fileInputRef = useRef<HTMLInputElement>(null);
   const previewUrlRef = useRef<string | null>(null);
   const isMountedRef = useRef(true);
@@ -40,6 +43,11 @@ export default function MyPage() {
       if (userData.imageUrl) {
         imageErrorRef.current.delete(userData.imageUrl);
         refetchAttemptedRef.current.delete(userData.imageUrl);
+        setFailedImageUrls((prev) => {
+          const next = new Set(prev);
+          next.delete(userData.imageUrl!);
+          return next;
+        });
       }
     }
   }, [userData, setUser]);
@@ -387,49 +395,23 @@ export default function MyPage() {
 
                       // 실제 이미지 URL이 있고 에러가 없으면 표시
                       const imageUrl = currentImageUrl || userData.imageUrl;
-                      if (imageUrl && !imageErrorRef.current.has(imageUrl)) {
+                      if (imageUrl && !failedImageUrls.has(imageUrl)) {
                         return (
                           <img
                             key={`img-${imageUrl}`}
                             src={imageUrl}
                             alt={userData.name}
                             className="w-full h-full object-cover"
-                            onError={async () => {
+                            onError={() => {
                               if (isMountedRef.current && imageUrl) {
                                 // 즉시 에러 상태에 추가하여 초성이 바로 보이도록
+                                // refetch를 하지 않고 바로 실패 처리
                                 imageErrorRef.current.add(imageUrl);
-
-                                // refetch는 한 번만 시도 (무한 루프 방지)
-                                if (
-                                  !refetchAttemptedRef.current.has(imageUrl)
-                                ) {
-                                  refetchAttemptedRef.current.add(imageUrl);
-
-                                  // 백그라운드에서 최신 URL 받아오기 시도
-                                  try {
-                                    const updatedUserData = await refetch();
-                                    if (
-                                      updatedUserData?.imageUrl &&
-                                      updatedUserData.imageUrl !== imageUrl
-                                    ) {
-                                      // 새로운 URL이 있으면 업데이트
-                                      setCurrentImageUrl(
-                                        updatedUserData.imageUrl
-                                      );
-                                      imageErrorRef.current.delete(
-                                        updatedUserData.imageUrl
-                                      );
-                                      refetchAttemptedRef.current.delete(
-                                        updatedUserData.imageUrl
-                                      );
-                                    }
-                                  } catch (error) {
-                                    console.error(
-                                      "이미지 URL 갱신 실패:",
-                                      error
-                                    );
-                                  }
-                                }
+                                refetchAttemptedRef.current.add(imageUrl);
+                                // 상태 업데이트로 리렌더링 트리거
+                                setFailedImageUrls((prev) =>
+                                  new Set(prev).add(imageUrl)
+                                );
                               }
                             }}
                           />

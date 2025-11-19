@@ -228,7 +228,7 @@ export default function RecommendationSection({
    */
   const handleCategoryClick = (categoryName: string) => {
     console.log("🍽️ [카테고리 클릭]", categoryName);
-    navigate(`/feed?category=${encodeURIComponent(categoryName)}`);
+    navigate(`/feed?category=${encodeURIComponent(categoryName)}&mock=true`);
   };
 
   /**
