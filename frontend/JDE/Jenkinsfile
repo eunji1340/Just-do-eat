@@ -34,7 +34,10 @@ pipeline {
 
         stage('Build Frontend') {
             agent {
-              docker { image 'node:20' }
+              docker { 
+                  image 'node:20'
+                  args '-u 0:0'
+                }
               }
             steps {
                 sh '''
@@ -44,6 +47,7 @@ pipeline {
       		    rm -rf node_modules package-lock.json
       		    npm cache clean --force
 		    
+                    rm -f .env.production || true
 
                     cat > .env.production <<EOF
 VITE_API_BASE_URL=${VITE_API_BASE_URL}
