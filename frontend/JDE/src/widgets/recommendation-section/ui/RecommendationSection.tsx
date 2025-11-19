@@ -133,8 +133,9 @@ export default function RecommendationSection({
 
       try {
         // ===== API 호출 =====
-        const baseURL = "https://www.justdoeat.ai.kr/api"; // import.meta.env.VITE_API_BASE_URL;
-        const fullUrl = `${baseURL}/main/restaurants/popular`;
+        const baseURL =
+          import.meta.env.VITE_API_BASE_URL || "https://justdoeat.ai.kr/api/";
+        const fullUrl = `${baseURL}main/restaurants/popular`;
         console.log("🔥 [인기식당] 요청 URL:", fullUrl);
 
         const response = await axios.get<PopularRestaurantResponse[]>(fullUrl, {
