@@ -1,4 +1,4 @@
-import { AlertCircle, Vote, UserCheck } from "lucide-react";
+import { Vote, UserCheck } from "lucide-react";
 
 type TieVoteModalProps = {
   isOpen: boolean;
@@ -34,13 +34,8 @@ export function TieVoteModal({
         className="w-full max-w-[360px] rounded-2xl bg-white p-6 shadow-xl"
       >
         <div className="text-center mb-6">
-          <div className="flex justify-center mb-4">
-            <div className="w-16 h-16 rounded-full bg-orange-100 flex items-center justify-center">
-              <AlertCircle className="w-8 h-8 text-orange-600" />
-            </div>
-          </div>
           <h2 className="text-lg font-bold text-neutral-900 mb-2">
-            동점이 발생했습니다
+            동점이 발생했습니다!
           </h2>
           <p className="text-sm text-neutral-600">
             {tiedCount}개 식당이 {voteCount}표로 동점입니다
@@ -72,9 +67,9 @@ export function TieVoteModal({
             <div className="flex items-center gap-3">
               <UserCheck className="h-6 w-6 text-primary" />
               <div>
-                <p className="font-semibold text-neutral-900">매니저 선택</p>
+                <p className="font-semibold text-neutral-900">직접 선택</p>
                 <p className="text-sm text-neutral-600">
-                  매니저가 직접 선택합니다
+                  주최자가 직접 선택합니다
                 </p>
               </div>
             </div>
