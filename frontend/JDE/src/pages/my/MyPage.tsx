@@ -10,6 +10,11 @@ import { deleteUser } from "@/features/user/api/deleteUser";
 
 export default function MyPage() {
   const navigate = useNavigate();
+
+  // 로그인 여부 확인 (localStorage의 accessToken)
+  const accessToken = localStorage.getItem("accessToken");
+  const isLoggedIn = !!accessToken; // 토큰이 있으면 로그인 상태
+
   const { userData, isLoading, refetch } = useUserMe();
   const { mukbtiResult, setUser } = useUserStore();
   const { logout } = useLogout();
@@ -336,7 +341,41 @@ export default function MyPage() {
       />
 
       {/* 메인 콘텐츠 */}
-      <div className="px-5 py-6 space-y-6 bg-gradient-to-b from-orange-50/30 to-white min-h-screen">
+      <div className="bg-body min-h-screen">
+        {/* 비로그인 사용자 안내 화면 */}
+        {!isLoggedIn ? (
+          <div className="flex flex-col items-center justify-center min-h-[calc(100vh-120px)] px-6">
+            <div className="text-center space-y-6">
+              {/* 안내 문구 */}
+              <div className="space-y-2">
+                <h2 className="text-2xl font-bold text-gray-900">
+                  로그인 후 이용해 주세요
+                </h2>
+                <p className="text-gray-600">
+                  마이페이지는 로그인이 필요합니다
+                </p>
+              </div>
+
+              {/* 버튼 영역 */}
+              <div className="space-y-3 w-full max-w-sm">
+                <button
+                  onClick={() => navigate("/login")}
+                  className="w-full px-6 py-3 bg-primary text-white rounded-lg font-semibold hover:bg-primary/90 transition-colors"
+                >
+                  로그인
+                </button>
+                <button
+                  onClick={() => navigate("/signup")}
+                  className="w-full px-6 py-3 bg-white text-primary border-2 border-primary rounded-lg font-semibold hover:bg-primary/5 transition-colors"
+                >
+                  회원가입
+                </button>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <>
+          <div className="px-5 py-6 space-y-6 bg-gradient-to-b from-orange-50/30 to-white min-h-screen">
         {/* 프로필 섹션 */}
         <div className="bg-white rounded-2xl p-5 shadow-sm border border-orange-100">
           {isLoading ? (
@@ -666,6 +705,9 @@ export default function MyPage() {
           </div>
         </div>
       )}
+          </>
+        )}
+      </div>
     </>
   );
 }
