@@ -5,6 +5,7 @@ import RestaurantSwipeDeck from "@/widgets/restaurantSwipe/RestaurantSwipeDeck";
 import type { Restaurant } from "@/entities/restaurant/types";
 import http from "@/shared/api/http";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { TopNavBar } from "@/widgets/top-navbar/ui/TopNavBar";
 // ==== 백엔드 응답 타입 ====
 
 // 백엔드에서 내려주는 raw item
@@ -233,16 +234,35 @@ export default function FeedPage() {
     }
   }
 
+  // 뒤로가기 핸들러
+  function handleBack() {
+    navigate(-1);
+  }
+
+  // 검색 핸들러
+  function handleSearchClick() {
+    navigate("/search/start");
+  }
+
   return (
-    <main className="min-h-dvh bg-white flex items-center justify-center">
-      <section className="w-full flex items-center justify-center">
-        <div className="w-full max-w-xl">
+    <main className="relative min-h-dvh bg-white">
+      {/* TopNavBar - simple variant (카드 위 overlay) */}
+      <TopNavBar
+        variant="simple"
+        onBack={handleBack}
+        onSearchClick={handleSearchClick}
+        showHomeButton={false}
+        className="absolute top-0 left-0 right-0 z-50"
+      />
+
+      <section className="w-full h-dvh flex items-center justify-center">
+        <div className="w-full max-w-xl h-full">
           {error && (
             <div className="p-4 text-center text-sm text-red-500">{error}</div>
           )}
 
           {items.length === 0 && loading ? (
-            <div className="h-dvh flex items-center justify-center text-gray-500">
+            <div className="h-full flex items-center justify-center text-gray-500">
               추천을 불러오는 중입니다...
             </div>
           ) : (
