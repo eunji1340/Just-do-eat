@@ -15,7 +15,6 @@ export default function RouletteResultPage() {
   const state = location.state as LocationState | undefined;
   const restaurant = state?.restaurant;
 
-  // 🔸 새로고침 등으로 state가 없는 경우 처리
   if (!restaurant) {
     return (
       <>
@@ -41,6 +40,9 @@ export default function RouletteResultPage() {
     );
   }
 
+  // 🔹 대표 이미지 (첫 번째 이미지)
+  const mainImage = restaurant.image?.[0];
+
   return (
     <>
       <TopNavBar
@@ -50,6 +52,17 @@ export default function RouletteResultPage() {
       />
       <main className="min-h-dvh bg-neutral-100 px-4 py-6">
         <section className="mx-auto max-w-md rounded-2xl bg-white p-5 shadow-md">
+          {/* ✅ 이미지 렌더링 */}
+          {mainImage && (
+            <div className="mb-4 overflow-hidden rounded-2xl">
+              <img
+                src={mainImage}
+                alt={restaurant.name}
+                className="h-48 w-full object-cover"
+              />
+            </div>
+          )}
+
           <p className="text-xs font-medium text-primary mb-2">
             오늘의 모임 장소
           </p>
@@ -69,16 +82,16 @@ export default function RouletteResultPage() {
             </p>
           )}
 
-          {/* 필요하다면 메뉴, 가격대, 거리 정보 등 추가 */}
+          {/* 필요하면 요약, 평점, 가격대 등 추가 */}
           {/* <p className="mt-2 text-sm text-neutral-700">
-            1인 예상 가격: {restaurant.priceRangeLabel}
+            {restaurant.summary}
           </p> */}
 
           <button
-            onClick={() => navigate(`/groups/${restaurant.restaurant_id?? ""}`)}
+            onClick={() => navigate(`/plans/${planId}`)}
             className="mt-6 w-full rounded-xl bg-primary px-4 py-3 text-sm font-semibold text-white"
           >
-            모임 상세로 돌아가기
+            약속 상세로 돌아가기
           </button>
         </section>
       </main>
