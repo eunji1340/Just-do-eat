@@ -22,6 +22,8 @@ import RestaurantDetailPage from "@/pages/restaurant/RestaurantDetailPage";
 import InvitePage from "@/pages/groups/InvitePage";
 import AppLayout from "../layout/AppLayout";
 import PlanListPage from "@/pages/groups/PlanListPage";
+import RouletteResultPage from "@/pages/plan/RouletteResultPage";
+
 const SearchResultPage = lazy(() => import("@/pages/search/SearchResultPage"));
 
 const router = createBrowserRouter([
@@ -145,6 +147,14 @@ const router = createBrowserRouter([
       </AppLayout>
     ),
   },
+{
+  path: "/plans/:planId/decision",
+  element: (
+    <AppLayout>
+      <RouletteResultPage />
+    </AppLayout>
+  ),
+}  
 ]);
 
 export default function AppRouter() {
