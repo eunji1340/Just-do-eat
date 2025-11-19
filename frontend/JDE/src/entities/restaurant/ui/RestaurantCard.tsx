@@ -1,5 +1,6 @@
 import { useState } from "react";
 import type { Restaurant } from "../types";
+import NoImage from "/public/NOIMAGE.png";
 
 // RestaurantCard Props 타입 정의
 interface RestaurantCardProps {
@@ -54,8 +55,8 @@ export function RestaurantCard({
           />
         ) : (
           // 이미지가 없거나 로드 실패 시 placeholder
-          <div className="w-full h-full flex items-center justify-center">
-            <span className="text-gray-400 text-sm">No Image</span>
+          <div className="w-full h-full p-4 flex items-center justify-center bg-t3">
+            <img src={NoImage} alt="" />
           </div>
         )}
       </div>
