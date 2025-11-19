@@ -1,12 +1,12 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import type { AxiosError, AxiosResponse } from "axios";
+import type { AxiosError } from "axios";
 import { TopNavBar } from "@/widgets/top-navbar";
 import { useUserStore } from "../../entities/user/model/user-store";
 import AuthLayout from "@/widgets/auth/AuthLayout";
 import SignupForm from "@/features/auth/ui/SignupForm";
 import { useSignup } from "@/features/auth/model/useSignup";
-import customAxios from "@/shared/api/http";
+import { getUserMe } from "@/features/user/api/getUserMe";
 
 export default function SignupPage() {
   const nav = useNavigate();
@@ -22,35 +22,12 @@ export default function SignupPage() {
     setNameCheckResult,
   } = useSignup();
 
-  type UserMeResponse = {
-    status: string;
-    code: string;
-    message: string;
-    data?: {
-      userId: number;
-      name: string;
-      imageUrl: string;
-      role: string;
-      ageGroup: string;
-      gender: string;
-      createdAt: string;
-      updatedAt: string;
-      regionId: number | null;
-      regionName: string | null;
-    };
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     const result = await submit(e);
     if (result.success && result.accessToken) {
-      // 사용자 정보 불러오기
+      // 이미지 업로드가 완료된 후 users/me를 호출하여 새로운 유효한 S3 URL 받아오기
       try {
-        const response = await customAxios<AxiosResponse<UserMeResponse>>({
-          method: "GET",
-          url: "/users/me",
-        });
-
-        const userData = response.data?.data;
+        const userData = await getUserMe();
 
         if (userData) {
           const { setUser } = useUserStore.getState();

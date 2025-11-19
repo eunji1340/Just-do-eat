@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Users } from "lucide-react";
 import { selectDecisionTool } from "@/entities/plan/api/selectDecisionTool";
@@ -45,7 +45,7 @@ export default function PlanDetailPage() {
     bottomButtonsRef,
     handleDirectSelect,
     handleRestaurantSelect: handleDirectRestaurantSelect,
-    handleDirectSelectComplete,
+    handleDirectSelectComplete: originalHandleDirectSelectComplete,
   } = useDirectSelect(planId, fetchPlanDetail);
 
   const [selectedTool, setSelectedTool] = useState<
@@ -56,7 +56,6 @@ export default function PlanDetailPage() {
   const {
     selectedRestaurantId: voteSelectedId,
     setSelectedRestaurantId: setVoteSelectedId,
-    hasVoted,
     isSubmitting,
     startVote,
     submitVote,
@@ -70,10 +69,14 @@ export default function PlanDetailPage() {
   const [showEndVoteConfirmModal, setShowEndVoteConfirmModal] = useState(false);
   const [showTieVoteModal, setShowTieVoteModal] = useState(false);
   const [showManagerSelectModal, setShowManagerSelectModal] = useState(false);
+  const [isRevoteMode, setIsRevoteMode] = useState(false);
+  // 재투표 시 동점이었던 식당 ID들 (동점이 해소되어도 유지)
+  const [revoteRestaurantIds, setRevoteRestaurantIds] = useState<number[]>([]);
 
   const handleSelectToolClick = useCallback(() => {
+    if (planDetail?.status === "DECIDED") return; // DECIDED 상태면 버튼 비활성화
     setShowToolModal(true);
-  }, []);
+  }, [planDetail?.status]);
 
   const handleToolSelectFromModal = useCallback(
     async (toolType: "VOTE" | "LADDER" | "ROULETTE") => {
@@ -93,6 +96,7 @@ export default function PlanDetailPage() {
         await selectDecisionTool(planId, toolType, restaurantIds);
 
         if (toolType === "ROULETTE") {
+          console.log("@@@@@@@@@@@@@@@@@@@@")
           navigate(`/roulette?planId=${planId}`);
         } else if (toolType === "VOTE") {
           // 투표 시작
@@ -111,18 +115,64 @@ export default function PlanDetailPage() {
     [planId, restaurants, navigate, startVote]
   );
 
+  // 바로 선택 완료 시 결정 도구 선택 API 먼저 호출
+  const handleDirectSelectComplete = useCallback(async () => {
+    if (!planId || !directSelectedId || restaurants.length === 0) return;
+
+    try {
+      // 1. 결정 도구 선택 API 호출 (VOTE로 현재 리스트의 후보 식당들 저장)
+      const restaurantIds = restaurants.map((r) => parseInt(r.id, 10));
+      await selectDecisionTool(planId, "VOTE", restaurantIds);
+
+      // 2. 식당 확정
+      await originalHandleDirectSelectComplete();
+    } catch (error) {
+      console.error("[handleDirectSelectComplete] 바로 선택 완료 실패:", error);
+      alert(
+        error instanceof Error
+          ? error.message
+          : "식당 확정에 실패했습니다. 다시 시도해주세요."
+      );
+    }
+  }, [
+    planId,
+    directSelectedId,
+    restaurants,
+    originalHandleDirectSelectComplete,
+  ]);
+
   const handleVoteRestaurantSelect = useCallback(
     (restaurantId: string) => {
-      if (!hasVoted) {
-        setVoteSelectedId(restaurantId);
+      // 재투표 중이면 (revoteRestaurantIds가 있으면) 동점이었던 식당만 선택 가능
+      if (revoteRestaurantIds.length > 0) {
+        const isRevoteRestaurant = revoteRestaurantIds.includes(
+          parseInt(restaurantId, 10)
+        );
+        if (!isRevoteRestaurant) {
+          return; // 재투표 대상이 아닌 식당은 선택 불가
+        }
+        // 동점이 해소되었으면 재투표 모드만 해제 (revoteRestaurantIds는 유지)
+        const tiedRestaurants = getTiedRestaurants();
+        if (tiedRestaurants.length <= 1) {
+          setIsRevoteMode(false);
+        }
       }
+      setVoteSelectedId(restaurantId);
     },
-    [hasVoted, setVoteSelectedId]
+    [revoteRestaurantIds, getTiedRestaurants, setVoteSelectedId]
   );
 
   const handleVoteSubmit = useCallback(async () => {
     try {
       await submitVote();
+      // 투표 제출 후 동점이 해소되었는지 확인하여 재투표 모드 해제
+      // fetchTally가 완료된 후에 확인하기 위해 약간의 지연
+      setTimeout(() => {
+        const tiedRestaurants = getTiedRestaurants();
+        if (tiedRestaurants.length <= 1) {
+          setIsRevoteMode(false);
+        }
+      }, 100);
     } catch (error) {
       alert(
         error instanceof Error
@@ -130,7 +180,7 @@ export default function PlanDetailPage() {
           : "투표 제출에 실패했습니다. 다시 시도해주세요."
       );
     }
-  }, [submitVote]);
+  }, [submitVote, getTiedRestaurants]);
 
   const handleEndVoteClick = useCallback(() => {
     setShowEndVoteConfirmModal(true);
@@ -159,19 +209,28 @@ export default function PlanDetailPage() {
     }
   }, [endVoteAndDecide, setShowDecideSuccessModal, getTiedRestaurants]);
 
-  const handleRevote = useCallback(async () => {
+  const handleRevote = useCallback(() => {
     setShowTieVoteModal(false);
-    try {
-      // 재투표 시작 (투표 상태 초기화 후 다시 시작)
-      await startVote();
-    } catch (error) {
-      alert(
-        error instanceof Error
-          ? error.message
-          : "재투표 시작에 실패했습니다. 다시 시도해주세요."
-      );
+    // 재투표 모드 활성화 (동점인 식당들만 선택 가능)
+    const tiedRestaurants = getTiedRestaurants();
+    const tiedRestaurantIds = tiedRestaurants.map((r) => r.restaurantId);
+    setRevoteRestaurantIds(tiedRestaurantIds);
+    setIsRevoteMode(true);
+    // 선택 상태 초기화
+    setVoteSelectedId(null);
+  }, [setVoteSelectedId, getTiedRestaurants]);
+
+  // 동점이 해소되면 재투표 모드 자동 해제
+  useEffect(() => {
+    if (isRevoteMode && isVotingStatus) {
+      const tiedRestaurants = getTiedRestaurants();
+      // 동점이 해소되면 (동점인 식당이 1개 이하) 재투표 모드 해제
+      if (tiedRestaurants.length <= 1) {
+        setIsRevoteMode(false);
+        console.log("[PlanDetailPage] 동점 해소, 재투표 모드 해제");
+      }
     }
-  }, [startVote]);
+  }, [isRevoteMode, isVotingStatus, getTiedRestaurants, voteTallyData]);
 
   const handleManagerSelectClick = useCallback(() => {
     setShowTieVoteModal(false);
@@ -235,6 +294,7 @@ export default function PlanDetailPage() {
 
   const participants = planDetail.planParticipantList || [];
   const isPlanManager = userData?.name === planDetail.planManager;
+  const isDecidedStatus = planDetail?.status === "DECIDED";
   // VOTE 상태일 때 라디오 버튼 표시
   const voteMode = isVotingStatus;
   const selectedRestaurantId = isVotingStatus
@@ -289,13 +349,17 @@ export default function PlanDetailPage() {
           currentVoteCount={
             isVotingStatus ? voteTallyData?.totalVotes : undefined
           }
+          allowedRestaurantIds={
+            isVotingStatus && revoteRestaurantIds.length > 0
+              ? revoteRestaurantIds
+              : undefined
+          }
         />
       </div>
 
       {isVotingStatus && (
         <>
           <VoteSubmitButton
-            hasVoted={hasVoted}
             hasSelectedRestaurant={!!selectedRestaurantId}
             isSubmitting={isSubmitting}
             onVoteSubmit={handleVoteSubmit}
@@ -309,7 +373,7 @@ export default function PlanDetailPage() {
         </>
       )}
 
-      {!isVotingStatus && isPlanManager && (
+      {!isVotingStatus && isPlanManager && !isDecidedStatus && (
         <BottomActionBar
           bottomButtonsRef={bottomButtonsRef}
           isLoading={isLoadingCandidates}
@@ -317,7 +381,10 @@ export default function PlanDetailPage() {
           directSelectMode={directSelectMode}
           hasSelectedRestaurant={!!selectedRestaurantId}
           onSelectToolClick={handleSelectToolClick}
-          onDirectSelect={handleDirectSelect}
+          onDirectSelect={() => {
+            if (planDetail?.status === "DECIDED") return;
+            handleDirectSelect();
+          }}
           onDirectSelectComplete={handleDirectSelectComplete}
         />
       )}
@@ -364,7 +431,13 @@ export default function PlanDetailPage() {
       />
       <DecideSuccessModal
         isOpen={showDecideSuccessModal}
-        onClose={() => setShowDecideSuccessModal(false)}
+        onClose={() => {
+          setShowDecideSuccessModal(false);
+          // 식당 확정 후 그룹 상세 페이지로 이동
+          if (planDetail?.roomId) {
+            navigate(`/groups/${planDetail.roomId}`);
+          }
+        }}
       />
     </>
   );
