@@ -2,6 +2,7 @@ import { useState, useCallback, useRef, useEffect } from "react";
 import type { AxiosError, AxiosResponse } from "axios";
 import { useUserStore } from "@/entities/user/model/user-store";
 import customAxios from "@/shared/api/http";
+import { getUserMe } from "@/features/user/api/getUserMe";
 
 type AgeGroup = "TEENS" | "TWENTIES" | "THIRTIES" | "FORTIES" | "FIFTIES_PLUS";
 type Gender = "MALE" | "FEMALE" | "OTHER";
@@ -138,6 +139,9 @@ export function useSignup() {
       },
       meta: { authRequired: true },
     });
+
+    // 4. users/me를 다시 호출하여 새로운 유효한 S3 URL 받아오기
+    await getUserMe();
   };
 
   const handleSubmit = async (
