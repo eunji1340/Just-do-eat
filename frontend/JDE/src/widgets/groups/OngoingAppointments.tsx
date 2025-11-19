@@ -81,7 +81,7 @@ export default function OngoingAppointments({
             진행중인 약속이 없어요.
           </p>
         ) : (
-          <ul className="grid grid-cols-2 gap-2">
+          <ul className="grid grid-cols-2 gap-4">
             {list.map((plan) => (
               <PlanCard
                 key={plan.planId}
@@ -117,43 +117,19 @@ function PlanCard({
 
   return (
     <li
-      className="overflow-hidden rounded-xl border-neutral-400 bg-card shadow-sm cursor-pointer hover:shadow-md transition-shadow"
+      className="overflow-hidden rounded-xl border-2 border-neutral-200 bg-card transition-shadow cursor-pointer"
       onClick={() => onSelect?.(plan.planId)}
     >
-      {/* 이미지 + 그라데이션 + 식당 이름 */}
-      <div className="relative aspect-video w-full overflow-hidden rounded-2xl bg-[#F6EEDC]">
-        {/* 실제 이미지 (없으면 기본 이미지) */}
-        <img
-          src={imageUrl}
-          alt={plan.restaurantName ?? plan.planName}
-          className={`h-full w-full ${
-            imageUrl === "/NOIMAGE.png" ? "object-contain p-4" : "object-cover"
-          }`}
-          loading="lazy"
-          onError={() => setImageError(true)}
-        />
-
-        {/* 하단 그라데이션 (투명 → 흰색) */}
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-white/95 via-white/40 to-transparent" />
-
-        {/* 텍스트 오버레이 */}
-        <div className="absolute inset-x-0 bottom-2 flex justify-end px-2">
-          <p className="line-clamp-2 text-center text-m font-semibold text-black">
-            {plan.restaurantName ?? "식당 미정"}
-          </p>
-        </div>
-      </div>
-
       {/* 아래 메타 정보 영역 */}
       <div className="p-2">
+        {/* 약속 이름 */}
+        <p className="mt-0.5 line-clamp-1 text-md font-semibold">
+          {plan.planName}
+        </p>
+
         {/* 날짜/시간 */}
         <p className="text-[11px] text-foreground/60">
           {formatDateTime(plan.startAt)}
-        </p>
-
-        {/* 약속 이름 */}
-        <p className="mt-0.5 line-clamp-1 text-sm font-semibold">
-          {plan.planName}
         </p>
 
         {/* 주최자 + 참여자 요약 */}
