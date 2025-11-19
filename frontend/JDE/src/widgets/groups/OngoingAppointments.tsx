@@ -1,27 +1,27 @@
-// src/widgets/groups/PastAppointments.tsx
+// src/widgets/groups/OngoingAppointments.tsx
 import * as React from "react";
-import { CalendarClock, ChevronRight, UtensilsCrossed } from "lucide-react";
+import { Clock, ChevronRight } from "lucide-react";
 import type { Room } from "@/entities/groups/types";
 
 type Props = {
   items: Room["planList"];
-  members: Room["roomMemberList"]; // 🔹 모임 참여자 배열
+  members: Room["roomMemberList"];
   onSeeAll?: () => void;
   onSelect?: (planId: number) => void;
 };
 
-export default function PastAppointments({
+export default function OngoingAppointments({
   items,
   members,
   onSeeAll,
   onSelect,
 }: Props) {
-  // 🔹 DECIDED 상태인 약속만 필터링 + 최신순 내림차순 + 최대 4개
+  // 🔹 DECIDED가 아닌 약속만 필터링 + 최신순 내림차순 + 최대 4개
   const list = React.useMemo(() => {
     if (!items) return [];
 
     return items
-      .filter((plan) => plan.status === "DECIDED")
+      .filter((plan) => plan.status !== "DECIDED")
       .slice()
       .sort((a, b) => {
         const ta = new Date(a.startAt).getTime();
@@ -66,54 +66,44 @@ export default function PastAppointments({
       <div className="rounded-2xl border-neutral-400 bg-card p-3 shadow-sm">
         <div className="mb-2 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <CalendarClock className="size-5 text-foreground/80" aria-hidden />
-            <h2 className="text-base font-semibold">지난 약속들</h2>
+            <Clock className="size-5 text-foreground/80" aria-hidden />
+            <h2 className="text-base font-semibold">진행중인 약속</h2>
           </div>
           {onSeeAll && (
-            <button
-              aria-label="전체 보기"
-              onClick={onSeeAll}
-              className="hover:bg-neutral-100 rounded-full p-1 transition-colors"
-            >
+            <button aria-label="전체 보기" onClick={onSeeAll}>
               <ChevronRight className="size-5 text-foreground/60" aria-hidden />
             </button>
           )}
         </div>
 
         {isEmpty ? (
-          <div className="py-6 flex flex-col items-center justify-center gap-3">
-            <p className="text-sm text-foreground/60">지난 약속이 없어요.</p>
-          </div>
+          <p className="py-6 text-center text-sm text-foreground/60">
+            진행중인 약속이 없어요.
+          </p>
         ) : (
-          <ul className="grid grid-cols-2 gap-4">
+          <ul className="grid grid-cols-2 gap-2">
             {list.map((plan) => (
               <li
                 key={plan.planId}
-                className="overflow-hidden rounded-xl border-2 border-neutral-200 bg-card shadow-sm hover:shadow-md transition-shadow cursor-pointer"
+                className="overflow-hidden rounded-xl border-neutral-400 bg-card shadow-sm cursor-pointer hover:shadow-md transition-shadow"
                 onClick={() => onSelect?.(plan.planId)}
               >
                 {/* 이미지 + 그라데이션 + 식당 이름 */}
-                <div className="relative aspect-video w-full overflow-hidden bg-[#F6EEDC]">
-                  {/* 실제 이미지 (없으면 기본 아이콘) */}
-                  {plan.restaurantImageUrl ? (
-                    <img
-                      src={plan.restaurantImageUrl}
-                      alt={plan.restaurantName ?? "plan.planName"}
-                      className="h-full w-full object-cover"
-                      loading="lazy"
-                    />
-                  ) : (
-                    <div className="h-full w-full bg-gradient-to-br from-orange-100 to-pink-100 flex items-center justify-center">
-                      <UtensilsCrossed className="size-12 text-orange-400" />
-                    </div>
-                  )}
+                <div className="relative aspect-video w-full overflow-hidden rounded-2xl bg-[#F6EEDC]">
+                  {/* 실제 이미지 (없으면 기본 이미지) */}
+                  <img
+                    src={plan.restaurantImageUrl || "/noimages.png"}
+                    alt={plan.restaurantName ?? plan.planName}
+                    className="h-full w-full object-cover"
+                    loading="lazy"
+                  />
 
-                  {/* 하단 그라데이션 */}
-                  <div className="pointer-events-none absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-black/70 via-black/40 to-transparent" />
+                  {/* 하단 그라데이션 (투명 → 흰색) */}
+                  <div className="pointer-events-none absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-white/95 via-white/40 to-transparent" />
 
                   {/* 텍스트 오버레이 */}
-                  <div className="absolute inset-x-0 bottom-2 flex justify-center px-2">
-                    <p className="line-clamp-2 text-center text-sm font-bold text-white drop-shadow-lg">
+                  <div className="absolute inset-x-0 bottom-2 flex justify-end px-2">
+                    <p className="line-clamp-2 text-center text-m font-semibold text-black">
                       {plan.restaurantName ?? "식당 미정"}
                     </p>
                   </div>
