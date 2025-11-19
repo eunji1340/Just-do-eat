@@ -136,21 +136,26 @@ export default function BingoFlow({ onComplete }: BingoFlowProps) {
     <div className="fixed inset-0 flex flex-col bg-[var(--color-bg)]">
       <div className="flex-1 flex flex-col p-6 max-w-2xl mx-auto w-full overflow-auto">
         {/* 헤더 */}
-        <div className="text-center mb-3">
-          <h2 className="m-0 mb-2 text-3xl font-extrabold text-[var(--color-fg)]">
-            취향 빙고
-          </h2>
-          <p className="text-[var(--color-muted-fg)] text-base leading-relaxed">
-            각 항목을 탭해서 당신의 취향을 알려주세요
+        <div className="text-center mb-4 flex-shrink-0">
+          <div className="inline-flex items-center gap-2 mb-2">
+            <div className="w-2 h-2 rounded-full bg-primary animate-pulse"></div>
+            <h2 className="m-0 text-2xl font-bold text-[var(--color-fg)]">
+              호불호 빙고
+            </h2>
+            <div className="w-2 h-2 rounded-full bg-[#FB2C36] animate-pulse"></div>
+          </div>
+          <p className="text-[var(--color-muted-fg)] text-sm m-0">
+            각 항목을 탭해서 당신의 취향을 알려주세요!
           </p>
         </div>
 
-        {/* 설명 카드 */}
-        <div className="bg-[var(--color-surface)] rounded-xl shadow-md p-3 mb-3 border border-[var(--color-border)]">
-          <div className="flex items-center justify-center gap-4">
+        {/* 설명 + 통계 카드 (공간 통합) */}
+        <div className="flex-shrink-0 bg-[var(--color-surface)] rounded-2xl shadow-md mb-4 border border-[var(--color-border)] overflow-hidden">
+          {/* 탭 설명 영역 */}
+          <div className="px-3 py-3 flex flex-wrap items-center justify-center gap-3">
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-red-50 rounded-lg flex items-center justify-center border border-red-200">
-                <Heart className="w-4 h-4 text-red-500 fill-red-500" />
+              <div className="w-8 h-8 bg-orange-50 rounded-lg flex items-center justify-center border border-orange-200">
+                <Heart className="w-4 h-4 text-primary fill-primary" />
               </div>
               <div className="text-left">
                 <p className="text-xs font-semibold text-[var(--color-fg)] m-0">
@@ -163,8 +168,8 @@ export default function BingoFlow({ onComplete }: BingoFlowProps) {
             </div>
 
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-blue-50 rounded-lg flex items-center justify-center border border-blue-200">
-                <ThumbsDown className="w-4 h-4 text-blue-500" />
+              <div className="w-8 h-8 bg-red-50 rounded-lg flex items-center justify-center border border-red-200">
+                <ThumbsDown className="w-4 h-4 text-[#FB2C36]" />
               </div>
               <div className="text-left">
                 <p className="text-xs font-semibold text-[var(--color-fg)] m-0">
@@ -190,19 +195,23 @@ export default function BingoFlow({ onComplete }: BingoFlowProps) {
               </div>
             </div>
           </div>
-        </div>
 
-        {/* 통계 */}
-        <div className="flex gap-2 mb-3">
-          <div className="flex-1 bg-red-50 rounded-xl p-2 text-center border border-red-200">
-            <p className="text-lg font-bold text-red-600 m-0">{likeCount}</p>
-            <p className="text-xs text-red-700 m-0 mt-0.5">좋아요</p>
-          </div>
-          <div className="flex-1 bg-blue-50 rounded-xl p-2 text-center border border-blue-200">
-            <p className="text-lg font-bold text-blue-600 m-0">
-              {dislikeCount}
-            </p>
-            <p className="text-xs text-blue-700 m-0 mt-0.5">싫어요</p>
+          {/* 통계 영역 */}
+          <div className="border-t border-[var(--color-border)] px-2 py-1.5 flex gap-2">
+            <div className="flex-1 bg-orange-50 rounded-lg px-2 py-1 text-center border border-orange-200">
+              <p className="text-base font-bold text-orange-600 m-0 leading-tight">
+                {likeCount}
+              </p>
+              <p className="text-xs text-orange-700 m-0 leading-tight">
+                좋아요
+              </p>
+            </div>
+            <div className="flex-1 bg-red-50 rounded-lg px-2 py-1 text-center border border-red-200">
+              <p className="text-base font-bold text-red-600 m-0 leading-tight">
+                {dislikeCount}
+              </p>
+              <p className="text-xs text-red-700 m-0 leading-tight">싫어요</p>
+            </div>
           </div>
         </div>
 
