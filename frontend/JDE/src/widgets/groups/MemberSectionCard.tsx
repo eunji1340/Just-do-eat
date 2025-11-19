@@ -1,10 +1,10 @@
 // src/widgets/groups/MemberSectionCard.tsx
 import { UsersRound, Plus } from "lucide-react";
 import MemberAvatarList from "./MemberAvatarList";
-import type { RoomMember } from "@/entities/groups/types";  // 🔁 여기!
+import type { RoomMember } from "@/entities/groups/types"; // 🔁 여기!
 
 type Props = {
-  members: RoomMember[];  // 🔁 GroupDetail["members"] → RoomMember[]
+  members: RoomMember[]; // 🔁 GroupDetail["members"] → RoomMember[]
   onInvite?: () => void;
 };
 
@@ -13,7 +13,7 @@ export default function MemberSectionCard({ members, onInvite }: Props) {
   const activeMembers = members.filter((m) => !m.del);
 
   return (
-    <section className="mt-10">
+    <section className="mt-4">
       <div className="rounded-2xl border-neutral-400 bg-card p-3 shadow-sm">
         <div className="mb-2 flex items-center justify-between">
           <div className="flex items-center gap-2">

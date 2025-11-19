@@ -18,10 +18,10 @@ export type SwipeDir = "left" | "right" | "up";
 export type Offset = { x: number; y: number };
 
 type Options = {
-  onMove?: (offset: Offset) => void;  // 드래그 중 Deck에 오프셋 전달
-  onSwipe: (dir: SwipeDir) => void;   // 방향 판정 후 콜백
-  thresholdX?: number;                // 좌/우 스와이프 임계치
-  thresholdY?: number;                // 위 스와이프 임계치
+  onMove?: (offset: Offset) => void; // 드래그 중 Deck에 오프셋 전달
+  onSwipe: (dir: SwipeDir) => void; // 방향 판정 후 콜백
+  thresholdX?: number; // 좌/우 스와이프 임계치
+  thresholdY?: number; // 위 스와이프 임계치
 
   // 🔥 비로그인 시 true → 좌/우 스와이프 차단하고 위로만 허용
   verticalOnly?: boolean;
@@ -34,7 +34,6 @@ export function useSwipeHandler({
   thresholdY = 80, // 기본 세로 스와이프 감도
   verticalOnly = false,
 }: Options) {
-  
   // 현재 드래그 offset(x, y)
   const [offset, setOffset] = useState<Offset>({ x: 0, y: 0 });
 
@@ -99,7 +98,7 @@ export function useSwipeHandler({
       if (dy < -thresholdY) {
         return onSwipe("up"); // 위로만 스와이프 가능
       }
-      
+
       // 좌우 금지 → 원위치
       onMove?.({ x: 0, y: 0 });
       setOffset({ x: 0, y: 0 });
@@ -114,7 +113,7 @@ export function useSwipeHandler({
       if (dx > thresholdX) return onSwipe("right"); // →
       if (dx < -thresholdX) return onSwipe("left"); // ←
     } else {
-      if (dy < -thresholdY) return onSwipe("up");   // ↑
+      if (dy < -thresholdY) return onSwipe("up"); // ↑
     }
 
     // 스와이프 실패 → 카드 원위치

@@ -164,10 +164,12 @@ export default function FeedCard({
             src={data.image?.[imgIdx] ?? data.image?.[0]}
             alt={data.name}
             className="w-full h-full object-contain"
-            style={{
-              // object-contain으로 이미지 전체가 보이도록 조정
-              // 이미지 크기가 작으면 중앙 정렬, 크면 비율 유지하며 축소
-            }}
+            style={
+              {
+                // object-contain으로 이미지 전체가 보이도록 조정
+                // 이미지 크기가 작으면 중앙 정렬, 크면 비율 유지하며 축소
+              }
+            }
           />
 
           {/* 상단 그라데이션 → 텍스트 가독성 향상 (이미지 위에만 적용) */}
