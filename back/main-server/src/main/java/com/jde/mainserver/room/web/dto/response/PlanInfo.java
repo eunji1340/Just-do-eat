@@ -1,5 +1,6 @@
 package com.jde.mainserver.room.web.dto.response;
 
+import com.jde.mainserver.plan.entity.enums.PlanStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -18,6 +19,7 @@ public class PlanInfo {
     private LocalDateTime startAt;
     private String planManager;
     private Long count;
+    private PlanStatus status;
     private Long restaurantId;
     private String restaurantName;
     private String restaurantImageUrl;

@@ -102,6 +102,7 @@ public class RoomConverter {
                 .startAt(plan.getStartsAt())
                 .planManager(planManager)
                 .count(count)
+                .status(plan.getStatus())
                 .restaurantId(restaurantId)
                 .restaurantName(restaurantName)
                 .restaurantImageUrl(firstImage)
