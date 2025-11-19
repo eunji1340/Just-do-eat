@@ -2,7 +2,7 @@
 // 목적: 식당 위치 섹션 (카카오맵 + 주소)
 
 import { useEffect } from "react";
-import { MapPin, ExternalLink } from "lucide-react";
+import { ExternalLink } from "lucide-react";
 import type { RestaurantDetailResponse } from "../api/useRestaurantDetail";
 
 // 전역 타입 선언
