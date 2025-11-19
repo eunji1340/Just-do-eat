@@ -1,3 +1,4 @@
+// src/features/roulette/useRoulette.ts
 // 목적: 룰렛 스핀 로직 + 회전 각도 계산 (단일 책임: 비즈니스 로직만)
 // 사용: 컴포넌트는 angle/transition만 받아서 그려주고, 결과 콜백으로 알림
 
@@ -27,8 +28,8 @@ type Options = {
   items: RouletteItem[];
   onFinish?: (result: SpinResult) => void;
   /** 스핀 한 바퀴 수(기본 6) + 목표 정렬에 필요한 잔여각 */
-  baseTurns?: number;   // 기본 6
-  durationMs?: number;  // 기본 4200
+  baseTurns?: number; // 기본 6
+  durationMs?: number; // 기본 4200
 };
 
 /** 각도 정규화(0~360) */
@@ -42,7 +43,7 @@ export function useRoulette({
   baseTurns = 6,
   durationMs = 4200,
 }: Options) {
-  const [angle, setAngle] = useState(0);      // 누적 각도(CSS rotate에 그대로 적용)
+  const [angle, setAngle] = useState(0); // 누적 각도(CSS rotate에 그대로 적용)
   const [spinning, setSpinning] = useState(false);
   const [lastIndex, setLastIndex] = useState<number | null>(null);
   const timerRef = useRef<number | null>(null);
@@ -54,7 +55,10 @@ export function useRoulette({
     [weights]
   );
   const palette = useMemo(
-    () => items.map((it, i) => it.color || DEFAULT_COLORS[i % DEFAULT_COLORS.length]),
+    () =>
+      items.map(
+        (it, i) => it.color || DEFAULT_COLORS[i % DEFAULT_COLORS.length]
+      ),
     [items]
   );
   const gradientStops = useMemo(() => {
@@ -84,7 +88,8 @@ export function useRoulette({
           const half = shareDeg / 2;
           const margin = Math.min(2, Math.max(0, half * 0.15)); // 최대 2°
           const maxJitter = Math.max(0, half - margin);
-          const jitter = maxJitter === 0 ? 0 : (Math.random() * 2 - 1) * maxJitter;
+          const jitter =
+            maxJitter === 0 ? 0 : (Math.random() * 2 - 1) * maxJitter;
 
           // 현재 각도에서 추가로 얼마나 돌리면 "mid+jitter"가 12시(=270°)에 오는가?
           const cur = norm(currentAngle);
@@ -100,26 +105,39 @@ export function useRoulette({
     [items.length, totalWeight, weights, baseTurns]
   );
 
-  /** 스핀 실행 */
+  /**
+   * 🔥 외부에서 "이 인덱스로 돌려"라고 지시하는 함수
+   * - 프론트에서 이미 결정된 index(예: deterministic index)에 맞춰 회전
+   */
+  const spinToIndex = useCallback(
+    (targetIndex: number) => {
+      if (spinning || items.length === 0) return;
+      if (targetIndex < 0 || targetIndex >= items.length) return;
+
+      setSpinning(true);
+      setLastIndex(targetIndex);
+
+      // 현재 angle 기준으로 정확히 12시에 맞도록 증분각 계산
+      const delta = calcDeltaToCenter(targetIndex, angle);
+      const next = angle + delta;
+      setAngle(next);
+
+      // 트랜지션 종료 시점에 콜백 (지금은 타이머 방식)
+      if (timerRef.current) window.clearTimeout(timerRef.current);
+      timerRef.current = window.setTimeout(() => {
+        setSpinning(false);
+        onFinish?.({ index: targetIndex, item: items[targetIndex] });
+      }, durationMs);
+    },
+    [spinning, items, angle, calcDeltaToCenter, durationMs, onFinish]
+  );
+
+  /** 기존 랜덤 스핀: 내부에서 인덱스를 뽑고, spinToIndex로 위임 */
   const spin = useCallback(() => {
     if (spinning || items.length === 0) return;
-    setSpinning(true);
-
-    const picked = weightedPick(items); // 가중치로 먼저 뽑음(화면/콜백 일치의 핵심)
-    setLastIndex(picked);
-
-    // 현재 angle 기준으로 정확히 12시에 맞도록 증분각 계산
-    const delta = calcDeltaToCenter(picked, angle);
-    const next = angle + delta;
-    setAngle(next);
-
-    // 트랜지션 종료 시점에 콜백(지금은 타이머 방식, 필요시 onTransitionEnd로 교체 가능)
-    if (timerRef.current) window.clearTimeout(timerRef.current);
-    timerRef.current = window.setTimeout(() => {
-      setSpinning(false);
-      onFinish?.({ index: picked, item: items[picked] });
-    }, durationMs);
-  }, [spinning, items, angle, calcDeltaToCenter, durationMs, onFinish]);
+    const picked = weightedPick(items); // 가중치 기반으로 index 선택
+    spinToIndex(picked);
+  }, [spinning, items, spinToIndex]);
 
   /** 언마운트/재실행 시 타이머 정리 */
   useEffect(() => {
@@ -129,12 +147,13 @@ export function useRoulette({
   }, []);
 
   return {
-    angle,          // CSS: transform: rotate(${angle}deg)
+    angle, // CSS: transform: rotate(${angle}deg)
     spinning,
     lastIndex,
     durationMs,
-    gradientStops,  // CSS: background: conic-gradient(${gradientStops})
+    gradientStops, // CSS: background: conic-gradient(${gradientStops})
     palette,
-    spin,
+    spin, // 🧪 기존 랜덤 스핀도 그대로 사용 가능
+    spinToIndex, // 🎯 외부에서 index를 지정해서 돌릴 때 사용
   } as const;
 }
