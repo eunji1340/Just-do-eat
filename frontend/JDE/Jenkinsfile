@@ -9,8 +9,8 @@ pipeline {
         NGINX_CONTAINER = "JDE-nginx"
         WORK_DIR = "frontend/JDE"
         VITE_API_BASE_URL = "https://api.justdoeat.ai.kr" 
-        VITE_USE_MSW=false
-        VITE_KAKAO_MAP_APP_KEY=64afe1c25c735fa73a5a18aaa90216b6
+        VITE_USE_MSW="false"
+        VITE_KAKAO_MAP_APP_KEY="64afe1c25c735fa73a5a18aaa90216b6"
     }
 
     stages {
