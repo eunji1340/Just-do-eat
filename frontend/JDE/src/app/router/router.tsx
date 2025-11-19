@@ -20,9 +20,9 @@ import FavoritesPage from "@/pages/favorites/FavoritesPage";
 import MyPage from "@/pages/my/MyPage";
 import RestaurantDetailPage from "@/pages/restaurant/RestaurantDetailPage";
 import InvitePage from "@/pages/groups/InvitePage";
-const SearchResultPage = lazy(() => import("@/pages/search/SearchResultPage"));
-const AppLayout = lazy(() => import("../layout/AppLayout"));
+import AppLayout from "../layout/AppLayout";
 import PlanListPage from "@/pages/groups/PlanListPage";
+const SearchResultPage = lazy(() => import("@/pages/search/SearchResultPage"));
 
 const router = createBrowserRouter([
   {
