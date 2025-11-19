@@ -27,7 +27,7 @@ export default function MemberAvatarList({ members, maxVisible }: Props) {
   return (
     <div
       className={[
-        "h-[12vh]",
+        "h-[8vh]",
         // 가로 스크롤 컨테이너
         "flex items-center gap-3 overflow-x-auto pb-0 pr-3",
         // 스냅 스크롤(옵션): 항목 단위로 딱딱 맞게 멈춤
