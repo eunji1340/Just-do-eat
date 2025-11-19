@@ -1,14 +1,15 @@
 // 목적: 모임 카드 프리젠테이션 + '나가기' 액션을 SwipeReveal에 제공
 // 단일 책임: 카드의 내용/스타일(도메인 프리젠테이션)
 
-import SwipeReveal from '@/features/swipe-reveal/SwipeReveal'
-import type { Room, Plan } from '@/entities/groups/types'
+import SwipeReveal from "@/features/swipe-reveal/SwipeReveal";
+import type { Room, Plan } from "@/entities/groups/types";
+import { Calendar, Users } from "lucide-react";
 
 type Props = {
-  group: Room
-  onLeave?: (id: number) => void // 실제 나가기 동작(목업/API) 콜백
-  onOpenGroup?: (id: number) => void // 카드 클릭 시 이동 등
-}
+  group: Room;
+  onLeave?: (id: number) => void; // 실제 나가기 동작(목업/API) 콜백
+  onOpenGroup?: (id: number) => void; // 카드 클릭 시 이동 등
+};
 
 function getLatestPlan(room: Room): Plan | null {
   if (!room.planList || room.planList.length === 0) return null;
@@ -28,7 +29,6 @@ function formatKoreanDate(iso: string): string {
   const day = d.getDate();
   return `${y}년 ${m}월 ${day}일`;
 }
-
 
 export default function MyMeetingCard({ group, onLeave, onOpenGroup }: Props) {
   function handleLeave() {
@@ -53,12 +53,8 @@ export default function MyMeetingCard({ group, onLeave, onOpenGroup }: Props) {
     : "아직 약속이 없어요";
 
   // 썸네일: 최신 plan의 이미지 1장만 사용 (나머지는 placeholder)
-  const thumbnailUrls: (string | null)[] = [
-    latestPlan?.restaurantImageUrl || null,
-    null,
-    null,
-    null,
-  ];
+  const thumbnailUrl = latestPlan?.restaurantImageUrl || null;
+  const hasAnyImage = !!thumbnailUrl;
 
   return (
     <SwipeReveal
@@ -75,35 +71,57 @@ export default function MyMeetingCard({ group, onLeave, onOpenGroup }: Props) {
       onFrontClick={() => onOpenGroup?.(group.roomId)}
     >
       <div className="rounded-2xl border border-neutral-300 bg-white">
-        {/* 썸네일 4분할 */}
-        <div className="grid grid-cols-4 gap-3 p-4">
-          {thumbnailUrls.map((url, i) =>
-            url ? (
+        {/* 썸네일 영역 */}
+        <div className="p-4">
+          {hasAnyImage ? (
+            <div className="grid grid-cols-4 gap-3">
+              {/* 첫 번째: 실제 이미지 */}
               <img
-                key={i}
-                src={url}
+                src={thumbnailUrl}
                 alt={`${group.roomName} 썸네일`}
                 className="aspect-square rounded-md object-cover"
               />
-            ) : (
-              <div
-                key={i}
-                className="aspect-square rounded-md bg-gray-200"
-              />
-            )
+              {/* 나머지 3개: cute_man.png */}
+              {[1, 2, 3].map((i) => (
+                <img
+                  key={i}
+                  src="/cute_man.png"
+                  alt="이미지 없음"
+                  className="aspect-square rounded-md object-contain object-center bg-gray-50 p-3"
+                />
+              ))}
+            </div>
+          ) : (
+            <div className="flex items-center justify-center h-20 rounded-md bg-gray-50 border border-gray-200">
+              <div className="flex flex-col items-center gap-1 text-center">
+                <Calendar className="w-5 h-5 text-gray-400" />
+                <p className="text-xs text-gray-500 font-medium">
+                  아직 약속이 없어요
+                </p>
+              </div>
+            </div>
           )}
         </div>
 
         {/* 텍스트 영역 */}
-        <div className="p-3">
+        <div className="p-3 pt-0">
           <h3 className="font-bold text-gray-900">{group.roomName}</h3>
 
-          <p className="mt-0.5 text-sm text-gray-500">
-            최근 만남 {recentLabel}
-          </p>
+          {/* 최근 만남 - 강조 */}
+          <div className="mt-2 flex items-center gap-1.5 bg-orange-50 rounded-lg px-2.5 py-1.5 border border-orange-200 inline-flex">
+            <Calendar className="w-3.5 h-3.5 text-orange-600" />
+            <p className="text-xs font-semibold text-orange-700 m-0">
+              최근 만남
+            </p>
+            <p className="text-xs font-bold text-orange-900 m-0">
+              {recentLabel}
+            </p>
+          </div>
 
+          {/* 멤버 */}
           <div className="mt-2 flex flex-wrap gap-2">
-            <span className="rounded-lg bg-gray-100 px-2 py-1 text-xs text-gray-700">
+            <span className="rounded-lg bg-gray-100 px-2 py-1 text-xs text-gray-700 flex items-center gap-1.5">
+              <Users className="w-3.5 h-3.5" />
               {memberText}
             </span>
           </div>

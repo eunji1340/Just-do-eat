@@ -1,4 +1,15 @@
-// src/widgets/restaurantSwipe/RestaurantSwipeDeck.tsx
+// 목적: 스와이프 덱 컨테이너 (FeedPage → 이 컴포넌트 사용)
+//
+// 주요 기능:
+// 1) 카드 스와이프(좌/우/상) 제스처 처리
+// 2) 카드 애니메이션 (날아가기 / 다음 카드 등장)
+// 3) 비로그인 사용자는 방향 제한 (위로 스와이프만 허용)
+// 4) 버튼도 로그인 여부에 따라 자동 비활성화
+// 5) 북마크 / 상세페이지 기능 포함
+// 6) 다음 카드 등장 시 초기 오프셋/제스처 상태 reset()
+//
+// ※ 핵심: "로그인 여부 판단 → 좌우 스와이프 제한"을
+//    이 파일(Deck) 하나에서만 처리하도록 설계함.
 
 import * as React from "react";
 import { useNavigate } from "react-router-dom";
@@ -8,6 +19,7 @@ import type { Restaurant } from "@/entities/restaurant/types";
 import type { Offset } from "@/features/feed/useSwipeHandler";
 import { X, Check, ArrowDown, CircleAlert, Star } from "lucide-react";
 import { CircularButton } from "@/shared/ui/button/circular-button";
+import { useNavigate } from "react-router-dom";
 import http from "@/shared/api/http";
 
 type Props = {
@@ -26,47 +38,48 @@ export default function RestaurantSwipeDeck({
   onDeckEmpty,
   hasMore = true,
 }: Props) {
-  const navigate = useNavigate();
+  const router = useNavigate();
+
+  /* ------------------------------------------
+   * 상태 정의
+   * ---------------------------------------- */
   const [index, setIndex] = React.useState(0);
   const [offset, setOffset] = React.useState<Offset>({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = React.useState(false);
+  const [transitionEnabled, setTransitionEnabled] = React.useState(true);
   const [finalDir, setFinalDir] = React.useState<
     "left" | "right" | "up" | null
   >(null);
-  const [overlayVisible, setOverlayVisible] = React.useState(true);
   const [emptyNotified, setEmptyNotified] = React.useState(false);
 
-  // 타이머 cleanup을 위한 ref
-  const swipeTimerRef = React.useRef<number | null>(null);
-  const animationTimerRef = React.useRef<number | null>(null);
+  // FeedCard가 내부 제스처를 초기화하도록 reset() 전달받음
+  const swipeResetRef = React.useRef<(() => void) | null>(null);
+  const registerReset = (fn: () => void) => (swipeResetRef.current = fn);
 
   const top = items[index];
 
+  // 로그인 여부 → 좌우 스와이프·버튼 제한
+  const isLoggedIn = !!localStorage.getItem("accessToken");
+  const verticalOnly = !isLoggedIn;
+
+  /* ------------------------------------------
+   * 스와이프 드래그 중 offset 업데이트
+   * ---------------------------------------- */
   function handleMove(o: Offset) {
     setOffset(o);
-    setFinalDir(null); // 드래그 중엔 확정 오버레이 숨김
-    setOverlayVisible(true);
+    setIsDragging(true);
+    setFinalDir(null);
   }
 
+  /* ------------------------------------------
+   * 스와이프 확정 방향 처리
+   * ---------------------------------------- */
   function handleSwiped(dir: "left" | "right" | "up") {
     const cur = items[index];
     if (!cur) return;
 
-    // 기존 타이머 정리
-    if (swipeTimerRef.current) {
-      clearTimeout(swipeTimerRef.current);
-      swipeTimerRef.current = null;
-    }
-
-    // ✅ 여기서 공통으로 모달/오버레이 상태 세팅
-    setFinalDir(dir); // 어떤 액션인지 저장 (갈게요/싫어요/보류)
-    setOverlayVisible(true); // 모달/오버레이 보이게
-
-    onTopSwiped?.(dir, cur); // 백엔드 액션 + 라우팅은 SwipePage에서
-
-    // 일정 시간 후 다음 카드로 넘기기
-    swipeTimerRef.current = setTimeout(() => {
-      setIndex((i) => i + 1);
-      setFinalDir(null);
+    // ❌ 비로그인 → 좌우 스와이프 차단
+    if (verticalOnly && (dir === "left" || dir === "right")) {
       setOffset({ x: 0, y: 0 });
       setOverlayVisible(false);
       requestAnimationFrame(() => setOverlayVisible(true));
@@ -82,24 +95,92 @@ export default function RestaurantSwipeDeck({
       animationTimerRef.current = null;
     }
 
-    // 방향에 따라 최종 offset 계산
-    const targetOffset =
-      dir === "left"
-        ? { x: -window.innerWidth, y: 0 }
-        : dir === "right"
-        ? { x: window.innerWidth, y: 0 }
-        : { x: 0, y: -window.innerHeight };
+    setIsDragging(false);
+    setFinalDir(dir);
 
-    // offset 애니메이션
-    setOffset(targetOffset);
+    // FE 상위 로직 호출
+    onTopSwiped?.(dir, cur);
 
-    // 애니메이션 완료 후 handleSwiped 호출
-    animationTimerRef.current = setTimeout(() => {
-      handleSwiped(dir);
-      animationTimerRef.current = null;
-    }, 300); // 애니메이션 시간
+    // 오른쪽 → 선택 → 메인 이동
+    if (dir === "right") {
+      setTimeout(() => router("/"), 550);
+      return;
+    }
+
+    // 왼쪽/위 → 다음 카드로 이동
+    setTimeout(showNextCard, overlayHoldMs);
   }
 
+  /* ------------------------------------------
+   * 다음 카드 등장 애니메이션
+   * ---------------------------------------- */
+  function showNextCard() {
+    setIndex((v) => v + 1);
+
+    swipeResetRef.current?.(); // FeedCard 내부 제스처 초기화
+
+    // 새 카드: 아래에서 등장(y:200 → 0)
+    setTransitionEnabled(false);
+    setOffset({ x: 0, y: 200 });
+
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        setTransitionEnabled(true);
+        setOffset({ x: 0, y: 0 });
+      });
+    });
+
+    setFinalDir(null);
+  }
+
+  /* ------------------------------------------
+   * 버튼 클릭 → 애니메이션 후 스와이프 처리
+   * ---------------------------------------- */
+  function animateSwipe(dir: "left" | "right" | "up") {
+    if (verticalOnly && (dir === "left" || dir === "right")) return;
+
+    const dist = 900;
+    setTransitionEnabled(true);
+
+    if (dir === "right") setOffset({ x: dist, y: 0 });
+    if (dir === "left") setOffset({ x: -dist, y: 0 });
+    if (dir === "up") setOffset({ x: 0, y: -dist });
+
+    setTimeout(() => handleSwiped(dir), 800);
+  }
+
+  /* ------------------------------------------
+   * 북마크 핸들러
+   * ---------------------------------------- */
+  async function handleBookmark() {
+    if (!top) return;
+    if (!isLoggedIn) {
+      alert("로그인이 필요한 기능입니다.");
+      return;
+    }
+
+    try {
+      await http.post(`/restaurants/${top.restaurant_id}/bookmark`);
+      alert("북마크에 추가되었습니다!");
+    } catch {
+      alert("북마크 추가에 실패했습니다.");
+    }
+  }
+
+  /* ------------------------------------------
+   * 상세 페이지 이동
+   * ---------------------------------------- */
+  function handleInfo() {
+    if (!top) return;
+
+    router(`/restaurants/${top.restaurant_id}`, {
+      state: { fromFeed: true },
+    });
+  }
+
+  /* ------------------------------------------
+   * 카드 소진 감지
+   * ---------------------------------------- */
   React.useEffect(() => {
     if (!onDeckEmpty) return;
 
@@ -162,55 +243,64 @@ export default function RestaurantSwipeDeck({
   }
 
   return (
-    <div className="relative h-dvh flex items-center justify-center overflow-hidden">
-      {/* 기존 스와이프 오버레이(모서리 띠 등) */}
-      <SwipeOverlay
-        offset={offset}
-        finalDir={finalDir}
-        visible={overlayVisible}
-      />
+    <div className="relative h-dvh flex items-center justify-center">
+      <div className="absolute inset-0 overflow-hidden">
+        <SwipeOverlay offset={offset} finalDir={finalDir} visible={true} />
 
-      {/* 카드 */}
-      {top ? (
-        <SwipeCard data={top} onMove={handleMove} onSwiped={handleSwiped} />
-      ) : (
-        <div className="absolute inset-0 flex flex-col items-center justify-center text-gray-500 text-sm">
-          {hasMore ? (
-            <span>다음 추천을 불러오는 중입니다...</span>
-          ) : (
-            <span>더 이상 카드가 없어요</span>
-          )}
-        </div>
-      )}
+        {top ? (
+          <FeedCard
+            data={top}
+            offset={offset}
+            isDragging={isDragging}
+            onMove={handleMove}
+            onSwiped={handleSwiped}
+            transitionEnabled={transitionEnabled}
+            resetHandler={registerReset}
+          />
+        ) : (
+          <div className="absolute inset-0 flex items-center justify-center text-gray-500">
+            {hasMore ? "추천을 불러오는 중..." : "더 이상 카드가 없어요"}
+          </div>
+        )}
+      </div>
 
-      {/* 하단 스와이프 보조도구 (카드 있을 때만) */}
+      {/* 하단 버튼 영역 */}
       {top && (
         <div className="pointer-events-none absolute bottom-6 left-0 right-0 flex items-center justify-center gap-4">
           <div className="pointer-events-auto flex items-center gap-4">
+
+            {/* 좌_swipe */}
             <CircularButton
               type="dislike"
               icon={<X strokeWidth={5} />}
               onClick={() => triggerSwipeAnimation("left")}
               aria-label="싫어요"
             />
+
+            {/* 북마크 */}
             <CircularButton
               type="bookmark"
-              icon={<Star strokeWidth={3} />}
+              disabled={verticalOnly}
+              icon={<Star />}
               onClick={handleBookmark}
-              aria-label="북마크"
             />
+
+            {/* 보류(up) */}
             <CircularButton
               type="next"
               icon={<ArrowDown strokeWidth={4} />}
               onClick={() => triggerSwipeAnimation("up")}
               aria-label="보류"
             />
+
+            {/* 상세정보 */}
             <CircularButton
               type="info"
-              icon={<CircleAlert strokeWidth={3} />}
+              icon={<CircleAlert />}
               onClick={handleInfo}
-              aria-label="정보"
             />
+
+            {/* 우_swipe */}
             <CircularButton
               type="confirm"
               icon={<Check strokeWidth={5} />}
