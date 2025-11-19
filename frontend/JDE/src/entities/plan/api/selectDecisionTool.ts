@@ -29,7 +29,8 @@ export async function selectDecisionTool(
     params: { type: toolType },
     data: restaurantIds,
     meta: { authRequired: true },
-  });
+  }
+);
 
   if (
     response.data?.status !== "OK" &&
@@ -41,6 +42,7 @@ export async function selectDecisionTool(
   if (!response.data?.data) {
     throw new Error("결정 도구 선택 응답 데이터가 없습니다.");
   }
-
+  console.log("@@@@@@@@@@@@@@@@@@@@@@")
+  console.log(response)
   return response.data.data;
 }

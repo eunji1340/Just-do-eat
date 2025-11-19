@@ -4,6 +4,11 @@
 import { useNavigate, useParams } from "react-router-dom";
 import { TopNavBar } from "@/widgets/top-navbar";
 import { useGroupDetail } from "@/features/group-detail/useGroupDetail";
+import { Button } from "@/shared/ui/button";
+import CreatePlanSheet from "@/features/group-detail/ui/CreatePlanSheet";
+import * as React from "react";
+
+
 
 // 멤버 표시: "첫번째 사람 외 n명"
 function formatMembers(members: { userName: string }[]) {
@@ -31,6 +36,8 @@ export default function PlanListPage() {
 
   const { data, loading } = useGroupDetail(groupId);
 
+  const [openCreate, setOpenCreate] = React.useState(false);
+  
   // 로딩/데이터 없음 처리
   if (loading || !data) {
     return (
@@ -56,7 +63,7 @@ export default function PlanListPage() {
 
   return (
     <>
-      <TopNavBar variant="default" />
+      <TopNavBar variant="default" onSearchClick={() => navigate("/search/start")} />
       <main className="px-4 pb-36 pt-3">
         {/* 상단 헤더 */}
         <header className="mb-4 flex items-center justify-between">
@@ -125,6 +132,23 @@ export default function PlanListPage() {
           ))}
         </section>
       </main>
+            {/* 페이지 전용 CTA(플로팅)는 page에서 배치 OK) */}
+      <div className="pointer-events-none fixed bottom-24 right-5 z-50 sm:right-[calc(50%-320px+20px)]">
+        <Button
+          className="pointer-events-auto rounded-full px-5 py-5 text-base font-bold shadow-lg"
+          aria-label="약속 만들기"
+          onClick={() => setOpenCreate(true)}
+        >
+          <span className="text-xl">＋</span>&nbsp;약속 만들기
+        </Button>
+      </div>
+      {/* 바텀시트 */}
+        <CreatePlanSheet 
+            open={openCreate} 
+            onOpenChange={setOpenCreate} 
+            groupId={Number(groupId)} 
+            members={data.roomMemberList}  
+            />
     </>
   );
 }
