@@ -26,14 +26,13 @@ export default function BingoBoard({ items, value, onChange }: Props) {
     onChange({ ...value, [idx]: nxt });
   };
 
-  const badge = (v: VoteValue | undefined) =>
-    v === 1 ? "LIKE" : v === -1 ? "DISLIKE" : "SKIP";
-
   const getButtonStyles = (v: VoteValue) => {
     if (v === 1) {
-      return "bg-red-500 text-white border-red-600";
+      // 좋아요: orange 계열 (프로젝트 primary 색상)
+      return "bg-primary text-white border-primary";
     } else if (v === -1) {
-      return "bg-blue-500 text-white border-blue-600";
+      // 싫어요: red 계열 (에러 색상)
+      return "bg-[#FB2C36] text-white border-[#FB2C36]";
     } else {
       return "bg-[var(--color-surface)] text-[var(--color-fg)] border-[var(--color-border)]";
     }
@@ -48,7 +47,6 @@ export default function BingoBoard({ items, value, onChange }: Props) {
             <button
               key={item.id}
               onClick={() => cycle(idx)}
-              title={`${badge(v as VoteValue)}`}
               className={`
                 p-2 rounded-xl border-2 cursor-pointer
                 flex items-center justify-center text-center
