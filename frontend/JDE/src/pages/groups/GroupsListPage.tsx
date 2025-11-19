@@ -66,7 +66,8 @@ export default function GroupsListPage() {
   return (
     <>
       <TopNavBar
-        variant="default"
+        variant="label"
+        label="모임"
         onSearchClick={() => navigate("/search/start")}
       />
 
@@ -81,9 +82,7 @@ export default function GroupsListPage() {
                 <h2 className="text-2xl font-bold text-gray-900">
                   로그인 후 이용해 주세요
                 </h2>
-                <p className="text-gray-600">
-                  모임 기능은 로그인이 필요합니다
-                </p>
+                <p className="text-gray-600">모임 기능은 로그인이 필요합니다</p>
               </div>
 
               {/* 버튼 영역 */}
@@ -107,26 +106,28 @@ export default function GroupsListPage() {
           <>
             {isLoading ? (
               <div className="flex flex-col items-center justify-center gap-3 p-8 py-40 text-center">
-                <p className="text-lg font-semibold">그룹 불러오는 중...</p>
+                <p className="text-lg font-semibold">모임 불러오는 중...</p>
               </div>
             ) : error ? (
               <div className="flex flex-col items-center justify-center gap-3 p-8 py-40 text-center">
-                <p className="text-lg font-semibold">그룹을 불러오지 못했어요</p>
+                <p className="text-lg font-semibold">
+                  모임임을 불러오지 못했어요
+                </p>
                 <p className="text-xs text-red-500">{error.message}</p>
               </div>
             ) : !hasRooms ? (
               <div className="flex flex-col items-center justify-center gap-3 p-8 py-40 text-center">
-                <p className="text-lg font-semibold">그룹이 없습니다</p>
+                <p className="text-lg font-semibold">모임임이 없습니다</p>
                 <p className="text-sm text-muted-foreground">
-                  새로운 그룹을 생성해 보세요.
+                  새로운 모임을 생성해 보세요.
                 </p>
                 <Button
                   className="mt-2 rounded-full"
-                  aria-label="그룹 만들기"
+                  aria-label="모임 만들기"
                   onClick={() => setOpenCreate(true)}
                 >
                   <Plus className="size-4" />
-                  그룹 만들기
+                  모임 만들기
                 </Button>
               </div>
             ) : (
@@ -147,11 +148,11 @@ export default function GroupsListPage() {
               <div className="fixed bottom-[100px] right-5 z-50 sm:right-[calc(50%-320px+20px)]">
                 <Button
                   className="rounded-full shadow-lg"
-                  aria-label="그룹 만들기"
+                  aria-label="모임 만들기"
                   onClick={() => setOpenCreate(true)}
                 >
                   <Plus className="size-4" />
-                  그룹 만들기
+                  모임 만들기
                 </Button>
               </div>
             )}
