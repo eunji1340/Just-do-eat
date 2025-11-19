@@ -27,6 +27,8 @@ export function useVote(
   const [hasVoted, setHasVoted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const pollingIntervalRef = useRef<number | null>(null);
+  // 사용자가 직접 선택한 경우를 추적 (라디오 버튼 클릭 등)
+  const userSelectedRef = useRef<string | null>(null);
 
   // 투표 시작
   const startVote = useCallback(async () => {
@@ -34,6 +36,7 @@ export function useVote(
     try {
       await voteStart(planId);
       // 투표 재시작 시 상태 초기화
+      userSelectedRef.current = null;
       setSelectedRestaurantId(null);
       setHasVoted(false);
       await fetchPlanDetail();
@@ -56,18 +59,61 @@ export function useVote(
         result.userIds.includes(currentUserId)
       );
 
-      if (userVote) {
-        setSelectedRestaurantId(userVote.restaurantId.toString());
-        setHasVoted(true);
-        console.log("[useVote] 사용자 투표 정보 확인:", {
-          restaurantId: userVote.restaurantId,
-          hasVoted: true,
-        });
-      } else {
-        setSelectedRestaurantId(null);
-        setHasVoted(false);
-        console.log("[useVote] 사용자 투표 정보 없음");
-      }
+      // 현재 선택된 식당 ID를 참조하여 덮어쓰지 않도록 함
+      setSelectedRestaurantId((prevSelectedId) => {
+        // 사용자가 직접 선택한 경우 (라디오 버튼 클릭 등) 항상 유지
+        if (
+          userSelectedRef.current &&
+          prevSelectedId === userSelectedRef.current
+        ) {
+          console.log(
+            "[useVote] 사용자가 직접 선택한 식당 유지:",
+            prevSelectedId
+          );
+          // 서버에 투표 기록이 있으면 hasVoted 업데이트
+          if (userVote) {
+            setHasVoted(true);
+          } else {
+            setHasVoted(false);
+          }
+          return prevSelectedId;
+        }
+
+        // 사용자가 이미 투표를 제출한 경우 서버 정보 우선
+        if (userVote) {
+          setHasVoted(true);
+          // 현재 선택된 식당이 없거나, 서버의 투표 정보와 다를 때만 업데이트
+          if (
+            !prevSelectedId ||
+            prevSelectedId !== userVote.restaurantId.toString()
+          ) {
+            console.log("[useVote] 사용자 투표 정보 확인:", {
+              restaurantId: userVote.restaurantId,
+              hasVoted: true,
+            });
+            // 사용자가 직접 선택한 경우가 아니므로 서버 정보로 업데이트
+            userSelectedRef.current = null;
+            return userVote.restaurantId.toString();
+          }
+          // 현재 선택된 식당이 서버 정보와 같으면 유지
+          return prevSelectedId;
+        } else {
+          // 서버에 투표 정보가 없는 경우
+          setHasVoted(false);
+          // 현재 선택된 식당이 있으면 유지 (사용자가 선택 중일 수 있음)
+          if (prevSelectedId) {
+            console.log(
+              "[useVote] 서버 투표 정보 없음, 현재 선택 유지:",
+              prevSelectedId
+            );
+            return prevSelectedId;
+          }
+          // 선택된 식당도 없으면 null
+          console.log("[useVote] 사용자 투표 정보 없음");
+          userSelectedRef.current = null;
+          return null;
+        }
+      });
     } catch (error) {
       console.error("[useVote] 투표 집계 조회 실패:", error);
     }
@@ -82,6 +128,8 @@ export function useVote(
       const restaurantIdNum = parseInt(selectedRestaurantId, 10);
       await voteSubmit(planId, restaurantIdNum);
       setHasVoted(true);
+      // 투표 제출 후에는 사용자 직접 선택 추적 초기화 (서버 정보로 동기화)
+      userSelectedRef.current = null;
       // 투표 제출 후 즉시 집계 다시 조회하여 상태 업데이트
       await fetchTally();
     } catch (error: any) {
@@ -190,10 +238,23 @@ export function useVote(
     return topRestaurants.length > 1 ? topRestaurants : [];
   }, [voteTallyData]);
 
+  // setSelectedRestaurantId를 래핑하여 사용자 직접 선택을 추적
+  const setSelectedRestaurantIdWithTracking = useCallback(
+    (restaurantId: string | null) => {
+      if (restaurantId) {
+        userSelectedRef.current = restaurantId;
+      } else {
+        userSelectedRef.current = null;
+      }
+      setSelectedRestaurantId(restaurantId);
+    },
+    []
+  );
+
   return {
     voteTallyData,
     selectedRestaurantId,
-    setSelectedRestaurantId,
+    setSelectedRestaurantId: setSelectedRestaurantIdWithTracking,
     hasVoted,
     isSubmitting,
     startVote,
