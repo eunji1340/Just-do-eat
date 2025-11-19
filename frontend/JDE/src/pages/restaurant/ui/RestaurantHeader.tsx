@@ -3,6 +3,7 @@
 
 import { Share2, Star } from "lucide-react";
 import type { RestaurantDetailResponse } from "../api/useRestaurantDetail";
+import { useState } from "react";
 
 /**
  * 주소에서 동 이름만 추출
@@ -27,22 +28,32 @@ export default function RestaurantHeader({
   restaurant,
   onShare,
 }: RestaurantHeaderProps) {
+
+  // 이미지 로드 실패 상태
+  
+  // 이미지 체크
+  const hasImage = restaurant.image && restaurant.image.length > 0;
+  const initialImage = hasImage ? restaurant.image[0] : '/NOIMAGE.png';
+
+    const [imageSrc, setImageSrc] = useState(initialImage);
+
   return (
     <>
-      {/* 식당 이미지 - 네비바 영역까지 전체 */}
+      {/* 식당 이미지 - 네비바 영역까지 전체
       {restaurant.image && restaurant.image.length > 0 && (
-        <div className="w-full h-80 bg-gray-200">
-          <img
-            src={restaurant.image[0]}
-            alt={restaurant.name}
-            className="w-full h-full object-cover"
-            onError={(e) => {
-              e.currentTarget.src = "";
-              e.currentTarget.style.display = "none";
-            }}
-          />
-        </div>
-      )}
+        
+      )} */}
+      <div className={`w-full h-80 bg-gray-200 ${imageSrc === '/NOIMAGE.png' ? "pt-24 bg-t3" : ""}`}>
+        <img
+          src={imageSrc}
+          alt={restaurant.name}
+          className={`${imageSrc === '/NOIMAGE.png' ? "w-[30%] mx-auto" : "w-full h-full object-cover"}`}
+          onError={() => {
+            console.error(`❌ 이미지 로드 실패: ${restaurant.name}`, imageSrc);
+            setImageSrc('/NOIMAGE.png'); // 실패하면 항상 noImage로
+          }}
+        />
+      </div>
 
       {/* 식당 기본 정보 섹션 */}
       <div className="relative -mt-8 bg-white rounded-t-lg p-6 space-y-4 z-10">
