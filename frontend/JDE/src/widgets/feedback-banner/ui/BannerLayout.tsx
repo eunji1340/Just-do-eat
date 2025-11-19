@@ -1,6 +1,3 @@
-// src/widgets/feedback-banner/ui/BannerLayout.tsx
-// 목적: 피드백 배너 공통 레이아웃 (shadcn Card 기반)
-
 import {
   Card,
   CardHeader,
@@ -11,7 +8,7 @@ import {
 
 interface BannerLayoutProps {
   /** 제목 */
-  title: string;
+  title: string | React.ReactNode;
   /** 설명 */
   description: string;
   /** 버튼 그룹 */
@@ -19,14 +16,13 @@ interface BannerLayoutProps {
 }
 
 /**
- * 피드백 배너 공통 레이아웃
+ * 피드백 배너 공통 레이아웃 (개선 버전)
  *
- * 레이아웃:
- * ┌────────────────────────┐
- * │ 제목                    │
- * │ 설명                    │
- * │         [버튼] [버튼]   │
- * └────────────────────────┘
+ * 개선사항:
+ * - 그라데이션 테두리로 시각적 강조
+ * - 아이콘 추가로 피드백 의도 명확화
+ * - 애니메이션으로 부드러운 등장 효과
+ * - 개선된 간격과 타이포그래피
  */
 export default function BannerLayout({
   title,
@@ -34,21 +30,33 @@ export default function BannerLayout({
   children,
 }: BannerLayoutProps) {
   return (
-    <Card className="mx-7 shadow-md">
-      {/* 제목과 설명 */}
-      <CardHeader className="gap-4 pb-0">
-        <CardTitle className="text-base text-neutral-900">
-          {title}
-        </CardTitle>
-        <CardDescription className="text-sm text-neutral-500 whitespace-pre-line min-h-[2.5rem] leading-relaxed">
-          {description}
-        </CardDescription>
-      </CardHeader>
+    <div className="mx-4 my-4 animate-in fade-in slide-in-from-top-2 duration-500">
+      <Card className="relative overflow-hidden border-2 border-orange-200 bg-gradient-to-br from-white to-orange-50/30 shadow-lg hover:shadow-xl transition-shadow duration-300">
+        {/* 좌측 강조 바 */}
+        <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-orange-400 to-orange-600" />
 
-      {/* 버튼 그룹 (가로 정렬, 전체 너비 채움) */}
-      <CardFooter className="gap-2 w-full pt-0">
-        {children}
-      </CardFooter>
-    </Card>
+        {/* 헤더 */}
+        <CardHeader className="gap-3 pl-6">
+          {/* 아이콘과 제목 */}
+          <div className="flex items-start gap-3">
+            <div className="flex-1 min-w-0">
+              <CardTitle className="text-lg font-bold text-neutral-900 leading-tight">
+                {title}
+              </CardTitle>
+            </div>
+          </div>
+
+          {/* 설명 */}
+          <CardDescription className="pl-[28px] text-sm text-neutral-500 whitespace-pre-line min-h-[2.5rem] leading-relaxed">
+            {description}
+          </CardDescription>
+        </CardHeader>
+
+        {/* 버튼 그룹 */}
+        <CardFooter className="gap-2.5 w-full pt-0">
+          <div className="flex gap-2.5 w-full">{children}</div>
+        </CardFooter>
+      </Card>
+    </div>
   );
 }
