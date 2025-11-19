@@ -8,10 +8,9 @@ import { Card, CardContent, CardFooter } from "@/shared/ui/shadcn/card";
 
 export default function PersonalizedEntryButton() {
   return (
-    // 개인추천피드 페이지로 변경하기
-    <Link to="/feed" className="block w-full">
-      <Card className="mx-4 overflow-hidden shadow-md pb-0 gap-0">
-        {/* 상단: 이미지 + 텍스트 */}
+    <Card className="mx-4 overflow-hidden shadow-md pb-0 gap-0">
+      {/* 상단: 이미지 + 텍스트 - 목업 데이터 사용 */}
+      <Link to="/feed?mock=true" className="block">
         <CardContent className="px-2 sm:px-12">
           <div className="flex items-center gap-2">
             {/* 캐릭터 이미지 */}
@@ -33,8 +32,10 @@ export default function PersonalizedEntryButton() {
             </div>
           </div>
         </CardContent>
+      </Link>
 
-        {/* 하단: 버튼 */}
+      {/* 하단: 버튼 - 원래 API 사용 */}
+      <Link to="/feed" className="block w-full">
         <CardFooter className="p-0 w-full">
           <div className="w-full bg-primary px-8 py-4 flex items-center justify-between hover:bg-s2 transition-colors rounded-b-xl">
             <span className="text-lg text-white font-semibold">
@@ -43,7 +44,7 @@ export default function PersonalizedEntryButton() {
             <ArrowRight className="w-6 h-6 text-white" strokeWidth={3} />
           </div>
         </CardFooter>
-      </Card>
-    </Link>
+      </Link>
+    </Card>
   );
 }
