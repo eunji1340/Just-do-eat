@@ -12,7 +12,8 @@
 //    이 파일(Deck) 하나에서만 처리하도록 설계함.
 
 import * as React from "react";
-import FeedCard from "@/features/feed/FeedCard";
+import { useNavigate } from "react-router-dom";
+import SwipeCard from "@/features/feed/FeedCard";
 import SwipeOverlay from "./SwipeOverlay";
 import type { Restaurant } from "@/entities/restaurant/types";
 import type { Offset } from "@/features/feed/useSwipeHandler";
@@ -32,6 +33,7 @@ type Props = {
 export default function RestaurantSwipeDeck({
   items,
   onTopSwiped,
+  // 🔥 기본 300 → 700ms 정도로 살짝 느리게 (체감용)
   overlayHoldMs = 700,
   onDeckEmpty,
   hasMore = true,
@@ -54,7 +56,6 @@ export default function RestaurantSwipeDeck({
   const swipeResetRef = React.useRef<(() => void) | null>(null);
   const registerReset = (fn: () => void) => (swipeResetRef.current = fn);
 
-  // 현재 카드
   const top = items[index];
 
   // 로그인 여부 → 좌우 스와이프·버튼 제한
@@ -80,7 +81,18 @@ export default function RestaurantSwipeDeck({
     // ❌ 비로그인 → 좌우 스와이프 차단
     if (verticalOnly && (dir === "left" || dir === "right")) {
       setOffset({ x: 0, y: 0 });
-      return;
+      setOverlayVisible(false);
+      requestAnimationFrame(() => setOverlayVisible(true));
+      swipeTimerRef.current = null;
+    }, overlayHoldMs);
+  }
+
+  // 버튼 클릭 시 스와이프 애니메이션 트리거
+  function triggerSwipeAnimation(dir: "left" | "right" | "up") {
+    // 기존 애니메이션 타이머 정리
+    if (animationTimerRef.current) {
+      clearTimeout(animationTimerRef.current);
+      animationTimerRef.current = null;
     }
 
     setIsDragging(false);
@@ -172,21 +184,64 @@ export default function RestaurantSwipeDeck({
   React.useEffect(() => {
     if (!onDeckEmpty) return;
 
-    const noMore = index >= items.length && items.length > 0;
+    const noMoreCards = index >= items.length && items.length > 0;
 
-    if (noMore && !emptyNotified) {
+    if (noMoreCards && !emptyNotified) {
       setEmptyNotified(true);
       onDeckEmpty();
     }
 
-    if (!noMore && emptyNotified) {
+    // 새 카드가 추가되면 다시 열 수 있게 플래그 리셋
+    if (items.length > index && emptyNotified) {
       setEmptyNotified(false);
     }
-  }, [index, items.length]);
+  }, [index, items.length, onDeckEmpty, emptyNotified]);
 
-  /* ------------------------------------------
-   * UI 렌더링
-   * ---------------------------------------- */
+  // 컴포넌트 언마운트 시 모든 타이머 정리
+  React.useEffect(() => {
+    return () => {
+      if (swipeTimerRef.current) {
+        clearTimeout(swipeTimerRef.current);
+      }
+      if (animationTimerRef.current) {
+        clearTimeout(animationTimerRef.current);
+      }
+    };
+  }, []);
+
+  // 북마크 버튼 핸들러
+  async function handleBookmark() {
+    const cur = items[index];
+    if (!cur) return;
+
+    // 로그인 체크
+    const token = localStorage.getItem("accessToken");
+    if (!token) {
+      alert("로그인이 필요한 기능입니다.");
+      return;
+    }
+
+    try {
+      await http.post(`/restaurants/${cur.restaurant_id}/bookmark`);
+      console.log(`✅ [북마크] 추가 성공 - restaurantId: ${cur.restaurant_id}`);
+      alert("북마크에 추가되었습니다!");
+    } catch (err) {
+      console.error("[북마크] 추가 실패:", err);
+      alert("북마크 추가에 실패했습니다.");
+    }
+  }
+
+  // 정보 버튼 핸들러 (식당 상세 페이지로 이동)
+  function handleInfo() {
+    const cur = items[index];
+    if (!cur) return;
+
+    // 피드에서 진입했다는 정보를 state로 전달
+    navigate(`/restaurants/${cur.restaurant_id}`, {
+      state: { fromFeed: true },
+    });
+  }
+
   return (
     <div className="relative h-dvh flex items-center justify-center">
       <div className="absolute inset-0 overflow-hidden">
@@ -211,15 +266,15 @@ export default function RestaurantSwipeDeck({
 
       {/* 하단 버튼 영역 */}
       {top && (
-        <div className="pointer-events-none absolute bottom-6 left-0 right-0 flex items-center justify-center">
+        <div className="pointer-events-none absolute bottom-6 left-0 right-0 flex items-center justify-center gap-4">
           <div className="pointer-events-auto flex items-center gap-4">
 
             {/* 좌_swipe */}
             <CircularButton
               type="dislike"
-              disabled={verticalOnly}
-              icon={<X />}
-              onClick={() => animateSwipe("left")}
+              icon={<X strokeWidth={5} />}
+              onClick={() => triggerSwipeAnimation("left")}
+              aria-label="싫어요"
             />
 
             {/* 북마크 */}
@@ -233,8 +288,9 @@ export default function RestaurantSwipeDeck({
             {/* 보류(up) */}
             <CircularButton
               type="next"
-              icon={<ArrowDown />}
-              onClick={() => animateSwipe("up")}
+              icon={<ArrowDown strokeWidth={4} />}
+              onClick={() => triggerSwipeAnimation("up")}
+              aria-label="보류"
             />
 
             {/* 상세정보 */}
@@ -247,9 +303,9 @@ export default function RestaurantSwipeDeck({
             {/* 우_swipe */}
             <CircularButton
               type="confirm"
-              disabled={verticalOnly}
-              icon={<Check />}
-              onClick={() => animateSwipe("right")}
+              icon={<Check strokeWidth={5} />}
+              onClick={() => triggerSwipeAnimation("right")}
+              aria-label="갈게요"
             />
           </div>
         </div>
