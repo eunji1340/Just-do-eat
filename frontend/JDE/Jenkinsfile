@@ -8,6 +8,9 @@ pipeline {
         APP_NAME = "jde-frontend"
         NGINX_CONTAINER = "JDE-nginx"
         WORK_DIR = "frontend/JDE"
+        VITE_API_BASE_URL = "https://api.justdoeat.ai.kr" 
+        VITE_USE_MSW=false
+        VITE_KAKAO_MAP_APP_KEY=64afe1c25c735fa73a5a18aaa90216b6
     }
 
     stages {
@@ -40,6 +43,13 @@ pipeline {
                     echo "🧹 Clean node_modules and lockfile..."
       		    rm -rf node_modules package-lock.json
       		    npm cache clean --force
+		    
+
+                    cat > .env.production <<EOF
+VITE_API_BASE_URL=${VITE_API_BASE_URL}
+VITE_USE_MSW=${VITE_USE_MSW}
+VITE_KAKAO_MAP_APP_KEY=${VITE_KAKAO_MAP_APP_KEY}
+EOF
 
       		    echo "📦 Installing dependencies (fresh)..."
       		    npm install
