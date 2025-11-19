@@ -1,6 +1,6 @@
 // src/widgets/groups/OngoingAppointments.tsx
 import * as React from "react";
-import { Clock, ChevronRight } from "lucide-react";
+import { Clock, ChevronRight, Calendar } from "lucide-react";
 import type { Room } from "@/entities/groups/types";
 
 type Props = {
@@ -109,33 +109,45 @@ function PlanCard({
   formatDateTime: (startAt: string) => string;
   onSelect?: (planId: number) => void;
 }) {
-  const [imageError, setImageError] = React.useState(false);
-  const imageUrl =
-    imageError || !plan.restaurantImageUrl
-      ? "/NOIMAGE.png"
-      : plan.restaurantImageUrl;
-
   return (
     <li
-      className="overflow-hidden rounded-xl border-2 border-neutral-200 bg-card transition-shadow cursor-pointer"
+      className="rounded-xl border-2 border-neutral-200 bg-card shadow-sm hover:shadow-md transition-shadow cursor-pointer"
       onClick={() => onSelect?.(plan.planId)}
     >
-      {/* 아래 메타 정보 영역 */}
-      <div className="p-2">
-        {/* 약속 이름 */}
-        <p className="mt-0.5 line-clamp-1 text-md font-semibold">
-          {plan.planName}
-        </p>
+      <div className="p-4">
+        {/* 아이콘 + 약속 이름 */}
+        <div className="flex items-start gap-3 mb-3">
+          <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-orange-50 flex items-center justify-center border border-orange-200">
+            <Calendar className="w-5 h-5 text-primary" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <h3 className="text-sm font-bold text-foreground line-clamp-2">
+              {plan.planName}
+            </h3>
+          </div>
+        </div>
 
         {/* 날짜/시간 */}
-        <p className="text-[11px] text-foreground/60">
-          {formatDateTime(plan.startAt)}
-        </p>
+        <div className="flex items-center gap-2 mb-2">
+          <Clock className="w-4 h-4 text-foreground/60 flex-shrink-0" />
+          <p className="text-xs text-foreground/60">
+            {formatDateTime(plan.startAt)}
+          </p>
+        </div>
 
-        {/* 주최자 + 참여자 요약 */}
-        <p className="mt-1 line-clamp-1 text-[11px] text-foreground/60">
-          {participantsText}
-        </p>
+        {/* 식당 상태 */}
+        <div className="mt-2 pt-2 border-t border-neutral-200">
+          <p className="text-xs text-foreground/60 mb-1">
+            {plan.restaurantName ? (
+              <span className="text-primary font-medium">
+                {plan.restaurantName}
+              </span>
+            ) : (
+              <span>식당 미정</span>
+            )}
+          </p>
+          <p className="text-[10px] text-foreground/50">{participantsText}</p>
+        </div>
       </div>
     </li>
   );
