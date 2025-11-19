@@ -5,7 +5,7 @@
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { lazy } from "react";
 import MainPage from "../../pages/main/MainPage";
-import SwipePage from "../../pages/swipe/SwipePage";
+import FeedPage from "../../pages/feed/FeedPage";
 import OnboardingLanding from "../../pages/Onboarding/landing";
 import OnboardingPage from "../../pages/Onboarding";
 import OnboardingResult from "../../pages/Onboarding/result";
@@ -20,9 +20,9 @@ import FavoritesPage from "@/pages/favorites/FavoritesPage";
 import MyPage from "@/pages/my/MyPage";
 import RestaurantDetailPage from "@/pages/restaurant/RestaurantDetailPage";
 import InvitePage from "@/pages/groups/InvitePage";
-const SearchResultPage = lazy(() => import("@/pages/search/SearchResultPage"));
-const AppLayout = lazy(() => import("../layout/AppLayout"));
+import AppLayout from "../layout/AppLayout";
 import PlanListPage from "@/pages/groups/PlanListPage";
+const SearchResultPage = lazy(() => import("@/pages/search/SearchResultPage"));
 
 const router = createBrowserRouter([
   {
@@ -34,10 +34,10 @@ const router = createBrowserRouter([
     ),
   },
   {
-    path: "/swipe",
+    path: "/feed",
     element: (
       <AppLayout>
-        <SwipePage />
+        <FeedPage />
       </AppLayout>
     ),
   },
@@ -86,7 +86,7 @@ const router = createBrowserRouter([
     ),
   },
   {
-    path: "/roulette",
+    path: "/roulette/:planId",
     element: (
       <AppLayout>
         <RoulettePage />
@@ -131,7 +131,11 @@ const router = createBrowserRouter([
   },
   {
     path: "/restaurants/:restaurantId",
-    element: <RestaurantDetailPage />,
+    element: (
+      <AppLayout>
+        <RestaurantDetailPage />
+      </AppLayout>
+    ),
   },
   {
     path: "/invite",

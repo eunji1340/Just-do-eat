@@ -73,7 +73,7 @@ function mapPopularResponseToRankingCard(
     rank,
     restaurantName: api.name,
     // 카테고리: 가장 구체적인 것 선택 (category3 > category2 > category1)
-    category: api.category3 || api.category2 || api.category1 || "기타",
+    category: api.category2 || api.category1 || "기타",
     // 이미지: null이면 undefined로 변환 (placeholder 표시)
     imageUrl: api.image || undefined,
     // 주소에서 구 이름 추출 (예: "서울 강남구 테헤란로..." → "강남구")
@@ -133,8 +133,9 @@ export default function RecommendationSection({
 
       try {
         // ===== API 호출 =====
-        const baseURL = "http://k13a701.p.ssafy.io/api";
-        const fullUrl = `${baseURL}/main/restaurants/popular`;
+        const baseURL =
+          import.meta.env.VITE_API_BASE_URL || "https://justdoeat.ai.kr/api/";
+        const fullUrl = `${baseURL}main/restaurants/popular`;
         console.log("🔥 [인기식당] 요청 URL:", fullUrl);
 
         const response = await axios.get<PopularRestaurantResponse[]>(fullUrl, {
@@ -146,26 +147,38 @@ export default function RecommendationSection({
           },
         });
 
-        console.log("🔥 [인기식당] API 응답:", response.data);
-        console.log("🔥 [인기식당] 결과 개수:", response.data.length);
+        // console.log("🔥 [인기식당] API 응답:", response.data);
+        // console.log("🔥 [인기식당] 응답 타입:", typeof response.data);
+        // console.log("🔥 [인기식당] 배열 여부:", Array.isArray(response.data));
 
         // 요청이 취소된 경우 상태 업데이트 안 함
         if (isCancelled) {
-          console.log("🔥 [인기식당] 요청이 취소됨");
+          // console.log("🔥 [인기식당] 요청이 취소됨");
           return;
         }
+
+        // ===== 배열 검증 =====
+        if (!Array.isArray(response.data)) {
+          console.error(
+            // "🔥 [인기식당] API 응답이 배열이 아닙니다:",
+            response.data
+          );
+          throw new Error("잘못된 응답 형식입니다. 배열이 아닙니다.");
+        }
+
+        // console.log("🔥 [인기식당] 결과 개수:", response.data.length);
 
         // ===== API 응답을 UI 타입으로 변환 (순위 부여) =====
         const mappedResults = response.data.map((restaurant, index) =>
           mapPopularResponseToRankingCard(restaurant, index + 1)
         );
 
-        console.log("🔥 [인기식당] 변환된 결과:", mappedResults);
+        // console.log("🔥 [인기식당] 변환된 결과:", mappedResults);
         setPopularRestaurants(mappedResults);
       } catch (err) {
         // 요청이 취소된 경우 에러 처리 안 함
         if (isCancelled) {
-          console.log("🔥 [인기식당] 요청이 취소됨 - 에러 처리 스킵");
+          // console.log("🔥 [인기식당] 요청이 취소됨 - 에러 처리 스킵");
           return;
         }
 
@@ -211,17 +224,11 @@ export default function RecommendationSection({
 
   /**
    * 카테고리 클릭 핸들러
-   * 스와이프 페이지로 이동하며 카테고리명(한글) 전달
+   * 피드 페이지로 이동하며 카테고리명(한글)을 쿼리 파라미터로 전달
    */
   const handleCategoryClick = (categoryName: string) => {
     console.log("🍽️ [카테고리 클릭]", categoryName);
-    navigate("/swipe", {
-      state: {
-        type: "category",
-        categoryName, // 한글 카테고리명 전달 (예: "한식", "중식")
-        districtName, // 선택된 상권명 전달
-      },
-    });
+    navigate(`/feed?category=${encodeURIComponent(categoryName)}`);
   };
 
   /**
