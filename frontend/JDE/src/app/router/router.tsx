@@ -3,9 +3,9 @@
 // 교체 포인트: 라우터 전환 시 여기만 수정 (ex. Remix, TanStack Router)
 
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
-import AppLayout from "../layout/AppLayout";
+import { lazy } from "react";
 import MainPage from "../../pages/main/MainPage";
-import SwipePage from "../../pages/swipe/SwipePage";
+import FeedPage from "../../pages/feed/FeedPage";
 import OnboardingLanding from "../../pages/Onboarding/landing";
 import OnboardingPage from "../../pages/Onboarding";
 import OnboardingResult from "../../pages/Onboarding/result";
@@ -15,12 +15,13 @@ import GroupsListPage from "@/pages/groups/GroupsListPage";
 import GroupDetailPage from "@/pages/groups/GroupDetailPage";
 import RoulettePage from "@/pages/roulette/RoulettePage";
 import SearchStartPage from "@/pages/search/SearchStartPage";
-import SearchResultPage from "@/pages/search/SearchResultPage";
 import PlanDetailPage from "@/pages/plan/PlanDetailPage";
 import FavoritesPage from "@/pages/favorites/FavoritesPage";
 import MyPage from "@/pages/my/MyPage";
 import RestaurantDetailPage from "@/pages/restaurant/RestaurantDetailPage";
 import InvitePage from "@/pages/groups/InvitePage";
+const SearchResultPage = lazy(() => import("@/pages/search/SearchResultPage"));
+const AppLayout = lazy(() => import("../layout/AppLayout"));
 import PlanListPage from "@/pages/groups/PlanListPage";
 
 const router = createBrowserRouter([
@@ -33,10 +34,10 @@ const router = createBrowserRouter([
     ),
   },
   {
-    path: "/swipe",
+    path: "/feed",
     element: (
       <AppLayout>
-        <SwipePage />
+        <FeedPage />
       </AppLayout>
     ),
   },
@@ -78,10 +79,11 @@ const router = createBrowserRouter([
   },
   {
     path: "groups/:groupId/plans",
-    element:
+    element: (
       <AppLayout>
         <PlanListPage />
       </AppLayout>
+    ),
   },
   {
     path: "/roulette",
@@ -137,8 +139,8 @@ const router = createBrowserRouter([
       <AppLayout>
         <InvitePage />
       </AppLayout>
-    )
-  }
+    ),
+  },
 ]);
 
 export default function AppRouter() {
