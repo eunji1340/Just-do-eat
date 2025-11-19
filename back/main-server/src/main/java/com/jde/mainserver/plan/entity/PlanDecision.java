@@ -1,7 +1,7 @@
 package com.jde.mainserver.plan.entity;
 
-import com.jde.mainserver.plan.entity.enums.DecisionStatus;
-import com.jde.mainserver.plan.entity.enums.DecisionToolType;
+import com.jde.mainserver.plan.entity.enums.PlanStatus;
+import com.jde.mainserver.plan.entity.enums.PlanDecisionTool;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -22,11 +22,11 @@ public class PlanDecision {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "tool_type", nullable = false)
-    private DecisionToolType toolType;
+    private PlanDecisionTool toolType;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
-    private DecisionStatus status;
+    private PlanStatus status;
 
     @Column(name = "final_restaurant_id")
     private Long finalRestaurantId;
@@ -42,6 +42,6 @@ public class PlanDecision {
 
     @PrePersist
     public void onCreate() {
-        if (status == null) status = DecisionStatus.PENDING;
+        if (status == null) status = PlanStatus.OPEN;
     }
 }

@@ -1,15 +1,15 @@
 package com.jde.mainserver.plan.web.dto.response;
 
 import com.jde.mainserver.plan.entity.PlanDecision;
-import com.jde.mainserver.plan.entity.enums.DecisionStatus;
-import com.jde.mainserver.plan.entity.enums.DecisionToolType;
+import com.jde.mainserver.plan.entity.enums.PlanStatus;
+import com.jde.mainserver.plan.entity.enums.PlanDecisionTool;
 
 import java.time.Instant;
 
 public record DecisionResponse(
         Long planId,
-        DecisionToolType toolType,
-        DecisionStatus status,
+        PlanDecisionTool toolType,
+        PlanStatus status,
         Long finalRestaurantId,
         Instant startedAt,
         Instant closedAt,

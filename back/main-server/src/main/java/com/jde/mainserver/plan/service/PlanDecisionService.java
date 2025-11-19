@@ -1,5 +1,6 @@
 package com.jde.mainserver.plan.service;
 
+import com.jde.mainserver.plan.entity.enums.PlanDecisionTool;
 import com.jde.mainserver.plan.web.dto.request.ConfirmDecisionRequest;
 import com.jde.mainserver.plan.web.dto.request.SubmitBallotRequest;
 import com.jde.mainserver.plan.web.dto.response.TallyResponse;
@@ -7,8 +8,6 @@ import com.jde.mainserver.plan.entity.Plan;
 import com.jde.mainserver.plan.entity.PlanCandidate;
 import com.jde.mainserver.plan.entity.PlanDecision;
 import com.jde.mainserver.plan.entity.PlanVote;
-import com.jde.mainserver.plan.entity.enums.DecisionStatus;
-import com.jde.mainserver.plan.entity.enums.DecisionToolType;
 import com.jde.mainserver.plan.entity.enums.PlanStatus;
 import com.jde.mainserver.plan.repository.PlanCandidateRepository;
 import com.jde.mainserver.plan.repository.PlanDecisionRepository;
@@ -43,7 +42,7 @@ public class PlanDecisionService {
      * - ROULETTE: 도구 선택 시점 = 룰렛 시작 시점으로 보고 startedAt 을 즉시 기록
      */
     @Transactional
-    public PlanDecision selectTool(Long planId, DecisionToolType type, List<Long> candidateRestaurantIds, Long userId) {
+    public PlanDecision selectTool(Long planId, PlanDecisionTool type, List<Long> candidateRestaurantIds, Long userId) {
         // Validation
         if (candidateRestaurantIds == null || candidateRestaurantIds.isEmpty()) {
             throw new IllegalArgumentException("후보 식당 ID 리스트는 필수입니다");
@@ -54,7 +53,10 @@ public class PlanDecisionService {
             .orElseThrow(() -> new IllegalArgumentException("Plan Not Found"));
         
         plan.setStatus(PlanStatus.VOTING);
+        plan.setDecisionTool(type);
         planRepository.save(plan);
+
+
 
         // 2. 기존 PlanCandidate 삭제 (재선택 시)
         planCandidateRepository.deleteByPlan(plan);
@@ -79,18 +81,18 @@ public class PlanDecisionService {
             decision = PlanDecision.builder()
                     .planId(planId)
                     .toolType(type)
-                    .status(DecisionStatus.PENDING)
+                    .status(PlanStatus.OPEN)
                     .createdBy(userId)
                     .build();
         } else {
             decision.setToolType(type);
-            decision.setStatus(DecisionStatus.PENDING);
+            decision.setStatus(PlanStatus.OPEN);
             decision.setFinalRestaurantId(null);
             decision.setClosedAt(null);
         }
 
         // startedAt 처리: ROULETTE 는 도구 선택 시점을 시작으로 기록
-        if (type == DecisionToolType.ROULETTE) {
+        if (type == PlanDecisionTool.ROULETTE) {
             if (decision.getStartedAt() == null) {
                 decision.setStartedAt(Instant.now());
             }
@@ -107,11 +109,11 @@ public class PlanDecisionService {
         PlanDecision decision = decisionRepository.findById(planId)
                 .orElseThrow(() -> new NoSuchElementException("plan decision not found"));
 
-        if (decision.getToolType() != DecisionToolType.VOTE) {
+        if (decision.getToolType() != PlanDecisionTool.VOTE) {
             throw new IllegalStateException("tool type is not VOTE");
         }
 
-        decision.setStatus(DecisionStatus.VOTING);
+        decision.setStatus(PlanStatus.VOTING);
         decision.setStartedAt(Instant.now());
         return decision;
     }
@@ -121,10 +123,10 @@ public class PlanDecisionService {
         PlanDecision decision = decisionRepository.findById(planId)
                 .orElseThrow(() -> new NoSuchElementException("plan decision not found"));
 
-        if (decision.getToolType() != DecisionToolType.VOTE) {
+        if (decision.getToolType() != PlanDecisionTool.VOTE) {
             throw new IllegalStateException("tool type is not VOTE");
         }
-        if (decision.getStatus() != DecisionStatus.VOTING) {
+        if (decision.getStatus() != PlanStatus.VOTING) {
             throw new IllegalStateException("voting is not in progress");
         }
 
@@ -151,7 +153,7 @@ public class PlanDecisionService {
         PlanDecision decision = decisionRepository.findById(planId)
                 .orElseThrow(() -> new NoSuchElementException("plan decision not found"));
 
-        if (decision.getToolType() != DecisionToolType.VOTE) {
+        if (decision.getToolType() != PlanDecisionTool.VOTE) {
             throw new IllegalStateException("tool type is not VOTE");
         }
 
@@ -184,11 +186,11 @@ public class PlanDecisionService {
         PlanDecision decision = decisionRepository.findById(planId)
                 .orElseThrow(() -> new NoSuchElementException("plan decision not found"));
 
-        if (decision.getToolType() != DecisionToolType.VOTE) {
+        if (decision.getToolType() != PlanDecisionTool.VOTE) {
             throw new IllegalStateException("tool type is not VOTE");
         }
 
-        decision.setStatus(DecisionStatus.CLOSED);
+        decision.setStatus(PlanStatus.CANCELLED);
         decision.setClosedAt(Instant.now());
         return decision;
     }
@@ -230,7 +232,7 @@ public class PlanDecisionService {
         }
 
         decision.setFinalRestaurantId(req.restaurantId());
-        decision.setStatus(DecisionStatus.DECIDED);
+        decision.setStatus(PlanStatus.DECIDED);
 
         return decisionRepository.save(decision);
     }
