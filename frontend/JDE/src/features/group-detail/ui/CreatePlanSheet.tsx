@@ -17,6 +17,8 @@ import TimePickerInSheet from "@/shared/ui/time-picker/TimePickerInSheet";
 import { Calendar } from "@/shared/ui/calendar/calendar";
 import { cn } from "@/shared/lib/utils";
 
+import { useNavigate } from "react-router-dom";
+
 function formatKoreanDate(value: string) {
   if (!value) return "날짜 선택";
   const [y, m, d] = value.split("-");
@@ -69,6 +71,8 @@ export default function CreatePlanSheet({
   groupId,
   members,
 }: Props) {
+  
+  const navigate = useNavigate()
   // 👇 폼 상태들
   const [title, setTitle] = React.useState(""); // planName
   const [date, setDate] = React.useState(""); // "YYYY-MM-DD"
@@ -168,6 +172,8 @@ export default function CreatePlanSheet({
 
       onOpenChange(false);
       onCreated?.(id);
+
+      navigate(`/plans/${id}`)
     } catch (err: any) {
       setError(err?.message || "약속 생성 중 오류가 발생했습니다.");
     } finally {

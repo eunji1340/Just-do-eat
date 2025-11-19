@@ -6,6 +6,15 @@ export type MenuItem = {
   price: number;
 };
 
+export type HoursInfo = {
+  dow: number; // 0=공휴일, 1=월, ... 7=일
+  open: string; // "HH:mm:ss"
+  close: string; // "HH:mm:ss"
+  break_open: string | null;
+  break_close: string | null;
+  is_holiday: boolean;
+};
+
 export type Restaurant = {
   restaurant_id: number;
   name: string;
@@ -20,6 +29,7 @@ export type Restaurant = {
   menu: MenuItem[];
   distance_m: number;
   is_open: boolean;
+  hours: HoursInfo[] | null;
 };
 
 /**
