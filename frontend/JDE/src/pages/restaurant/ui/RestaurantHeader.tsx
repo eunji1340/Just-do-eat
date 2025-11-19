@@ -43,11 +43,11 @@ export default function RestaurantHeader({
       {restaurant.image && restaurant.image.length > 0 && (
         
       )} */}
-      <div className="w-full h-80 bg-gray-200">
+      <div className={`w-full h-80 bg-gray-200 ${imageSrc === '/NOIMAGE.png' ? "pt-24 bg-t3" : ""}`}>
         <img
           src={imageSrc}
           alt={restaurant.name}
-          className="w-full h-full object-cover"
+          className={`${imageSrc === '/NOIMAGE.png' ? "w-[30%] mx-auto" : "w-full h-full object-cover"}`}
           onError={() => {
             console.error(`❌ 이미지 로드 실패: ${restaurant.name}`, imageSrc);
             setImageSrc('/NOIMAGE.png'); // 실패하면 항상 noImage로
