@@ -6,7 +6,7 @@ import com.jde.mainserver.plan.web.dto.request.ConfirmDecisionRequest;
 import com.jde.mainserver.plan.web.dto.request.SubmitBallotRequest;
 import com.jde.mainserver.plan.web.dto.response.DecisionResponse;
 import com.jde.mainserver.plan.web.dto.response.TallyResponse;
-import com.jde.mainserver.plan.entity.enums.DecisionToolType;
+import com.jde.mainserver.plan.entity.enums.PlanDecisionTool;
 import com.jde.mainserver.plan.service.PlanDecisionService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -36,7 +36,7 @@ public class PlanDecisionController {
             @Parameter(description = "약속 ID", example = "1", required = true)
             @PathVariable Long planId,
             @Parameter(description = "결정 도구 타입", example = "VOTE", required = true)
-            @RequestParam("type") DecisionToolType type,
+            @RequestParam("type") PlanDecisionTool type,
             @Parameter(description = "현재 화면에 보여지고 있는 후보 식당 ID 리스트", required = true)
             @RequestBody List<Long> candidateRestaurantIds,
             @AuthUser Long userId

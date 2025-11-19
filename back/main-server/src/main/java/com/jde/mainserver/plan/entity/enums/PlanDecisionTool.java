@@ -9,7 +9,7 @@ public enum PlanDecisionTool {
 
     DIRECT("사다리 타기"),
     VOTE("투표"),
-    RANDOM("룰렛"),
+    ROULETTE("룰렛"),
     TOURNEY("토너먼트");
 
     private final String decisionTool;
