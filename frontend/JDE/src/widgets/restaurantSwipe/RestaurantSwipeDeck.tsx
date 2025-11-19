@@ -35,6 +35,10 @@ export default function RestaurantSwipeDeck({
   const [overlayVisible, setOverlayVisible] = React.useState(true);
   const [emptyNotified, setEmptyNotified] = React.useState(false);
 
+  // 타이머 cleanup을 위한 ref
+  const swipeTimerRef = React.useRef<number | null>(null);
+  const animationTimerRef = React.useRef<number | null>(null);
+
   const top = items[index];
 
   function handleMove(o: Offset) {
@@ -47,6 +51,12 @@ export default function RestaurantSwipeDeck({
     const cur = items[index];
     if (!cur) return;
 
+    // 기존 타이머 정리
+    if (swipeTimerRef.current) {
+      clearTimeout(swipeTimerRef.current);
+      swipeTimerRef.current = null;
+    }
+
     // ✅ 여기서 공통으로 모달/오버레이 상태 세팅
     setFinalDir(dir); // 어떤 액션인지 저장 (갈게요/싫어요/보류)
     setOverlayVisible(true); // 모달/오버레이 보이게
@@ -54,17 +64,24 @@ export default function RestaurantSwipeDeck({
     onTopSwiped?.(dir, cur); // 백엔드 액션 + 라우팅은 SwipePage에서
 
     // 일정 시간 후 다음 카드로 넘기기
-    window.setTimeout(() => {
+    swipeTimerRef.current = setTimeout(() => {
       setIndex((i) => i + 1);
       setFinalDir(null);
       setOffset({ x: 0, y: 0 });
       setOverlayVisible(false);
       requestAnimationFrame(() => setOverlayVisible(true));
+      swipeTimerRef.current = null;
     }, overlayHoldMs);
   }
 
   // 버튼 클릭 시 스와이프 애니메이션 트리거
   function triggerSwipeAnimation(dir: "left" | "right" | "up") {
+    // 기존 애니메이션 타이머 정리
+    if (animationTimerRef.current) {
+      clearTimeout(animationTimerRef.current);
+      animationTimerRef.current = null;
+    }
+
     // 방향에 따라 최종 offset 계산
     const targetOffset =
       dir === "left"
@@ -77,8 +94,9 @@ export default function RestaurantSwipeDeck({
     setOffset(targetOffset);
 
     // 애니메이션 완료 후 handleSwiped 호출
-    window.setTimeout(() => {
+    animationTimerRef.current = setTimeout(() => {
       handleSwiped(dir);
+      animationTimerRef.current = null;
     }, 300); // 애니메이션 시간
   }
 
@@ -97,6 +115,18 @@ export default function RestaurantSwipeDeck({
       setEmptyNotified(false);
     }
   }, [index, items.length, onDeckEmpty, emptyNotified]);
+
+  // 컴포넌트 언마운트 시 모든 타이머 정리
+  React.useEffect(() => {
+    return () => {
+      if (swipeTimerRef.current) {
+        clearTimeout(swipeTimerRef.current);
+      }
+      if (animationTimerRef.current) {
+        clearTimeout(animationTimerRef.current);
+      }
+    };
+  }, []);
 
   // 북마크 버튼 핸들러
   async function handleBookmark() {
