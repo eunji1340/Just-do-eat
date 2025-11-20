@@ -14,11 +14,77 @@ type Props = {
 function getLatestPlan(room: Room): Plan | null {
   if (!room.planList || room.planList.length === 0) return null;
 
-  // startAt 기준으로 가장 최근 것 선택
-  const sorted = [...room.planList].sort(
+  // restaurantImageUrl이 있는 plan들을 우선적으로 선택 (확정된 식당이 있는 약속)
+  const plansWithImage = room.planList.filter(
+    (plan) => plan.restaurantImageUrl && plan.restaurantImageUrl.trim() !== ""
+  );
+
+  if (plansWithImage.length > 0) {
+    // restaurantImageUrl이 있는 plan 중에서 startAt 기준으로 가장 최근 것 선택
+    const validPlansWithImage = plansWithImage.filter(
+      (plan) => plan.startAt && !Number.isNaN(new Date(plan.startAt).getTime())
+    );
+
+    if (validPlansWithImage.length > 0) {
+      // startAt이 있는 것들 중 가장 최근 것
+      const sorted = [...validPlansWithImage].sort(
+        (a, b) => new Date(b.startAt).getTime() - new Date(a.startAt).getTime()
+      );
+      return sorted[0];
+    } else {
+      // startAt이 없어도 restaurantImageUrl이 있으면 첫 번째 것 반환
+      return plansWithImage[0];
+    }
+  }
+
+  // restaurantImageUrl이 없는 plan들 중에서 startAt 기준으로 가장 최근 것 선택
+  const validPlans = room.planList.filter(
+    (plan) => plan.startAt && !Number.isNaN(new Date(plan.startAt).getTime())
+  );
+
+  if (validPlans.length > 0) {
+    const sorted = [...validPlans].sort(
+      (a, b) => new Date(b.startAt).getTime() - new Date(a.startAt).getTime()
+    );
+    return sorted[0];
+  }
+
+  // startAt도 없고 restaurantImageUrl도 없으면 첫 번째 plan 반환
+  return room.planList[0] || null;
+}
+
+function getPlanImages(room: Room): string[] {
+  if (!room.planList || room.planList.length === 0) return [];
+
+  // restaurantImageUrl이 있는 plan들을 필터링
+  const plansWithImage = room.planList.filter(
+    (plan) => plan.restaurantImageUrl && plan.restaurantImageUrl.trim() !== ""
+  );
+
+  if (plansWithImage.length === 0) return [];
+
+  // startAt이 있는 것들을 우선 정렬 (최신순)
+  const validPlans = plansWithImage.filter(
+    (plan) => plan.startAt && !Number.isNaN(new Date(plan.startAt).getTime())
+  );
+
+  const invalidPlans = plansWithImage.filter(
+    (plan) => !plan.startAt || Number.isNaN(new Date(plan.startAt).getTime())
+  );
+
+  // startAt 기준으로 정렬 (최신순)
+  const sorted = [...validPlans].sort(
     (a, b) => new Date(b.startAt).getTime() - new Date(a.startAt).getTime()
   );
-  return sorted[0];
+
+  // 정렬된 것들 + startAt 없는 것들 합치기
+  const allPlans = [...sorted, ...invalidPlans];
+
+  // 최대 4개까지 restaurantImageUrl 추출
+  return allPlans
+    .slice(0, 4)
+    .map((plan) => plan.restaurantImageUrl)
+    .filter((url): url is string => !!url && url.trim() !== "");
 }
 
 function formatKoreanDate(iso: string): string {
@@ -48,13 +114,16 @@ export default function MyMeetingCard({ group, onLeave, onOpenGroup }: Props) {
 
   // 최신 약속 정보
   const latestPlan = getLatestPlan(group);
-  const recentLabel = latestPlan
-    ? formatKoreanDate(latestPlan.startAt)
-    : "아직 약속이 없어요";
+  const recentLabel =
+    latestPlan && latestPlan.startAt
+      ? formatKoreanDate(latestPlan.startAt)
+      : latestPlan
+      ? "약속 있음"
+      : "아직 약속이 없어요";
 
-  // 썸네일: 최신 plan의 이미지 1장만 사용 (나머지는 placeholder)
-  const thumbnailUrl = latestPlan?.restaurantImageUrl || null;
-  const hasAnyImage = !!thumbnailUrl;
+  // 확정된 식당 이미지들 (최대 4개)
+  const planImages = getPlanImages(group);
+  const hasAnyImage = planImages.length > 0;
 
   return (
     <SwipeReveal
@@ -75,16 +144,19 @@ export default function MyMeetingCard({ group, onLeave, onOpenGroup }: Props) {
         <div className="p-4">
           {hasAnyImage ? (
             <div className="grid grid-cols-4 gap-3">
-              {/* 첫 번째: 실제 이미지 */}
-              <img
-                src={thumbnailUrl}
-                alt={`${group.roomName} 썸네일`}
-                className="aspect-square rounded-md object-cover"
-              />
-              {/* 나머지 3개: cute_man.png */}
-              {[1, 2, 3].map((i) => (
+              {/* 확정된 식당 이미지들 (최대 4개) */}
+              {planImages.map((imageUrl, index) => (
                 <img
-                  key={i}
+                  key={index}
+                  src={imageUrl}
+                  alt={`${group.roomName} 약속 ${index + 1}`}
+                  className="aspect-square rounded-md object-cover"
+                />
+              ))}
+              {/* 나머지 자리는 placeholder로 채우기 */}
+              {Array.from({ length: 4 - planImages.length }).map((_, index) => (
+                <img
+                  key={`placeholder-${index}`}
                   src="/cute_man.png"
                   alt="이미지 없음"
                   className="aspect-square rounded-md object-contain object-center bg-gray-50 p-3"
