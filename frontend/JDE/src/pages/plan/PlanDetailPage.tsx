@@ -53,6 +53,12 @@ export default function PlanDetailPage() {
   >(null);
 
   const isVotingStatus = planDetail?.status === "VOTING";
+  const decisionTool = planDetail?.decisionTool
+    ? planDetail.decisionTool.toUpperCase()
+    : null;
+  const isVoteTool = decisionTool === "VOTE";
+  const isRouletteTool = decisionTool === "ROULETTE";
+
   const {
     selectedRestaurantId: voteSelectedId,
     setSelectedRestaurantId: setVoteSelectedId,
@@ -63,7 +69,8 @@ export default function PlanDetailPage() {
     getVoteCount,
     voteTallyData,
     getTiedRestaurants,
-  } = useVote(planId, isVotingStatus || false, fetchPlanDetail);
+  } = useVote(planId, Boolean(isVotingStatus && isVoteTool), fetchPlanDetail);
+
   const [showToolModal, setShowToolModal] = useState(false);
   const [showComingSoonModal, setShowComingSoonModal] = useState(false);
   const [showEndVoteConfirmModal, setShowEndVoteConfirmModal] = useState(false);
@@ -73,10 +80,27 @@ export default function PlanDetailPage() {
   // 재투표 시 동점이었던 식당 ID들 (동점이 해소되어도 유지)
   const [revoteRestaurantIds, setRevoteRestaurantIds] = useState<number[]>([]);
 
+  // VOTING + ROULETTE면 약속 상세 진입 시 바로 룰렛 페이지로 이동
+  useEffect(() => {
+    if (!planId || !planDetail) return;
+
+    if (planDetail.status === "VOTING" && isRouletteTool) {
+      navigate(`/roulette/${planId}`, { replace: true });
+      return;
+    }
+
+    // 이미 VOTE 도구가 선택된 상태로 들어온 경우, 선택된 도구 상태 동기화
+    if (planDetail.status === "VOTING" && isVoteTool) {
+      setSelectedTool("VOTE");
+    }
+  }, [planId, planDetail, isRouletteTool, isVoteTool, navigate]);
+
   const handleSelectToolClick = useCallback(() => {
-    if (planDetail?.status === "DECIDED") return; // DECIDED 상태면 버튼 비활성화
+    if (!planDetail) return;
+    // 결정 도구 선택은 OPEN 상태에서만 가능
+    if (planDetail.status !== "OPEN") return;
     setShowToolModal(true);
-  }, [planDetail?.status]);
+  }, [planDetail]);
 
   const handleToolSelectFromModal = useCallback(
     async (toolType: "VOTE" | "LADDER" | "ROULETTE") => {
@@ -100,7 +124,6 @@ export default function PlanDetailPage() {
         } else if (toolType === "VOTE") {
           // 투표 시작
           await startVote();
-          // 투표 모드 활성화는 selectedTool이 "VOTE"로 설정되어 있어서 자동으로 됨
         }
       } catch (error) {
         console.error(
@@ -221,7 +244,8 @@ export default function PlanDetailPage() {
 
   // 동점이 해소되면 재투표 모드 자동 해제
   useEffect(() => {
-    if (isRevoteMode && isVotingStatus) {
+    const voteMode = Boolean(isVotingStatus && isVoteTool);
+    if (isRevoteMode && voteMode) {
       const tiedRestaurants = getTiedRestaurants();
       // 동점이 해소되면 (동점인 식당이 1개 이하) 재투표 모드 해제
       if (tiedRestaurants.length <= 1) {
@@ -229,7 +253,7 @@ export default function PlanDetailPage() {
         console.log("[PlanDetailPage] 동점 해소, 재투표 모드 해제");
       }
     }
-  }, [isRevoteMode, isVotingStatus, getTiedRestaurants, voteTallyData]);
+  }, [isRevoteMode, isVotingStatus, isVoteTool, getTiedRestaurants, voteTallyData]);
 
   const handleManagerSelectClick = useCallback(() => {
     setShowTieVoteModal(false);
@@ -294,11 +318,10 @@ export default function PlanDetailPage() {
   const participants = planDetail.planParticipantList || [];
   const isPlanManager = userData?.name === planDetail.planManager;
   const isDecidedStatus = planDetail?.status === "DECIDED";
-  // VOTE 상태일 때 라디오 버튼 표시
-  const voteMode = isVotingStatus;
-  const selectedRestaurantId = isVotingStatus
-    ? voteSelectedId
-    : directSelectedId;
+
+  // VOTE 도구 + VOTING 상태일 때만 투표 모드
+  const voteMode = Boolean(isVotingStatus && isVoteTool);
+  const selectedRestaurantId = voteMode ? voteSelectedId : directSelectedId;
 
   return (
     <>
@@ -317,7 +340,7 @@ export default function PlanDetailPage() {
       />
       <div
         className={`min-h-screen bg-neutral-100 ${
-          isPlanManager || isVotingStatus ? "pb-24" : ""
+          isPlanManager || voteMode ? "pb-24" : ""
         }`}
       >
         <PlanHeader planDetail={planDetail} />
@@ -333,30 +356,26 @@ export default function PlanDetailPage() {
           selectedTool={selectedTool}
           restaurantListRef={restaurantListRef}
           onRestaurantSelect={
-            isVotingStatus
-              ? handleVoteRestaurantSelect
-              : handleDirectRestaurantSelect
+            voteMode ? handleVoteRestaurantSelect : handleDirectRestaurantSelect
           }
           onPrevious={handlePrevious}
           onNext={handleNext}
-          getVoteCount={isVotingStatus ? getVoteCount : undefined}
+          getVoteCount={voteMode ? getVoteCount : undefined}
           totalParticipants={
-            isVotingStatus && planDetail
+            voteMode && planDetail
               ? planDetail.planParticipantList.length
               : undefined
           }
-          currentVoteCount={
-            isVotingStatus ? voteTallyData?.totalVotes : undefined
-          }
+          currentVoteCount={voteMode ? voteTallyData?.totalVotes : undefined}
           allowedRestaurantIds={
-            isVotingStatus && revoteRestaurantIds.length > 0
+            voteMode && revoteRestaurantIds.length > 0
               ? revoteRestaurantIds
               : undefined
           }
         />
       </div>
 
-      {isVotingStatus && (
+      {voteMode && (
         <>
           <VoteSubmitButton
             hasSelectedRestaurant={!!selectedRestaurantId}
@@ -372,6 +391,7 @@ export default function PlanDetailPage() {
         </>
       )}
 
+      {/* OPEN 상태 + 모임장 + 미확정일 때만 도구선택 / 바로선택 바텀바 노출 */}
       {!isVotingStatus && isPlanManager && !isDecidedStatus && (
         <BottomActionBar
           bottomButtonsRef={bottomButtonsRef}

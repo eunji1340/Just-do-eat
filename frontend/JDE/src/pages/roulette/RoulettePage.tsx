@@ -1,18 +1,16 @@
-// 예시: src/pages/RoulettePage.tsx (기존 MOCK 버전 → 실제 plan 연동 버전)
-
 import * as React from "react";
-import { useSearchParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import type { RouletteItem } from "@/entities/roulette/types";
 import RouletteWheel from "@/widgets/roulette/RouletteWheel";
 import { useRoulette } from "@/features/roulette/useRoulette";
 import { getDeterministicWinnerIndex } from "@/features/roulette/utils/getWinnerindex";
 import { usePlanCandidates } from "@/pages/plan/hooks/usePlanCandidates";
+import { rouletteResultRestaurant } from "@/entities/plan/api/rouletteResult";
 
 export default function RoulettePage() {
-  const [searchParams] = useSearchParams();
-  const planId = searchParams.get("planId") || "";
+  const navigate = useNavigate();
+  const { planId = "" } = useParams<{ planId: string }>();
 
-  // 1) 약속 후보 식당 목록 재사용
   const {
     restaurants,
     isLoading: isLoadingCandidates,
@@ -20,21 +18,50 @@ export default function RoulettePage() {
 
   const [items, setItems] = React.useState<RouletteItem[]>([]);
   const [winnerIndex, setWinnerIndex] = React.useState<number | null>(null);
+  const [isDeciding, setIsDeciding] = React.useState(false);
 
   const { angle, spinning, durationMs, gradientStops, spinToIndex } =
     useRoulette({
       items,
-      onFinish: ({ item }) => {
-        alert(`오늘은 ➜ ${item.label}!`);
+      // 🔥 룰렛이 멈췄을 때 호출되는 콜백
+      onFinish: async ({ item }) => {
+        if (!planId || !item) return;
+        if (isDeciding) return;
+
+        const restaurantId = Number(item.id);
+        const decidedRestaurant = restaurants.find(
+          (r) => String(r.id) === String(item.id)
+        );
+
+        try {
+          setIsDeciding(true);
+          // 1) 서버에 최종 결정 PATCH
+          await rouletteResultRestaurant(planId, restaurantId);
+
+          // 2) 결과 페이지로 이동 (식당 정보도 함께 전달)
+          navigate(`/plans/${planId}/decision`, {
+            state: {
+              restaurant: decidedRestaurant,
+            },
+          });
+        } catch (error) {
+          console.error("[RoulettePage] 결정 PATCH 실패:", error);
+          alert(
+            error instanceof Error
+              ? error.message
+              : "식당 확정에 실패했습니다. 다시 시도해주세요."
+          );
+        } finally {
+          setIsDeciding(false);
+        }
       },
     });
 
-  // 2) 후보 식당 → RouletteItem 으로 변환 + winnerIndex 계산
   React.useEffect(() => {
     if (!planId || restaurants.length === 0) return;
 
     const rouletteItems: RouletteItem[] = restaurants.map((r) => ({
-      id: String(r.id),
+      id: String(r.id), // 🔥 나중에 restaurantId로 다시 쓸 거라 id를 그대로 넣어둠
       label: r.name,
       weight: 1,
     }));
@@ -46,11 +73,11 @@ export default function RoulettePage() {
     setWinnerIndex(idx);
   }, [planId, restaurants]);
 
-  // 3) "룰렛 돌리기" 버튼 → 항상 같은 인덱스로 회전
   const handleSpinClick = React.useCallback(() => {
-    if (winnerIndex === null || spinning || items.length === 0) return;
+    if (winnerIndex === null || spinning || items.length === 0 || isDeciding)
+      return;
     spinToIndex(winnerIndex);
-  }, [winnerIndex, spinning, items.length, spinToIndex]);
+  }, [winnerIndex, spinning, items.length, isDeciding, spinToIndex]);
 
   if (isLoadingCandidates) {
     return (
@@ -59,7 +86,6 @@ export default function RoulettePage() {
       </main>
     );
   }
-
   return (
     <main className="min-h-dvh bg-surface">
       <div className="mx-auto max-w-7xl px-4 py-6 md:py-10">
