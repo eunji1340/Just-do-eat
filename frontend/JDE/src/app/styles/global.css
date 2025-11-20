@@ -1,0 +1,158 @@
+@import "tailwindcss";
+
+/* ========================================================================================
+방법 3: CSS 변수 + 커스텀 유틸리티 클래스
+========================================================================================
+
+구조:
+1. :root - 라이트/다크 전환이 필요한 CSS 변수 정의
+2. :root[data-theme="dark"] - 다크모드 CSS 변수
+3. @theme - 고정 브랜드 색상 (라이트/다크 무관)
+4. 커스텀 유틸리티 클래스 - CSS 변수를 참조하여 자동 다크모드 전환
+
+   ======================================================================================== */
+
+/* ========================================================================================
+1. CSS 변수 - 라이트/다크 전환 필요한 색상
+   ======================================================================================== */
+
+/* ===== 라이트 모드 ===== */
+:root {
+  /* 배경 색상 */
+  --color-body: oklch(97% 0 0); /* body 배경색 (neutral-100) */
+  --color-surface: oklch(100% 0 0); /* 섹션/패널 배경 (흰색) */
+  --color-card: oklch(100% 0 0); /* 카드 배경색 (흰색) */
+
+  /* 텍스트 색상 */
+  --color-fg: oklch(20.5% 0 0); /* body 기본 텍스트 (neutral-900) */
+  --color-card-foreground: oklch(20.5% 0 0); /* 카드 텍스트 (neutral-900) */
+  --color-muted-foreground: oklch(55.6% 0 0); /* 보조 텍스트 (neutral-500) */
+
+  /* 테두리/구분선 */
+  --color-border: oklch(92.2% 0 0); /* 테두리 (neutral-200) */
+  --color-stroke: oklch(92.2% 0 0); /* stroke (neutral-200) */
+
+  /* 보조 색상 */
+  --color-muted: oklch(97% 0 0); /* 보조 배경 (neutral-100) */
+}
+
+/* ===== 다크 모드 ===== */
+:root[data-theme="dark"] {
+  /* 배경 색상 */
+  --color-bg: oklch(23% 0 0); /* body 배경색 (zinc-900) */
+  --color-surface: oklch(26.9% 0 0); /* 섹션/패널 배경 (zinc-800) */
+  --color-card: oklch(26.9% 0 0); /* 카드 배경색 (zinc-800) */
+
+  /* 텍스트 색상 */
+  --color-fg: oklch(98.5% 0 0); /* body 기본 텍스트 (neutral-50) */
+  --color-card-foreground: oklch(93.2% 0 0); /* 카드 텍스트 (neutral-200) */
+  --color-muted-foreground: oklch(70.8% 0 0); /* 보조 텍스트 (neutral-400) */
+
+  /* 테두리/구분선 */
+  --color-border: oklch(39.6% 0 0); /* 테두리 (zinc-700) */
+  --color-stroke: oklch(39.6% 0 0); /* stroke (zinc-700) */
+
+  /* 보조 색상 */
+  --color-muted: oklch(37.1% 0 0); /* 보조 배경 (zinc-700) */
+}
+
+/* ========================================================================================
+   2. @theme - 고정 브랜드 색상 (라이트/다크 무관)
+   ======================================================================================== */
+
+@theme {
+  /* Brand - 브랜드 주요 색상 (오렌지) */
+  --color-primary: oklch(
+    75% 0.183 55.934
+  ); /* 주요 CTA, 포인트 컬러 (orange-400) */
+  --color-primary-fg: oklch(100% 0 0); /* primary 위의 텍스트 (흰색) */
+  --color-secondary: oklch(55.6% 0 0); /* 보조 컬러 (neutral-500) */
+  --color-info: oklch(62.3% 0.214 259.815); /* 정보 컬러 (blue-500) */
+
+  /* Brand Shades (S2~S6: 점점 진하게) */
+  --color-s2: oklch(70.5% 0.213 47.604); /* orange-500 */
+  --color-s3: oklch(64.6% 0.222 41.116); /* orange-600 */
+  --color-s4: oklch(55.3% 0.195 38.402); /* orange-700 */
+  --color-s5: oklch(47% 0.157 37.304); /* orange-800 */
+  --color-s6: oklch(40.8% 0.123 38.172); /* orange-900 */
+
+  /* Brand Tints (T1~T4: 점점 연하게) */
+  --color-t1: oklch(83.7% 0.128 66.29); /* orange-300 */
+  --color-t2: oklch(90.1% 0.076 70.697); /* orange-200 */
+  --color-t3: oklch(95.4% 0.038 75.164); /* orange-100 */
+  --color-t4: oklch(98% 0.016 73.684); /* orange-50 */
+
+  /* Actions - 상태 색상 */
+  --color-success: oklch(72.3% 0.219 149.579); /* 성공 (green-500) */
+  --color-warning: oklch(90.5% 0.182 98.111); /* 경고 (yellow-300) */
+  --color-error: oklch(57.7% 0.245 27.325); /* 에러 (red-600) */
+
+  /* Ranking - 순위 배지 색상 */
+  --color-rank-gold: oklch(85% 0.15 85); /* 금메달 (1등) */
+  --color-rank-silver: oklch(85% 0.02 0); /* 은메달 (2등) */
+  --color-rank-bronze: oklch(70% 0.12 50); /* 동메달 (3등) */
+  --color-rank-default: oklch(83.7% 0.128 66.29); /* 일반 순위 (4등 이하) */
+}
+
+/* ========================================================================================
+   3. 커스텀 유틸리티 클래스 - CSS 변수 참조로 자동 다크모드 전환
+   ======================================================================================== */
+
+/* 배경 클래스 */
+.bg-body {
+  background-color: var(--color-body);
+}
+
+.bg-surface {
+  background-color: var(--color-surface);
+}
+
+.bg-card {
+  background-color: var(--color-card);
+}
+
+/* 텍스트 클래스 */
+.text-card-foreground {
+  color: var(--color-card-foreground);
+}
+
+.text-muted-foreground {
+  color: var(--color-muted-foreground);
+}
+
+/* 테두리 클래스 */
+.border-stroke {
+  border-color: var(--color-stroke);
+}
+
+.border-border {
+  border-color: var(--color-border);
+}
+
+/* 보조 배경 */
+.bg-muted {
+  background-color: var(--color-muted);
+}
+
+/* ========================================================================================
+   4. 전역 스타일 적용
+   ======================================================================================== */
+
+/* 기본 배경 및 텍스트 색상 */
+html,
+body {
+  background: var(--color-bg); /* CSS 변수 참조 → 라이트/다크 자동 전환 */
+  color: var(--color-fg); /* CSS 변수 참조 → 라이트/다크 자동 전환 */
+  font-family: "Pretendard Variable", Pretendard, -apple-system,
+    BlinkMacSystemFont, system-ui, Roboto, "Helvetica Neue", "Segoe UI",
+    "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", "Apple Color Emoji",
+    "Segoe UI Emoji", "Segoe UI Symbol", sans-serif;
+}
+
+/* 전역 폰트 설정 */
+* {
+  font-family: "Pretendard Variable", Pretendard, -apple-system,
+    BlinkMacSystemFont, system-ui, Roboto, "Helvetica Neue", "Segoe UI",
+    "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", "Apple Color Emoji",
+    "Segoe UI Emoji", "Segoe UI Symbol", sans-serif;
+}

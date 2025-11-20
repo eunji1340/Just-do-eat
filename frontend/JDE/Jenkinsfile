@@ -1,11 +1,16 @@
 pipeline {
     agent any
-
+    options {
+        disableConcurrentBuilds()
+    }
     environment {
 
         APP_NAME = "jde-frontend"
         NGINX_CONTAINER = "JDE-nginx"
-        WORK_DIR = "./frontend/JDE"
+        WORK_DIR = "frontend/JDE"
+        VITE_API_BASE_URL = "https://api.justdoeat.ai.kr" 
+        VITE_USE_MSW="false"
+        VITE_KAKAO_MAP_APP_KEY="64afe1c25c735fa73a5a18aaa90216b6"
     }
 
     stages {
@@ -54,11 +59,10 @@ pipeline {
                     echo "🚀 Deploying build files to Nginx container..."
 
                     # Nginx 컨테이너가 실제 서비스 담당
-                    docker cp $WORKSPACE/${WORK_DIR}/dist/. ${NGINX_CONTAINER}:/usr/share/nginx/html/
+                    cd /var/jenkins_home/workspace/back/back
 
                     # nginx reload로 새 파일 반영
-                    docker exec ${NGINX_CONTAINER} nginx -s reload
-
+		    docker compose up -d --build nginx
                     echo "✅ Deployment completed successfully!"
                 '''
             }

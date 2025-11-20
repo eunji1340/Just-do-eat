@@ -1,14 +1,26 @@
 // main.tsx
-import React from 'react'
-import ReactDOM from 'react-dom/client'
-import { BrowserRouter } from 'react-router-dom'
-import App from './App'
-import './index.css'
+import React from "react";
+import ReactDOM from "react-dom/client";
+import AppRouter from "./app/router/router";
+import "./app/styles/global.css";
 
-ReactDOM.createRoot(document.getElementById('root')!).render(
-  <React.StrictMode>
-    <BrowserRouter>
-      <App />
-    </BrowserRouter>
-  </React.StrictMode>,
-)
+async function bootstrap() {
+  // 라이트 모드를 기본으로 설정
+  document.documentElement.setAttribute("data-theme", "light");
+
+  // DOM이 준비될 때까지 대기
+  const rootElement = document.getElementById("root");
+  if (!rootElement) {
+    console.error("Root element not found!");
+    return;
+  }
+
+
+  ReactDOM.createRoot(rootElement).render(
+    <React.StrictMode>
+      <AppRouter />
+    </React.StrictMode>
+  );
+}
+
+bootstrap();
