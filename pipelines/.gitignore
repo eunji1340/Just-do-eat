@@ -1,36 +1,3 @@
-# Python venv
-venv/
-.env/
-.env*/        # e.g. .env36, .env38
-.venv/
-**/venv/
-**/.venv/
 
-# Python bytecode / 캐시
-__pycache__/
-*.py[cod]
-*$py.class
-
-# 테스트 / 타입체커 캐시
-.pytest_cache/
-.mypy_cache/
-.coverage
-htmlcov/
-
-# Jupyter
-.ipynb_checkpoints/
-
-# 로그 / 임시
-*.log
-logs/
-*.tmp
-*.temp
-
-# 시스템 파일
-.DS_Store
-Thumbs.db
-
-# 가상환경 변형 (혹시 다른 이름 쓴 경우)
-env/
-ENV/
-*.venv
+.env
+venv

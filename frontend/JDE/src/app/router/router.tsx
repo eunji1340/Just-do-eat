@@ -1,0 +1,164 @@
+// src/app/router/router.tsx
+// 목적: 앱 라우팅 정의 (단일 책임: 라우팅)
+// 교체 포인트: 라우터 전환 시 여기만 수정 (ex. Remix, TanStack Router)
+
+import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import { lazy } from "react";
+import MainPage from "../../pages/main/MainPage";
+import FeedPage from "../../pages/feed/FeedPage";
+import OnboardingLanding from "../../pages/Onboarding/landing";
+import OnboardingPage from "../../pages/Onboarding";
+import OnboardingResult from "../../pages/Onboarding/result";
+import SignupPage from "../../pages/Signup";
+import LoginPage from "../../pages/Login";
+import GroupsListPage from "@/pages/groups/GroupsListPage";
+import GroupDetailPage from "@/pages/groups/GroupDetailPage";
+import RoulettePage from "@/pages/roulette/RoulettePage";
+import SearchStartPage from "@/pages/search/SearchStartPage";
+import PlanDetailPage from "@/pages/plan/PlanDetailPage";
+import FavoritesPage from "@/pages/favorites/FavoritesPage";
+import MyPage from "@/pages/my/MyPage";
+import RestaurantDetailPage from "@/pages/restaurant/RestaurantDetailPage";
+import InvitePage from "@/pages/groups/InvitePage";
+import AppLayout from "../layout/AppLayout";
+import PlanListPage from "@/pages/groups/PlanListPage";
+import RouletteResultPage from "@/pages/plan/RouletteResultPage";
+
+const SearchResultPage = lazy(() => import("@/pages/search/SearchResultPage"));
+
+const router = createBrowserRouter([
+  {
+    path: "/",
+    element: (
+      <AppLayout>
+        <MainPage />
+      </AppLayout>
+    ),
+  },
+  {
+    path: "/feed",
+    element: (
+      <AppLayout>
+        <FeedPage />
+      </AppLayout>
+    ),
+  },
+  {
+    path: "/onboarding/landing",
+    element: <OnboardingLanding />,
+  },
+  {
+    path: "/onboarding/test",
+    element: <OnboardingPage />,
+  },
+  {
+    path: "/onboarding/result",
+    element: <OnboardingResult />,
+  },
+  {
+    path: "/signup",
+    element: <SignupPage />,
+  },
+  {
+    path: "/login",
+    element: <LoginPage />,
+  },
+  {
+    path: "/groups",
+    element: (
+      <AppLayout>
+        <GroupsListPage />
+      </AppLayout>
+    ),
+  },
+  {
+    path: "/groups/:groupId",
+    element: (
+      <AppLayout>
+        <GroupDetailPage />
+      </AppLayout>
+    ),
+  },
+  {
+    path: "groups/:groupId/plans",
+    element: (
+      <AppLayout>
+        <PlanListPage />
+      </AppLayout>
+    ),
+  },
+  {
+    path: "/roulette/:planId",
+    element: (
+      <AppLayout>
+        <RoulettePage />
+      </AppLayout>
+    ),
+  },
+  {
+    path: "/plans/:planId",
+    element: (
+      <AppLayout>
+        <PlanDetailPage />
+      </AppLayout>
+    ),
+  },
+  {
+    path: "/search/start",
+    element: <SearchStartPage />,
+  },
+  {
+    path: "/search",
+    element: (
+      <AppLayout>
+        <SearchResultPage />
+      </AppLayout>
+    ),
+  },
+  {
+    path: "/favorites",
+    element: (
+      <AppLayout>
+        <FavoritesPage />
+      </AppLayout>
+    ),
+  },
+  {
+    path: "/my",
+    element: (
+      <AppLayout>
+        <MyPage />
+      </AppLayout>
+    ),
+  },
+  {
+    path: "/restaurants/:restaurantId",
+    element: (
+      <AppLayout>
+        <RestaurantDetailPage />
+      </AppLayout>
+    ),
+  },
+  {
+    path: "/invite",
+    element: (
+      <AppLayout>
+        <InvitePage />
+      </AppLayout>
+    ),
+  },
+{
+  path: "/plans/:planId/decision",
+  element: (
+    <AppLayout>
+      <RouletteResultPage />
+    </AppLayout>
+  ),
+}  
+]);
+
+export default function AppRouter() {
+  return (
+    <RouterProvider router={router} future={{ v7_startTransition: true }} />
+  );
+}

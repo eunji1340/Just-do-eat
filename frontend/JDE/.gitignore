@@ -24,3 +24,7 @@ dist-ssr
 *.sw?
 
 .env
+.vite/
+
+# Claude Code settings and instructions
+.claude/

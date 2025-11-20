@@ -1,1 +1,23 @@
-backend
+# secrets
+.env
+**/.env
+docker-compose.yml
+**/docker-compose.yml
+
+# editor swap/backup
+*.swp
+*.swo
+*~
+
+# node
+node_modules/
+**/node_modules/
+
+# build outputs
+frontend/dist/
+
+# logs
+*.log
+logs/
+**/logs/
+
