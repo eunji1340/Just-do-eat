@@ -192,15 +192,14 @@ Spring에서 관리하며:
 
 ## Frontend
 
-![React](https://img.shields.io/badge/React-61DAFB?style=for-the-badge&logo=React&logoColor=black)
+![React](https://img.shields.io/badge/React_18-61DAFB?style=for-the-badge&logo=React&logoColor=black)
 ![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=TypeScript&logoColor=white)
+![Vite](https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=Vite&logoColor=white)
 ![TailwindCSS](https://img.shields.io/badge/TailwindCSS-06B6D4?style=for-the-badge&logo=TailwindCSS&logoColor=white)
-![Zustand](https://img.shields.io/badge/Zustand-764ABC?style=for-the-badge&logo=React&logoColor=white)
+![Zustand](https://img.shields.io/badge/Zustand-764ABC?style=for-the-badge&logo=Z&logoColor=white)
 ![ReactQuery](https://img.shields.io/badge/React%20Query-FF4154?style=for-the-badge&logo=ReactQuery&logoColor=white)
-![FramerMotion](https://img.shields.io/badge/FramerMotion-0055FF?style=for-the-badge&logo=Framer&logoColor=white)
 ![ReactRouter](https://img.shields.io/badge/React%20Router-CA4245?style=for-the-badge&logo=ReactRouter&logoColor=white)
-![KakaoMap](https://img.shields.io/badge/Kakao%20Map-FFCD00?style=for-the-badge&logo=Kakao&logoColor=black)
-![PWA](https://img.shields.io/badge/PWA-5A0FC8?style=for-the-badge&logo=PWA&logoColor=white)
+![Axios](https://img.shields.io/badge/Axios-5A29E4?style=for-the-badge&logo=Axios&logoColor=white)
 
 ---
 
@@ -211,7 +210,6 @@ Spring에서 관리하며:
 ![Swagger](https://img.shields.io/badge/Swagger-85EA2D?style=for-the-badge&logo=Swagger&logoColor=black)
 ![JWT](https://img.shields.io/badge/JWT-000000?style=for-the-badge&logo=JSONWebTokens&logoColor=white)
 ![KakaoAPI](https://img.shields.io/badge/Kakao%20Local%20API-FFCD00?style=for-the-badge&logo=Kakao&logoColor=black)
-![S3](https://img.shields.io/badge/AWS%20S3-569A31?style=for-the-badge&logo=AmazonS3&logoColor=white)
 
 ---
 
@@ -236,12 +234,11 @@ Spring에서 관리하며:
 
 ## Infra / DevOps
 
-![AWS EC2](https://img.shields.io/badge/AWS_EC2-FF9900?style=for-the-badge&logo=AmazonEC2&logoColor=white)
-![AWS RDS](https://img.shields.io/badge/AWS_RDS-527FFF?style=for-the-badge&logo=AmazonRDS&logoColor=white)
-![CloudFront](https://img.shields.io/badge/CloudFront-8C4FFF?style=for-the-badge&logo=AmazonAWS&logoColor=white)
+![Jenkins](https://img.shields.io/badge/Jenkins-D24939?style=for-the-badge&logo=Jenkins&logoColor=white)
 ![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=Docker&logoColor=white)
-![GitHubActions](https://img.shields.io/badge/GitHub_Actions-2088FF?style=for-the-badge&logo=GitHubActions&logoColor=white)
-![CloudWatch](https://img.shields.io/badge/CloudWatch-FF4F8B?style=for-the-badge&logo=AmazonAWS&logoColor=white)
+![NGINX](https://img.shields.io/badge/Nginx-009639?style=for-the-badge&logo=NGINX&logoColor=white)
+![AWS EC2](https://img.shields.io/badge/AWS_EC2-FF9900?style=for-the-badge&logo=AmazonEC2&logoColor=white)
+
 
 ---
 
@@ -257,3 +254,4 @@ Spring에서 관리하며:
 | 장은지 | Backend · AI|
 | 전유진 | Frontend |
 | 한영균 | Frontend |
+
