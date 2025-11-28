@@ -190,8 +190,6 @@ Spring에서 관리하며:
 
 # 기술 스택
 
-# Tech Stack
-
 ## Frontend
 
 ![React](https://img.shields.io/badge/React-61DAFB?style=for-the-badge&logo=React&logoColor=black)
@@ -259,22 +257,3 @@ Spring에서 관리하며:
 | 장은지 | Backend · AI|
 | 전유진 | Frontend |
 | 한영균 | Frontend |
-
----
-
-# 프로젝트 실행 방법
-
-```bash
-# Backend(Spring)
-cd backend
-./gradlew bootRun
-
-# Recommender(FastAPI)
-cd recommender
-uvicorn main:app --reload
-
-# Frontend
-cd frontend
-npm install
-npm run dev
-```
