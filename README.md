@@ -1,5 +1,6 @@
 # JUST DO EAT
-<img width="320" height="320" alt="Frame 457" src="https://github.com/user-attachments/assets/0f2807c4-576a-4873-95ea-1529dc1cdbdb" />
+<img width="320" height="360" alt="logo" src="https://github.com/user-attachments/assets/33042827-218b-4fb1-844a-2870e94e70e3" />
+
 
 개인 & 모임을 위한 **AI 기반 외식 추천 서비스**
 
@@ -187,3 +188,4 @@ cd frontend
 npm install
 npm run dev
 ```
+
