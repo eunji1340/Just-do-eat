@@ -133,12 +133,14 @@
 
 **구성 요소**
 
-- Spring Boot: API 서버, 추천 후보 생성(Retrieval), 행동 로그 업데이트
-- FastAPI: 개인/그룹 추천 점수 계산(Scoring)
-- PostgreSQL + PostGIS: 식당 정보/위치/태그/사용자 상태 저장
-- Redis: 개인 피드 캐싱 + 약속 후보 임시 저장
-- S3: 이미지 저장
-- GitHub Actions + AWS: 배포 자동화
+* **Spring Boot** — 메인 API 서버, 추천 후보 Retrieval
+* **FastAPI** — 개인/그룹 추천 점수 계산(Scoring)
+* **PostgreSQL + PostGIS** — 식당/유저 데이터 + 위치 기반 쿼리
+* **Redis** — 개인 피드/온보딩/약속 임시 저장
+* **Nginx** — Reverse Proxy & 라우팅
+* **S3** — 이미지 저장
+* **GitLab + Jenkins + AWS** — 코드 저장∙CI/CD∙배포
+* **Kakao Local / Google Place** — 외부 위치·식당 데이터 조회
 
 ---
 
@@ -254,4 +256,5 @@ Spring에서 관리하며:
 | 장은지 | Backend · AI|
 | 전유진 | Frontend |
 | 한영균 | Frontend |
+
 
